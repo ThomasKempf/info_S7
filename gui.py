@@ -3,11 +3,31 @@ import sys
 import PySide6.QtWidgets as qtw
 import PySide6.QtGui as qtg
 
-
 menu = {
     "geometrie": [100, 100, 400, 300],
-    "titre": "Menu"
+    "titre": "Menu",
+    "styleSheet": """
+        QWidget {
+            background-color: #f8f8f8; /* Couleur de fond claire */
+            border: 2px solid #222; /* Bordure sombre */
+            border-radius: 8px; /* Bords arrondis */
+        }
+        QPushButton {
+            background: #fff; /* Couleur de fond blanche */
+            border: 2px solid #222; /* Bordure sombre */
+            border-radius: 6px; /* Bords arrondis */
+            font-size: 16px; /* Taille de police */
+            font-weight: bold; /* Poids de police */
+            padding: 10px 0; /* Rembourrage */
+            margin-bottom: 12px; /* Espace entre les boutons */
+        }
+        QPushButton:hover {
+            background: #e0e0e0; /* Couleur de fond au survol */
+        }
+    """
 }
+
+
 class Titre(qtw.QLabel):
     def __init__(self, texte, parent=None):
         super().__init__(texte, parent)
@@ -21,25 +41,7 @@ class Fenetre(qtw.QWidget):
         super().__init__()
         self.setWindowTitle(parametre["titre"])
         self.setGeometry(*parametre["geometrie"])
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #f8f8f8;
-                border: 2px solid #222;
-                border-radius: 8px;
-            }
-            QPushButton {
-                background: #fff;
-                border: 2px solid #222;
-                border-radius: 6px;
-                font-size: 16px;
-                font-weight: bold;
-                padding: 10px 0;
-                margin-bottom: 12px;
-            }
-            QPushButton:hover {
-                background: #e0e0e0;
-            }
-        """)
+        self.setStyleSheet(parametre["styleSheet"])
 
         main_layout = qtw.QHBoxLayout()
         left_layout = qtw.QVBoxLayout()
