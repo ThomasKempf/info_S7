@@ -24,7 +24,8 @@ menu = {
         QPushButton:hover {
             background: #e0e0e0; /* Couleur de fond au survol */
         }
-    """
+    """,
+    "buttons": ["Créer Projet", "Ouvrir Projet"]
 }
 
 class Bouton(qtw.QPushButton):
@@ -43,14 +44,28 @@ class Titre(qtw.QLabel):
 class Fenetre(qtw.QWidget):
     def __init__(self, parametre):
         super().__init__()
-        self.setWindowTitle(parametre["titre"])
-        self.setGeometry(*parametre["geometrie"])
-        self.setStyleSheet(parametre["styleSheet"])
+        self._parametre = parametre
+        self.setWindowTitle(self._parametre["titre"])
+        self.setGeometry(*self._parametre["geometrie"])
+        self.setStyleSheet(self._parametre["styleSheet"])
         self.main_layout = qtw.QHBoxLayout() # Layout horizontal principal
         self.left_layout = qtw.QVBoxLayout() # Layout vertical pour les boutons et le titre
 
-        # Create three QLabel widgets for each gear, positioned by x and y
-        # Widget conteneur pour l’icône
+    def ajouter_bouton(self):
+        self.boutons = {}
+        for texte_bouton in self._parametre["buttons"]:
+            self.boutons[texte_bouton] = Bouton(texte_bouton, self)
+            self.left_layout.addWidget(self.boutons[texte_bouton])
+
+class FenetreMenu(Fenetre):
+    def __init__(self, parametre):
+        super().__init__(parametre)
+
+        titre = Titre("Dimensionnement Réducteur", self) # Titre personnalisé
+        self.left_layout.addWidget(titre)  # Ajouter le titre au layout gauche
+        self.ajouter_bouton()  # Ajouter les boutons au layout gauche
+        self.left_layout.addStretch() # Pour pousser les éléments vers le haut
+        # Conteneur pour les engrenages
         self.gears_widget = qtw.QWidget(self)
         self.gears_widget.setFixedSize(210, 210)  # Taille du conteneur
         placement_engreanes = [(60, 105), (150, 155), (150, 52)] 
@@ -61,25 +76,10 @@ class Fenetre(qtw.QWidget):
             x = pos[0] - gear.width() // 2
             y = pos[1] - gear.height() // 2
             gear.move(x, y)  # Positionner l'icône
-
         # Ajouter le widget contenant les engrenages dans ton layout principal
         self.main_layout.addLayout(self.left_layout)
         self.main_layout.addWidget(self.gears_widget, alignment=qtg.Qt.AlignmentFlag.AlignTop)
-
         self.setLayout(self.main_layout)
-
-
-
-class FenetreMenu(Fenetre):
-    def __init__(self, parametre):
-        super().__init__(parametre)
-        titre = Titre("Dimensionnement Réducteur", self) # Titre personnalisé
-        self.left_layout.addWidget(titre)  # Ajouter le titre au layout gauche
-        self.bouton1 = Bouton("Créer Projet", self) # Bouton personnalisé
-        self.bouton2 = Bouton("Ouvrir Projet", self) # Bouton personnalisé
-        self.left_layout.addWidget(self.bouton1) # Ajouter le premier bouton au layout gauche
-        self.left_layout.addWidget(self.bouton2) # Ajouter le deuxième bouton au layout gauche
-        self.left_layout.addStretch() # Pour pousser les éléments vers le haut
 
     def creer_projet(self):
         print("Créer Projet clicked")
