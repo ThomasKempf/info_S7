@@ -4,29 +4,21 @@ class Engrenage:
     def __init__(self, nbr_dents: int):
         self.nbr_dents = nbr_dents
 
-# Classe Mère
 class Train:
-    """Classe de base concrète pour les trains d'engrenages."""
     def __init__(self):
         self._rapport_reduction: float = 0.0
 
     def calculer_rapport(self):
-        # Cette méthode DOIT être surchargée.
         raise NotImplementedError(
             "La méthode 'calculer_rapport' doit être implémentée par la sous-classe."
         )
 
     @property
     def rapport_reduction(self) -> float:
-        """Propriété publique (getter) du rapport de réduction."""
         return self._rapport_reduction
 
-# Classe Fille
 class TrainSimple(Train):
-    """
-    Représente un train d'engrenages simple.
-    Calcule le rapport de vitesse (i = Z_entrée / Z_sortie).
-    """
+   
     def __init__(self, engrenage_entree: Engrenage, engrenage_sortie: Engrenage):
         super().__init__()
         self.engrenage_entree = engrenage_entree
@@ -45,10 +37,10 @@ class TrainSimple(Train):
 # --- Fonction de Test ---
 
 def run_tests():
-    print("--- Démarrage des tests du modèle Train ---")
+    print(" Démarrage test ")
 
     # 1. Test du Train Simple (Réduction)
-    print("\n[1] Test du Train Simple (Réduction)")
+    print("\n[1] Test du Train Simple ")
     e_petit = Engrenage(nbr_dents=20)
     e_grand = Engrenage(nbr_dents=80)
     train_1 = TrainSimple(e_petit, e_grand)
