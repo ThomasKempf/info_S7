@@ -51,7 +51,8 @@ class Fenetre(qtw.QWidget):
         self.setFixedSize(*self._parametre["geometrie"])
         self.setStyleSheet(self._parametre["styleSheet"])
         self.main_layout = qtw.QHBoxLayout() # Layout horizontal principal
-        self.child_layout = qtw.QVBoxLayout() # Layout vertical pour les boutons et le titre
+        self.layouts = {}
+        self.layouts["child"] = qtw.QVBoxLayout() # Layout vertical pour les boutons et le titre
 
     def ajouter_bouton(self,layout):
         self.boutons = {}
@@ -63,14 +64,14 @@ class FenetreMenu(Fenetre):
     def __init__(self, parametre):
         super().__init__(parametre)
         self._generer_titre()
-        self.ajouter_bouton(self.child_layout)  # Ajouter les boutons au layout gauche
-        self.child_layout.addStretch() # Pour pousser les éléments vers le haut
+        self.ajouter_bouton(self.layouts["child"])  # Ajouter les boutons au layout gauche
+        self.layouts["child"].addStretch() # Pour pousser les éléments vers le haut
         self._generer_icone_engrenage()
         self.setLayout(self.main_layout) # Définir le layout principal pour la fenêtre
 
     def _generer_titre(self):
         titre = Titre("Dimensionnement Réducteur", self) # Titre personnalisé
-        self.child_layout.addWidget(titre)  # Ajouter le titre au layout gauche
+        self.layouts["child"].addWidget(titre)  # Ajouter le titre au layout gauche
     
     def _generer_icone_engrenage(self):
         self.gears_widget = qtw.QWidget(self)
@@ -84,7 +85,7 @@ class FenetreMenu(Fenetre):
             y = pos[1] - gear.height() // 2
             gear.move(x, y)  # Positionner l'icône
         # Ajouter le widget contenant les engrenages dans ton layout principal
-        self.main_layout.addLayout(self.child_layout)
+        self.main_layout.addLayout(self.layouts["child"])
         self.main_layout.addWidget(self.gears_widget, alignment=qtg.Qt.AlignmentFlag.AlignTop)
         
 
