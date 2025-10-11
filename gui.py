@@ -5,8 +5,8 @@ import PySide6.QtGui as qtg
 
 menu = {
     "layout": {
-        "left":{
-            "buttons": ["Créer Projet", "Ouvrir Projet"]
+        "left_layout":{
+            "bouttons": ["Créer Projet", "Ouvrir Projet"]
         }
     },
     "geometrie": [700, 300],
@@ -24,7 +24,7 @@ menu = {
             font-size: 16px; /* Taille de police */
             font-weight: bold; /* Poids de police */
             padding: 10px 0; /* Rembourrage */
-            margin-bottom: 12px; /* Espace entre les boutons */
+            margin-bottom: 12px; /* Espace entre les bouttons */
         }
         QPushButton:hover {
             background: #e0e0e0; /* Couleur de fond au survol */
@@ -33,7 +33,7 @@ menu = {
     "buttons": ["Créer Projet", "Ouvrir Projet"]
 }
 
-class Bouton(qtw.QPushButton):
+class Boutton(qtw.QPushButton):
     def __init__(self, texte, parent=None):
         super().__init__(texte, parent)
 
@@ -58,6 +58,13 @@ class Fenetre(qtw.QWidget):
         self.generer_layouts()
 
 
+    def generer_boutton(self,layout_name):
+        self.bouttons = {}
+        for texte_boutton in self._parametre["layout"][layout_name]["bouttons"]:
+            self.bouttons[texte_boutton] = Boutton(texte_boutton, self)
+            self.layouts[layout_name].addWidget(self.bouttons[texte_boutton])
+
+
     def generer_layouts(self):
         self.main_layout = qtw.QHBoxLayout() # Layout horizontal principal
         self.layouts = {}
@@ -65,24 +72,18 @@ class Fenetre(qtw.QWidget):
             self.layouts[name] = qtw.QVBoxLayout()
 
 
-    def ajouter_bouton(self,layout):
-        self.boutons = {}
-        for texte_bouton in self._parametre["buttons"]:
-            self.boutons[texte_bouton] = Bouton(texte_bouton, self)
-            layout.addWidget(self.boutons[texte_bouton])
-
 class FenetreMenu(Fenetre):
     def __init__(self, parametre):
         super().__init__(parametre)
         self._generer_titre()
-        self.ajouter_bouton(self.layouts["left"])  # Ajouter les boutons au layout gauche
-        self.layouts["left"].addStretch() # Pour pousser les éléments vers le haut
+        self.generer_boutton("left_layout")  # Ajouter les bouttons au layout gauche
+        self.layouts["left_layout"].addStretch() # Pour pousser les éléments vers le haut
         self._generer_icone_engrenage()
         self.setLayout(self.main_layout) # Définir le layout principal pour la fenêtre
 
     def _generer_titre(self):
         titre = Titre("Dimensionnement Réducteur", self) # Titre personnalisé
-        self.layouts["left"].addWidget(titre)  # Ajouter le titre au layout gauche
+        self.layouts["left_layout"].addWidget(titre)  # Ajouter le titre au layout gauche
     
     def _generer_icone_engrenage(self):
         self.gears_widget = qtw.QWidget(self)
@@ -96,7 +97,7 @@ class FenetreMenu(Fenetre):
             y = pos[1] - gear.height() // 2
             gear.move(x, y)  # Positionner l'icône
         # Ajouter le widget contenant les engrenages dans ton layout principal
-        self.main_layout.addLayout(self.layouts["left"])
+        self.main_layout.addLayout(self.layouts["left_layout"])
         self.main_layout.addWidget(self.gears_widget, alignment=qtg.Qt.AlignmentFlag.AlignTop)
         
 
