@@ -4,7 +4,7 @@ import PySide6.QtWidgets as qtw
 import PySide6.QtGui as qtg
 
 menu = {
-    "geometrie": [100, 100, 400, 300],
+    "geometrie": [700, 300],
     "titre": "Menu",
     "styleSheet": """
         QWidget {
@@ -36,17 +36,18 @@ class Bouton(qtw.QPushButton):
 class Titre(qtw.QLabel):
     def __init__(self, texte, parent=None):
         super().__init__(texte, parent)
-        self.setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop)
-        font = qtg.QFont("Arial", 20, qtg.QFont.Weight.Bold)
-        self.setFont(font)
-        self.setStyleSheet("color: #222; margin-bottom: 20px;")
+        self.setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop) # Alignement à gauche et en haut
+        font = qtg.QFont("Arial", 20, qtg.QFont.Weight.Bold) # Police personnalisée
+        self.setFont(font) 
+        self.setStyleSheet("color: #222; margin-bottom: 20px;padding: 8px") # Style du titre
+        self.setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
 
 class Fenetre(qtw.QWidget):
     def __init__(self, parametre):
         super().__init__()
         self._parametre = parametre
         self.setWindowTitle(self._parametre["titre"])
-        self.setGeometry(*self._parametre["geometrie"])
+        self.setFixedSize(*self._parametre["geometrie"])
         self.setStyleSheet(self._parametre["styleSheet"])
         self.main_layout = qtw.QHBoxLayout() # Layout horizontal principal
         self.left_layout = qtw.QVBoxLayout() # Layout vertical pour les boutons et le titre
@@ -60,15 +61,20 @@ class Fenetre(qtw.QWidget):
 class FenetreMenu(Fenetre):
     def __init__(self, parametre):
         super().__init__(parametre)
-
-        titre = Titre("Dimensionnement Réducteur", self) # Titre personnalisé
-        self.left_layout.addWidget(titre)  # Ajouter le titre au layout gauche
+        self._generer_titre()
         self.ajouter_bouton(self.left_layout)  # Ajouter les boutons au layout gauche
         self.left_layout.addStretch() # Pour pousser les éléments vers le haut
-        # Conteneur pour les engrenages
+        self._generer_icone_engrenage()
+        self.setLayout(self.main_layout) # Définir le layout principal pour la fenêtre
+
+    def _generer_titre(self):
+        titre = Titre("Dimensionnement Réducteur", self) # Titre personnalisé
+        self.left_layout.addWidget(titre)  # Ajouter le titre au layout gauche
+    
+    def _generer_icone_engrenage(self):
         self.gears_widget = qtw.QWidget(self)
         self.gears_widget.setFixedSize(210, 210)  # Taille du conteneur
-        placement_engreanes = [(60, 105), (150, 155), (150, 52)] 
+        placement_engreanes = [(60, 105), (150, 150), (150, 52)] 
         for pos in placement_engreanes:
             gear = qtw.QLabel("\u2699", self.gears_widget)  # Unicode pour l'icône d'engrenage
             gear.setStyleSheet(f"background: transparent; border: none; font-size: 90px; color: #444;")  # Style de l'icône
@@ -79,13 +85,8 @@ class FenetreMenu(Fenetre):
         # Ajouter le widget contenant les engrenages dans ton layout principal
         self.main_layout.addLayout(self.left_layout)
         self.main_layout.addWidget(self.gears_widget, alignment=qtg.Qt.AlignmentFlag.AlignTop)
-        self.setLayout(self.main_layout)
+        
 
-    def creer_projet(self):
-        print("Créer Projet clicked")
-
-    def ouvrir_projet(self):
-        print("Ouvrir Projet clicked")
 
 if __name__ == "__main__":
 
