@@ -1,7 +1,6 @@
 # --- Définition des classes ---
 
 class Engrenage:
-    """Représente un engrenage avec un nombre de dents."""
     def __init__(self, nbr_dents: int):
         self.nbr_dents = nbr_dents
 
