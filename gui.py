@@ -7,6 +7,9 @@ menu = {
     "layout": {
         "left_layout":{
             "bouttons": ["Créer Projet", "Ouvrir Projet"]
+        },
+        "right_layout":{
+            "bouttons": ["EXIT" ]
         }
     },
     "geometrie": [700, 300],
@@ -78,6 +81,11 @@ class FenetreMenu(Fenetre):
         self._generer_titre()
         self.generer_boutton("left_layout")  # Ajouter les bouttons au layout gauche
         self.layouts["left_layout"].addStretch() # Pour pousser les éléments vers le haut
+        self.main_layout.addLayout(self.layouts["left_layout"])
+        self.layouts["right_layout"].addStretch()
+        self.generer_boutton("right_layout") # Ajouter les bouttons au layout droit
+        
+        self.main_layout.addLayout(self.layouts["right_layout"])
         self._generer_icone_engrenage()
         self.setLayout(self.main_layout) # Définir le layout principal pour la fenêtre
 
@@ -97,9 +105,16 @@ class FenetreMenu(Fenetre):
             y = pos[1] - gear.height() // 2
             gear.move(x, y)  # Positionner l'icône
         # Ajouter le widget contenant les engrenages dans ton layout principal
-        self.main_layout.addLayout(self.layouts["left_layout"])
         self.main_layout.addWidget(self.gears_widget, alignment=qtg.Qt.AlignmentFlag.AlignTop)
         
+
+def _generer_bouton_quitter(self):
+    self.bouton_quitter = Boutton("Quitter", self)
+    # Créer un layout vertical pour le bouton et ajouter un stretch pour le pousser en bas
+    layout_droite = qtw.QVBoxLayout()
+    layout_droite.addStretch()  # Pousse le bouton vers le bas
+    layout_droite.addWidget(self.bouton_quitter, alignment=qtg.Qt.AlignmentFlag.AlignRight)
+    self.main_layout.addLayout(layout_droite)
 
 
 if __name__ == "__main__":
