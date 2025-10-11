@@ -83,29 +83,29 @@ class FenetreMenu(Fenetre):
         self.layouts["left_layout"].addStretch() # Pour pousser les éléments vers le haut
         self.main_layout.addLayout(self.layouts["left_layout"])
         self.layouts["right_layout"].addStretch()
+        self._generer_icone_engrenage(self.layouts["right_layout"])
         self.generer_boutton("right_layout") # Ajouter les bouttons au layout droit
         
         self.main_layout.addLayout(self.layouts["right_layout"])
-        self._generer_icone_engrenage()
         self.setLayout(self.main_layout) # Définir le layout principal pour la fenêtre
 
     def _generer_titre(self):
         titre = Titre("Dimensionnement Réducteur", self) # Titre personnalisé
         self.layouts["left_layout"].addWidget(titre)  # Ajouter le titre au layout gauche
     
-    def _generer_icone_engrenage(self):
-        self.gears_widget = qtw.QWidget(self)
-        self.gears_widget.setFixedSize(210, 210)  # Taille du conteneur
+    def _generer_icone_engrenage(self,layout):
+        widget = qtw.QWidget(self)
+        widget.setFixedSize(210, 210)  # Taille du conteneur
         placement_engreanes = [(60, 105), (150, 150), (150, 52)] 
         for pos in placement_engreanes:
-            gear = qtw.QLabel("\u2699", self.gears_widget)  # Unicode pour l'icône d'engrenage
+            gear = qtw.QLabel("\u2699", widget)  # Unicode pour l'icône d'engrenage
             gear.setStyleSheet(f"background: transparent; border: none; font-size: 90px; color: #444;")  # Style de l'icône
             gear.adjustSize()   # Ajuster la taille du QLabel à son contenu
             x = pos[0] - gear.width() // 2
             y = pos[1] - gear.height() // 2
             gear.move(x, y)  # Positionner l'icône
         # Ajouter le widget contenant les engrenages dans ton layout principal
-        self.main_layout.addWidget(self.gears_widget, alignment=qtg.Qt.AlignmentFlag.AlignTop)
+        layout.addWidget(widget, alignment=qtg.Qt.AlignmentFlag.AlignTop)
         
 
 def _generer_bouton_quitter(self):
