@@ -7,4 +7,10 @@ class Train(Composant) :
  
 def __init__(self, vitesse_enree: int,vitesse_sortie: int): 
 
+
+    dknckd,fkd,fd
+    fbfg
+    fvd
+    vd
+
     
