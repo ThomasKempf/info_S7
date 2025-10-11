@@ -51,11 +51,11 @@ class Fenetre(qtw.QWidget):
         self.main_layout = qtw.QHBoxLayout() # Layout horizontal principal
         self.left_layout = qtw.QVBoxLayout() # Layout vertical pour les boutons et le titre
 
-    def ajouter_bouton(self):
+    def ajouter_bouton(self,layout):
         self.boutons = {}
         for texte_bouton in self._parametre["buttons"]:
             self.boutons[texte_bouton] = Bouton(texte_bouton, self)
-            self.left_layout.addWidget(self.boutons[texte_bouton])
+            layout.addWidget(self.boutons[texte_bouton])
 
 class FenetreMenu(Fenetre):
     def __init__(self, parametre):
@@ -63,7 +63,7 @@ class FenetreMenu(Fenetre):
 
         titre = Titre("Dimensionnement Réducteur", self) # Titre personnalisé
         self.left_layout.addWidget(titre)  # Ajouter le titre au layout gauche
-        self.ajouter_bouton()  # Ajouter les boutons au layout gauche
+        self.ajouter_bouton(self.left_layout)  # Ajouter les boutons au layout gauche
         self.left_layout.addStretch() # Pour pousser les éléments vers le haut
         # Conteneur pour les engrenages
         self.gears_widget = qtw.QWidget(self)
