@@ -4,6 +4,11 @@ import PySide6.QtWidgets as qtw
 import PySide6.QtGui as qtg
 
 menu = {
+    "layout": {
+        "left":{
+            "buttons": ["Créer Projet", "Ouvrir Projet"]
+        }
+    },
     "geometrie": [700, 300],
     "titre": "Menu",
     "styleSheet": """
@@ -50,9 +55,15 @@ class Fenetre(qtw.QWidget):
         self.setWindowTitle(self._parametre["titre"])
         self.setFixedSize(*self._parametre["geometrie"])
         self.setStyleSheet(self._parametre["styleSheet"])
+        self.generer_layouts()
+
+
+    def generer_layouts(self):
         self.main_layout = qtw.QHBoxLayout() # Layout horizontal principal
         self.layouts = {}
-        self.layouts["child"] = qtw.QVBoxLayout() # Layout vertical pour les boutons et le titre
+        for name in self._parametre["layout"]:
+            self.layouts[name] = qtw.QVBoxLayout()
+
 
     def ajouter_bouton(self,layout):
         self.boutons = {}
@@ -64,14 +75,14 @@ class FenetreMenu(Fenetre):
     def __init__(self, parametre):
         super().__init__(parametre)
         self._generer_titre()
-        self.ajouter_bouton(self.layouts["child"])  # Ajouter les boutons au layout gauche
-        self.layouts["child"].addStretch() # Pour pousser les éléments vers le haut
+        self.ajouter_bouton(self.layouts["left"])  # Ajouter les boutons au layout gauche
+        self.layouts["left"].addStretch() # Pour pousser les éléments vers le haut
         self._generer_icone_engrenage()
         self.setLayout(self.main_layout) # Définir le layout principal pour la fenêtre
 
     def _generer_titre(self):
         titre = Titre("Dimensionnement Réducteur", self) # Titre personnalisé
-        self.layouts["child"].addWidget(titre)  # Ajouter le titre au layout gauche
+        self.layouts["left"].addWidget(titre)  # Ajouter le titre au layout gauche
     
     def _generer_icone_engrenage(self):
         self.gears_widget = qtw.QWidget(self)
@@ -85,7 +96,7 @@ class FenetreMenu(Fenetre):
             y = pos[1] - gear.height() // 2
             gear.move(x, y)  # Positionner l'icône
         # Ajouter le widget contenant les engrenages dans ton layout principal
-        self.main_layout.addLayout(self.layouts["child"])
+        self.main_layout.addLayout(self.layouts["left"])
         self.main_layout.addWidget(self.gears_widget, alignment=qtg.Qt.AlignmentFlag.AlignTop)
         
 
