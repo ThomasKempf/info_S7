@@ -1,0 +1,95 @@
+# --- Définition des classes ---
+
+class Engrenage:
+    """Représente un engrenage avec un nombre de dents."""
+    def __init__(self, nbr_dents: int):
+        self.nbr_dents = nbr_dents
+
+# Classe Mère
+class Train:
+    """Classe de base concrète pour les trains d'engrenages."""
+    def __init__(self):
+        self._rapport_reduction: float = 0.0
+
+    def calculer_rapport(self):
+        # Cette méthode DOIT être surchargée.
+        raise NotImplementedError(
+            "La méthode 'calculer_rapport' doit être implémentée par la sous-classe."
+        )
+
+    @property
+    def rapport_reduction(self) -> float:
+        """Propriété publique (getter) du rapport de réduction."""
+        return self._rapport_reduction
+
+# Classe Fille
+class TrainSimple(Train):
+    """
+    Représente un train d'engrenages simple.
+    Calcule le rapport de vitesse (i = Z_entrée / Z_sortie).
+    """
+    def __init__(self, engrenage_entree: Engrenage, engrenage_sortie: Engrenage):
+        super().__init__()
+        self.engrenage_entree = engrenage_entree
+        self.engrenage_sortie = engrenage_sortie
+        self.calculer_rapport()
+
+    def calculer_rapport(self):
+        Z_entree = self.engrenage_entree.nbr_dents
+        Z_sortie = self.engrenage_sortie.nbr_dents
+        
+        if Z_sortie != 0: 
+            self._rapport_reduction = Z_entree / Z_sortie 
+        else:
+            self._rapport_reduction = 0.0
+
+# --- Fonction de Test ---
+
+def run_tests():
+    print("--- Démarrage des tests du modèle Train ---")
+
+    # 1. Test du Train Simple (Réduction)
+    print("\n[1] Test du Train Simple (Réduction)")
+    e_petit = Engrenage(nbr_dents=20)
+    e_grand = Engrenage(nbr_dents=80)
+    train_1 = TrainSimple(e_petit, e_grand)
+    
+    expected_rapport = 20 / 80
+    
+    print(f"  Entrée: {e_petit.nbr_dents} | Sortie: {e_grand.nbr_dents}")
+    print(f"  Rapport Calculé: {train_1.rapport_reduction:.2f}")
+    
+    if train_1.rapport_reduction == expected_rapport:
+        print("  RÉSULTAT: Succès. Le rapport est correct (0.25).")
+    else:
+        print("  RÉSULTAT: Échec. Le rapport ne correspond pas.")
+
+    # 2. Test du Train Simple (Multiplication / Surmultiplication)
+    print("\n[2] Test du Train Simple (Multiplication)")
+    e_entree_rapide = Engrenage(nbr_dents=60)
+    e_sortie_lente = Engrenage(nbr_dents=30)
+    train_2 = TrainSimple(e_entree_rapide, e_sortie_lente)
+    
+    expected_rapport_2 = 60 / 30
+    
+    print(f"  Entrée: {e_entree_rapide.nbr_dents} | Sortie: {e_sortie_lente.nbr_dents}")
+    print(f"  Rapport Calculé: {train_2.rapport_reduction:.2f}")
+    
+    if train_2.rapport_reduction == expected_rapport_2:
+        print("  RÉSULTAT: Succès. Le rapport est correct (2.00).")
+    else:
+        print("  RÉSULTAT: Échec. Le rapport ne correspond pas.")
+
+    # 3. Test de l'obligation d'implémentation (Méthode de la classe mère)
+    print("\n[3] Test de l'héritage (Tentative d'utilisation directe)")
+    try:
+        train_mere = Train()
+        train_mere.calculer_rapport()
+    except NotImplementedError as e:
+        print(f"  RÉSULTAT: Succès. Erreur levée : '{e}'")
+    except Exception as e:
+        print(f"  RÉSULTAT: Échec. Une autre erreur s'est produite : {e}")
+
+# Exécution du script
+if __name__ == "__main__":
+    run_tests()
