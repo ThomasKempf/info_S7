@@ -22,10 +22,11 @@ DEFAULT = {
 MENU = {
     'layout': {
         'left_layout':{
-            'bouttons': {'Créer Projet', 'Ouvrir Projet'}
+            'bouttons': {'Créer Projet':{'taille': None, 'action': None},
+                         'Ouvrir Projet':{'taille': None, 'action': None}}
         },
         'right_layout':{
-            'bouttons': {'EXIT':[210, 50]}
+            'bouttons': {'EXIT':{'taille': [210, 50], 'action': 'close'}}
         }
     },
     'widget_engrenage':{
@@ -66,6 +67,19 @@ class Boutton(qtw.QPushButton):
         if taille:
             self.setFixedSize(*taille)  # Définir une taille fixe si spécifiée
 
+class Boutton_exit(Boutton):
+     
+    def __init__(self, texte: str, taille: list = None) -> None:
+        super().__init__(texte, taille)
+
+    def fermer_fenetre(self):
+        '''
+        Ferme la fenêtre parente.
+        '''
+        parent = self.parent()
+        if parent:
+            parent.close()
+
 
 class Titre(qtw.QLabel):
     '''
@@ -105,13 +119,12 @@ class Fenetre(qtw.QWidget):
         self.bouttons = {}
         bouttons_param = self._parametre['layout'][layout_name]['bouttons']
         for texte_boutton in bouttons_param:
-            # verifier si il y a une taille specifique
-            if isinstance(bouttons_param, set):
-                taille = None
-            else:
-                taille = bouttons_param[texte_boutton]
             # creer le boutton et l'ajouter au layout
-            self.bouttons[texte_boutton] = Boutton(texte_boutton,taille)
+            if texte_boutton == 'EXIT':
+                self.bouttons[texte_boutton] = Boutton_exit(texte_boutton, bouttons_param[texte_boutton]['taille'])
+                self.bouttons[texte_boutton].clicked.connect(getattr(self, bouttons_param[texte_boutton]['action']))
+            else:
+                self.bouttons[texte_boutton] = Boutton(texte_boutton, bouttons_param[texte_boutton]['taille'])
             self.layouts[layout_name].addWidget(self.bouttons[texte_boutton])
 
 
