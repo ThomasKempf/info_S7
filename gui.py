@@ -62,18 +62,15 @@ MENU = {
 
 # parametre specifique a la fenetre menu
 CREATION_PROJET = {
-    'page':{
+    'page':[
         'entree_sortie',
         'structure',
         'param_train'
-    },
+    ],
     'layout': {
-        'left_layout':{
-            'bouttons': {'Créer Projet':{'taille': None, 'action': 'ouvrir_fenetre_creation_projet'},
-                         'Ouvrir Projet':{'taille': None, 'action': 'ouvrir_fenetre_creation_projet'}}
-        },
-        'right_layout':{
-            'bouttons': {'EXIT':{'taille': [210, 50], 'action': 'close'}}
+        'principal':{
+            'bouttons': {'Next':{'taille': None, 'action': 'next_page'},
+                         'Precedent':{'taille': None, 'action': 'precedente_page'}}
         }
     },
     'widget_engrenage':{
@@ -227,27 +224,76 @@ class FenetreMenu(Fenetre):
         self.close()
 
 
-class FenetreCreationProjet(Fenetre):
-    '''
-    Classe pour genere uniquement la fenêtre de création de projet.
-    parametre : dictionnaire contenant les parametres de la fenetre, propre a chaque fenetre
-    '''
+class FenetreCreationProjet(qtw.QWidget):
     def __init__(self, param: dict) -> None:
-        super().__init__(param)
-        self.page1 = self.create_page1()
-        for nom in param['page']:
-            page_method = getattr(self, f"create_page1")  # ex: create_page2
-            setattr(self, nom, page_method())
+        super().__init__()
+        self.setWindowTitle(param['titre'])
+        self.setFixedSize(*param['geometrie'])
+        self.setStyleSheet(param['styleSheet'])
+
+        # Création du QStackedWidget
+        self.stack = qtw.QStackedWidget()
+        self.pages = []
+        for i in range(len(param['page'])):
+            page_method = getattr(self, f"create_page{i}")
+            page_instance = page_method()
+            self.stack.addWidget(page_instance)
+            self.pages.append(page_instance)
+
+        # Layout vertical pour le stack + boutons
+        layout_principal = qtw.QVBoxLayout()
+        layout_principal.addWidget(self.stack)
+
+        # Boutons Next / Precedent
+        self.bouttons_layout = qtw.QHBoxLayout()
+        btn_prev = qtw.QPushButton("Precedent")
+        btn_next = qtw.QPushButton("Next")
+        btn_prev.clicked.connect(self.precedente_page)
+        btn_next.clicked.connect(self.next_page)
+        self.bouttons_layout.addWidget(btn_prev)
+        self.bouttons_layout.addWidget(btn_next)
+        layout_principal.addLayout(self.bouttons_layout)
+
+        self.setLayout(layout_principal)
+
+    def create_page0(self):
+        page = qtw.QWidget()
+        layout = qtw.QVBoxLayout()
+        layout.addStretch()
+        layout.addWidget(qtw.QLabel("Bienvenue dans l'installation !"))
+        layout.addWidget(qtw.QLabel("Ceci est la première étape."))
+        layout.addStretch()
+        page.setLayout(layout)
+        return page
 
     def create_page1(self):
         page = qtw.QWidget()
         layout = qtw.QVBoxLayout()
-        layout.addWidget(qtw.QLabel("Bienvenue dans l'installation !"))
-        layout.addWidget(qtw.QLabel("Ceci est la première étape."))
+        layout.addStretch()
+        layout.addWidget(qtw.QLabel("Page 2"))
+        layout.addStretch()
         page.setLayout(layout)
         return page
 
-        
+    def create_page2(self):
+        page = qtw.QWidget()
+        layout = qtw.QVBoxLayout()
+        layout.addStretch()
+        layout.addWidget(qtw.QLabel("Page 3"))
+        layout.addStretch()
+        page.setLayout(layout)
+        return page
+
+    def next_page(self):
+        i = self.stack.currentIndex()
+        if i < self.stack.count() - 1:
+            self.stack.setCurrentIndex(i + 1)
+
+    def precedente_page(self):
+        i = self.stack.currentIndex()
+        if i > 0:
+            self.stack.setCurrentIndex(i - 1)
+
 
 
 if __name__ == '__main__':
