@@ -12,6 +12,7 @@
 import sys
 import PySide6.QtWidgets as qtw
 import PySide6.QtGui as qtg
+import time
 
 # parametres que les fenetres on en commun 
 DEFAULT = {
@@ -22,8 +23,8 @@ DEFAULT = {
 MENU = {
     'layout': {
         'left_layout':{
-            'bouttons': {'Créer Projet':{'taille': None, 'action': None},
-                         'Ouvrir Projet':{'taille': None, 'action': None}}
+            'bouttons': {'Créer Projet':{'taille': None, 'action': 'ouvrir_fenetre_creation_projet'},
+                         'Ouvrir Projet':{'taille': None, 'action': 'ouvrir_fenetre_creation_projet'}}
         },
         'right_layout':{
             'bouttons': {'EXIT':{'taille': [210, 50], 'action': 'close'}}
@@ -67,19 +68,6 @@ class Boutton(qtw.QPushButton):
         if taille:
             self.setFixedSize(*taille)  # Définir une taille fixe si spécifiée
 
-class Boutton_exit(Boutton):
-     
-    def __init__(self, texte: str, taille: list = None) -> None:
-        super().__init__(texte, taille)
-
-    def fermer_fenetre(self):
-        '''
-        Ferme la fenêtre parente.
-        '''
-        parent = self.parent()
-        if parent:
-            parent.close()
-
 
 class Titre(qtw.QLabel):
     '''
@@ -120,11 +108,8 @@ class Fenetre(qtw.QWidget):
         bouttons_param = self._parametre['layout'][layout_name]['bouttons']
         for texte_boutton in bouttons_param:
             # creer le boutton et l'ajouter au layout
-            if texte_boutton == 'EXIT':
-                self.bouttons[texte_boutton] = Boutton_exit(texte_boutton, bouttons_param[texte_boutton]['taille'])
-                self.bouttons[texte_boutton].clicked.connect(getattr(self, bouttons_param[texte_boutton]['action']))
-            else:
-                self.bouttons[texte_boutton] = Boutton(texte_boutton, bouttons_param[texte_boutton]['taille'])
+            self.bouttons[texte_boutton] = Boutton(texte_boutton, bouttons_param[texte_boutton]['taille'])
+            self.bouttons[texte_boutton].clicked.connect(getattr(self, bouttons_param[texte_boutton]['action']))
             self.layouts[layout_name].addWidget(self.bouttons[texte_boutton])
 
 
@@ -185,6 +170,15 @@ class FenetreMenu(Fenetre):
             gear.move(x, y)  # Positionner l'icône
         # Ajouter le widget contenant les engrenages dans ton layout principal
         layout.addWidget(widget, alignment=qtg.Qt.AlignmentFlag.AlignTop)
+
+
+    def ouvrir_fenetre_creation_projet(self):
+        '''
+        Ouvre la fenêtre de création de projet.
+        '''
+        self.fentre_projet = Fenetre(MENU)
+        self.fentre_projet.show()
+        self.close()
 
 
 if __name__ == '__main__':
