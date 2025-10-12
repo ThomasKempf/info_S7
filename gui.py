@@ -6,10 +6,10 @@ import PySide6.QtGui as qtg
 menu = {
     "layout": {
         "left_layout":{
-            "bouttons": ["Créer Projet", "Ouvrir Projet"]
+            "bouttons": {"Créer Projet", "Ouvrir Projet"}
         },
         "right_layout":{
-            "bouttons": ["EXIT" ]
+            "bouttons": {"EXIT":[150, 50]}
         }
     },
     "geometrie": [700, 300],
@@ -32,13 +32,14 @@ menu = {
         QPushButton:hover {
             background: #e0e0e0; /* Couleur de fond au survol */
         }
-    """,
-    "buttons": ["Créer Projet", "Ouvrir Projet"]
+    """
 }
 
 class Boutton(qtw.QPushButton):
-    def __init__(self, texte, parent=None):
-        super().__init__(texte, parent)
+    def __init__(self, texte, taille):
+        super().__init__(texte)
+        if taille:
+            self.setFixedSize(*taille)  # Définir une taille fixe si spécifiée
 
 
 class Titre(qtw.QLabel):
@@ -63,8 +64,13 @@ class Fenetre(qtw.QWidget):
 
     def generer_boutton(self,layout_name):
         self.bouttons = {}
-        for texte_boutton in self._parametre["layout"][layout_name]["bouttons"]:
-            self.bouttons[texte_boutton] = Boutton(texte_boutton, self)
+        bouttons_param = self._parametre["layout"][layout_name]["bouttons"]
+        for texte_boutton in bouttons_param:
+            if isinstance(bouttons_param, set):# verifier si il y a une taille specifique
+                taille = None
+            else:
+                taille = bouttons_param[texte_boutton]
+            self.bouttons[texte_boutton] = Boutton(texte_boutton,taille)
             self.layouts[layout_name].addWidget(self.bouttons[texte_boutton])
 
 
@@ -106,15 +112,6 @@ class FenetreMenu(Fenetre):
             gear.move(x, y)  # Positionner l'icône
         # Ajouter le widget contenant les engrenages dans ton layout principal
         layout.addWidget(widget, alignment=qtg.Qt.AlignmentFlag.AlignTop)
-        
-
-def _generer_bouton_quitter(self):
-    self.bouton_quitter = Boutton("Quitter", self)
-    # Créer un layout vertical pour le bouton et ajouter un stretch pour le pousser en bas
-    layout_droite = qtw.QVBoxLayout()
-    layout_droite.addStretch()  # Pousse le bouton vers le bas
-    layout_droite.addWidget(self.bouton_quitter, alignment=qtg.Qt.AlignmentFlag.AlignRight)
-    self.main_layout.addLayout(layout_droite)
 
 
 if __name__ == "__main__":
