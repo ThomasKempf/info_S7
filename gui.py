@@ -9,7 +9,7 @@ menu = {
             "bouttons": {"Créer Projet", "Ouvrir Projet"}
         },
         "right_layout":{
-            "bouttons": {"EXIT":[150, 50]}
+            "bouttons": {"EXIT":[210, 50]}
         }
     },
     "geometrie": [700, 300],
@@ -88,8 +88,8 @@ class FenetreMenu(Fenetre):
         self.generer_boutton("left_layout")  # Ajouter les bouttons au layout gauche
         self.layouts["left_layout"].addStretch() # Pour pousser les éléments vers le haut
         self.main_layout.addLayout(self.layouts["left_layout"])
-        self.layouts["right_layout"].addStretch()
         self._generer_icone_engrenage(self.layouts["right_layout"])
+        self.layouts["right_layout"].addStretch()
         self.generer_boutton("right_layout") # Ajouter les bouttons au layout droit
         
         self.main_layout.addLayout(self.layouts["right_layout"])
