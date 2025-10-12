@@ -10,9 +10,10 @@
 """
 
 import sys
-import PySide6.QtWidgets as qtw
-import PySide6.QtGui as qtg
-import time
+from PySide6 import (
+    QtWidgets as qtw,
+    QtGui as qtg
+)
 
 # parametres que les fenetres on en commun 
 DEFAULT = {
@@ -37,6 +38,51 @@ MENU = {
     },
     'geometrie': [700, 300],
     'titre': 'Menu',
+    'styleSheet': '''
+        QWidget {
+            background-color: #f8f8f8; /* Couleur de fond claire */
+            border: 2px solid #222; /* Bordure sombre */
+            border-radius: 8px; /* Bords arrondis */
+        }
+        QPushButton {
+            background: #fff; /* Couleur de fond blanche */
+            border: 2px solid #222; /* Bordure sombre */
+            border-radius: 6px; /* Bords arrondis */
+            font-size: 16px; /* Taille de police */
+            font-weight: bold; /* Poids de police */
+            padding: 10px 0; /* Rembourrage */
+            margin-bottom: 12px; /* Espace entre les bouttons */
+        }
+        QPushButton:hover {
+            background: #e0e0e0; /* Couleur de fond au survol */
+        }
+    '''
+}
+
+
+# parametre specifique a la fenetre menu
+CREATION_PROJET = {
+    'page':{
+        'entree_sortie',
+        'structure',
+        'param_train'
+    },
+    'layout': {
+        'left_layout':{
+            'bouttons': {'Créer Projet':{'taille': None, 'action': 'ouvrir_fenetre_creation_projet'},
+                         'Ouvrir Projet':{'taille': None, 'action': 'ouvrir_fenetre_creation_projet'}}
+        },
+        'right_layout':{
+            'bouttons': {'EXIT':{'taille': [210, 50], 'action': 'close'}}
+        }
+    },
+    'widget_engrenage':{
+        'taille': [210, 210],
+        'placement_engrenages': [(60, 105), (150, 150), (150, 52)],
+        'styleSheet': 'background: transparent; border: none; font-size: 90px; color: #444;'
+    },
+    'geometrie': [700, 300],
+    'titre': 'Creation Projet',
     'styleSheet': '''
         QWidget {
             background-color: #f8f8f8; /* Couleur de fond claire */
@@ -90,9 +136,9 @@ class Fenetre(qtw.QWidget):
     classe de base pour les fenetres
     parametre : dictionnaire contenant les parametres de la fenetre, propre a chaque fenetre
     '''
-    def __init__(self, parametre: dict) -> None:
+    def __init__(self, param: dict) -> None:
         super().__init__()
-        self._parametre = parametre
+        self._parametre = param
         self.setWindowTitle(self._parametre['titre'])
         self.setFixedSize(*self._parametre['geometrie'])
         self.setStyleSheet(self._parametre['styleSheet'])
@@ -128,8 +174,8 @@ class FenetreMenu(Fenetre):
     Classe pour genere uniquement la fenêtre de menu.
     parametre : dictionnaire contenant les parametres de la fenetre, propre a chaque fenetre
     '''
-    def __init__(self, parametre: dict) -> None:
-        super().__init__(parametre)
+    def __init__(self, param: dict) -> None:
+        super().__init__(param)
         self._generer_titre()
         # ajoute la partie gauche avec les bouttons
         self.generer_boutton('left_layout')  # Ajouter les bouttons au layout gauche
@@ -176,9 +222,32 @@ class FenetreMenu(Fenetre):
         '''
         Ouvre la fenêtre de création de projet.
         '''
-        self.fentre_projet = Fenetre(MENU)
+        self.fentre_projet = FenetreCreationProjet(CREATION_PROJET)
         self.fentre_projet.show()
         self.close()
+
+
+class FenetreCreationProjet(Fenetre):
+    '''
+    Classe pour genere uniquement la fenêtre de création de projet.
+    parametre : dictionnaire contenant les parametres de la fenetre, propre a chaque fenetre
+    '''
+    def __init__(self, param: dict) -> None:
+        super().__init__(param)
+        self.page1 = self.create_page1()
+        for nom in param['page']:
+            page_method = getattr(self, f"create_page1")  # ex: create_page2
+            setattr(self, nom, page_method())
+
+    def create_page1(self):
+        page = qtw.QWidget()
+        layout = qtw.QVBoxLayout()
+        layout.addWidget(qtw.QLabel("Bienvenue dans l'installation !"))
+        layout.addWidget(qtw.QLabel("Ceci est la première étape."))
+        page.setLayout(layout)
+        return page
+
+        
 
 
 if __name__ == '__main__':
