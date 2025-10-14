@@ -72,11 +72,13 @@ CREATION_PROJET = {
             'zone_texte':{
                 'nbr_train':{
                     'variable':None,
-                    'validator': qtg.QDoubleValidator(0.0, 9999.99, 2)
+                    'validator': qtg.QDoubleValidator(0.0, 9999.99, 2),
+                    'largeur':60
                 },
                 'contrainte_max':{
                     'variable':None,
-                    'validator': qtg.QIntValidator(0, 100)
+                    'validator': qtg.QIntValidator(0, 100),
+                    'largeur':80
                 }
             }
         },
@@ -184,7 +186,7 @@ class Fenetre(qtw.QWidget):
     def _generer_zone_texte(self,ligne:str,param_zone_text:dict) ->None:
         variable = qtw.QLineEdit()
         variable.setValidator(param_zone_text['validator'])  # seulement des entiers
-        variable.setFixedWidth(60)
+        variable.setFixedWidth(param_zone_text['largeur'])
         ligne.addWidget(variable)
         return variable
 
