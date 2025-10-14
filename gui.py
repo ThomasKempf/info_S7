@@ -288,10 +288,7 @@ class FenetreCreationProjet(Fenetre):
         ligne.addWidget(lbl_nbr)
 
         # 2️⃣ Zone de texte pour nombre d’étage (entier)
-        self.nbr_train_input = qtw.QLineEdit()
-        self.nbr_train_input.setValidator(qtg.QIntValidator(0, 100))  # seulement des entiers
-        self.nbr_train_input.setFixedWidth(60)
-        ligne.addWidget(self.nbr_train_input)
+        param_zone_texte['contrainte_max']['varaible'] = self._generer_zone_texte(ligne,param_zone_texte['contrainte_max'])
 
         # 3️⃣ Label "1"
         lbl_1 = qtw.QLabel("1")
@@ -307,7 +304,7 @@ class FenetreCreationProjet(Fenetre):
         ligne.addWidget(lbl_sigma)
 
         # 6️⃣ Zone de texte pour contrainte_max (float)
-        param_page['varaible'] = self._generer_zone_texte(ligne,param_zone_texte['nbr_train'])
+        param_zone_texte['nbr_train']['varaible'] = self._generer_zone_texte(ligne,param_zone_texte['nbr_train'])
 
         # 7️⃣ Label "MPa"
         lbl_mpa = qtw.QLabel("MPa")
