@@ -229,18 +229,9 @@ class FenetreCreationProjet(Fenetre):
         self.setWindowTitle(param['titre'])
         self.setFixedSize(*param['geometrie'])
         self.setStyleSheet(param['styleSheet'])
-
-        # Création du QStackedWidget
-        self.stack = qtw.QStackedWidget()
-        self.pages = []
-        for i in range(len(param['page'])):
-            page_method = getattr(self, f"create_page{i}")
-            page_instance = page_method()
-            self.stack.addWidget(page_instance)
-            self.pages.append(page_instance)
+        self.generer_widget_page()
 
         # Layout vertical pour le stack + boutons
-        self.layouts['layout_principal'].addWidget(self.stack)
         self.generer_boutton('bouttons_layout')
         self.layouts['layout_principal'].addLayout(self.layouts['bouttons_layout'])
         self.setLayout(self.layouts['layout_principal'])
@@ -257,6 +248,7 @@ class FenetreCreationProjet(Fenetre):
             page_instance = page_method()
             self.stack.addWidget(page_instance)
             self.pages.append(page_instance)
+        self.layouts['layout_principal'].addWidget(self.stack)
 
 
     def create_page0(self):
