@@ -67,11 +67,22 @@ MENU = {
 
 # parametre specifique a la fenetre menu
 CREATION_PROJET = {
-    'page':[
-        'entree_sortie',
-        'structure',
-        'param_train'
-    ],
+    'page':{
+        'entree_sortie':{
+            'zone_texte':{
+                'nbr_train':{
+                    'variable':None,
+                    'validator': qtg.QDoubleValidator(0.0, 9999.99, 2)
+                },
+                'contrainte_max':{
+                    'variable':None,
+                    'validator': qtg.QIntValidator(0, 100)
+                }
+            }
+        },
+        'structure':None,
+        'param_train':None
+    },
     'layout': {
         'main_layout':{
             'sens': 'vertical',
@@ -170,6 +181,14 @@ class Fenetre(qtw.QWidget):
                 self.layouts[name] = qtw.QVBoxLayout()
 
 
+    def _generer_zone_texte(self,ligne:str,param_zone_text:dict) ->None:
+        variable = qtw.QLineEdit()
+        variable.setValidator(param_zone_text['validator'])  # seulement des entiers
+        variable.setFixedWidth(60)
+        ligne.addWidget(variable)
+        return variable
+
+
 class FenetreMenu(Fenetre):
     '''
     Classe pour genere uniquement la fenêtre de menu.
@@ -254,6 +273,8 @@ class FenetreCreationProjet(Fenetre):
         self.layouts['main_layout'].addWidget(self.stack)
 
     def create_page0(self):
+        param_page = self._param['page']['entree_sortie']
+        param_zone_texte = param_page['zone_texte']
         page = qtw.QWidget()
         layout = qtw.QVBoxLayout()
 
@@ -284,10 +305,7 @@ class FenetreCreationProjet(Fenetre):
         ligne.addWidget(lbl_sigma)
 
         # 6️⃣ Zone de texte pour contrainte_max (float)
-        self.contrainte_max_input = qtw.QLineEdit()
-        self.contrainte_max_input.setValidator(qtg.QDoubleValidator(0.0, 9999.99, 2))
-        self.contrainte_max_input.setFixedWidth(80)
-        ligne.addWidget(self.contrainte_max_input)
+        param_page['varaible'] = self._generer_zone_texte(ligne,param_zone_texte['nbr_train'])
 
         # 7️⃣ Label "MPa"
         lbl_mpa = qtw.QLabel("MPa")
