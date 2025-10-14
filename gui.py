@@ -68,17 +68,15 @@ CREATION_PROJET = {
         'param_train'
     ],
     'layout': {
-        'principal':{
+        'layout_principal':{
+
+        },
+        'bouttons_layout':{
             'bouttons': {'Next':{'taille': None, 'action': 'next_page'},
                          'Precedent':{'taille': None, 'action': 'precedente_page'}}
         }
     },
-    'widget_engrenage':{
-        'taille': [210, 210],
-        'placement_engrenages': [(60, 105), (150, 150), (150, 52)],
-        'styleSheet': 'background: transparent; border: none; font-size: 90px; color: #444;'
-    },
-    'geometrie': [700, 300],
+    'geometrie': [1000, 600],
     'titre': 'Creation Projet',
     'styleSheet': '''
         QWidget {
@@ -224,9 +222,10 @@ class FenetreMenu(Fenetre):
         self.close()
 
 
-class FenetreCreationProjet(qtw.QWidget):
+class FenetreCreationProjet(Fenetre):
     def __init__(self, param: dict) -> None:
-        super().__init__()
+        super().__init__(param)
+        self._param = param
         self.setWindowTitle(param['titre'])
         self.setFixedSize(*param['geometrie'])
         self.setStyleSheet(param['styleSheet'])
@@ -241,20 +240,24 @@ class FenetreCreationProjet(qtw.QWidget):
             self.pages.append(page_instance)
 
         # Layout vertical pour le stack + boutons
-        layout_principal = qtw.QVBoxLayout()
-        layout_principal.addWidget(self.stack)
+        self.layouts['layout_principal'].addWidget(self.stack)
+        self.generer_boutton('bouttons_layout')
+        self.layouts['layout_principal'].addLayout(self.layouts['bouttons_layout'])
+        self.setLayout(self.layouts['layout_principal'])
 
-        # Boutons Next / Precedent
-        self.bouttons_layout = qtw.QHBoxLayout()
-        btn_prev = qtw.QPushButton("Precedent")
-        btn_next = qtw.QPushButton("Next")
-        btn_prev.clicked.connect(self.precedente_page)
-        btn_next.clicked.connect(self.next_page)
-        self.bouttons_layout.addWidget(btn_prev)
-        self.bouttons_layout.addWidget(btn_next)
-        layout_principal.addLayout(self.bouttons_layout)
 
-        self.setLayout(layout_principal)
+    def generer_widget_page(self) -> None:
+        '''
+        Fonction pour générer les pages du QStackedWidget.
+        '''
+        self.stack = qtw.QStackedWidget()
+        self.pages = []
+        for i in range(len(self._param['page'])):
+            page_method = getattr(self, f"create_page{i}")
+            page_instance = page_method()
+            self.stack.addWidget(page_instance)
+            self.pages.append(page_instance)
+
 
     def create_page0(self):
         page = qtw.QWidget()
