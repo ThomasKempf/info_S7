@@ -23,12 +23,17 @@ DEFAULT = {
 # parametre specifique a la fenetre menu
 MENU = {
     'layout': {
+        'main_layout':{
+            'sens': 'horizontal',
+        },
         'left_layout':{
-            'bouttons': {'Créer Projet':{'taille': None, 'action': 'ouvrir_fenetre_creation_projet'},
+            'sens': 'vertical',
+            'boutons': {'Créer Projet':{'taille': None, 'action': 'ouvrir_fenetre_creation_projet'},
                          'Ouvrir Projet':{'taille': None, 'action': 'ouvrir_fenetre_creation_projet'}}
         },
         'right_layout':{
-            'bouttons': {'EXIT':{'taille': [210, 50], 'action': 'close'}}
+            'sens': 'vertical',
+            'boutons': {'EXIT':{'taille': [210, 50], 'action': 'close'}}
         }
     },
     'widget_engrenage':{
@@ -51,7 +56,7 @@ MENU = {
             font-size: 16px; /* Taille de police */
             font-weight: bold; /* Poids de police */
             padding: 10px 0; /* Rembourrage */
-            margin-bottom: 12px; /* Espace entre les bouttons */
+            margin-bottom: 12px; /* Espace entre les boutons */
         }
         QPushButton:hover {
             background: #e0e0e0; /* Couleur de fond au survol */
@@ -68,12 +73,13 @@ CREATION_PROJET = {
         'param_train'
     ],
     'layout': {
-        'layout_principal':{
-
+        'main_layout':{
+            'sens': 'vertical',
         },
-        'bouttons_layout':{
-            'bouttons': {'Next':{'taille': None, 'action': 'next_page'},
-                         'Precedent':{'taille': None, 'action': 'precedente_page'}}
+        'boutons_layout':{
+            'sens': 'horizontal',
+            'boutons': {'Precedent':{'taille': [210, 50], 'action': 'precedente_page'},
+                         'Next':{'taille': [210, 50], 'action': 'next_page'}}
         }
     },
     'geometrie': [1000, 600],
@@ -81,8 +87,6 @@ CREATION_PROJET = {
     'styleSheet': '''
         QWidget {
             background-color: #f8f8f8; /* Couleur de fond claire */
-            border: 2px solid #222; /* Bordure sombre */
-            border-radius: 8px; /* Bords arrondis */
         }
         QPushButton {
             background: #fff; /* Couleur de fond blanche */
@@ -91,7 +95,7 @@ CREATION_PROJET = {
             font-size: 16px; /* Taille de police */
             font-weight: bold; /* Poids de police */
             padding: 10px 0; /* Rembourrage */
-            margin-bottom: 12px; /* Espace entre les bouttons */
+            margin-bottom: 12px; /* Espace entre les boutons */
         }
         QPushButton:hover {
             background: #e0e0e0; /* Couleur de fond au survol */
@@ -100,7 +104,7 @@ CREATION_PROJET = {
 }
 
 
-class Boutton(qtw.QPushButton):
+class bouton(qtw.QPushButton):
     '''
     Classe pour les boutons avec une taille optionnelle.
     '''
@@ -140,28 +144,30 @@ class Fenetre(qtw.QWidget):
         self.generer_layouts()
 
 
-    def generer_boutton(self,layout_name: str) -> None:
+    def generer_bouton(self,layout_name: str) -> None:
         '''
-        fonction de base pour generer les bouttons pour chaque fenetre
-        layout_name : nom du layout dans lequel ajouter les bouttons
+        fonction de base pour generer les boutons pour chaque fenetre
+        layout_name : nom du layout dans lequel ajouter les boutons
         '''
-        self.bouttons = {}
-        bouttons_param = self._parametre['layout'][layout_name]['bouttons']
-        for texte_boutton in bouttons_param:
-            # creer le boutton et l'ajouter au layout
-            self.bouttons[texte_boutton] = Boutton(texte_boutton, bouttons_param[texte_boutton]['taille'])
-            self.bouttons[texte_boutton].clicked.connect(getattr(self, bouttons_param[texte_boutton]['action']))
-            self.layouts[layout_name].addWidget(self.bouttons[texte_boutton])
+        self.boutons = {}
+        boutons_param = self._parametre['layout'][layout_name]['boutons']
+        for texte_bouton in boutons_param:
+            # creer le bouton et l'ajouter au layout
+            self.boutons[texte_bouton] = bouton(texte_bouton, boutons_param[texte_bouton]['taille'])
+            self.boutons[texte_bouton].clicked.connect(getattr(self, boutons_param[texte_bouton]['action']))
+            self.layouts[layout_name].addWidget(self.boutons[texte_bouton])
 
 
     def generer_layouts(self) -> None:
         '''
         Fonction de base pour générer les layouts de chaque fenêtre.
         '''
-        self.main_layout = qtw.QHBoxLayout() # Layout horizontal principal
         self.layouts = {}
         for name in self._parametre['layout']:
-            self.layouts[name] = qtw.QVBoxLayout()
+            if self._parametre['layout'][name]['sens'] == 'horizontal':
+                self.layouts[name] = qtw.QHBoxLayout()
+            else:
+                self.layouts[name] = qtw.QVBoxLayout()
 
 
 class FenetreMenu(Fenetre):
@@ -172,16 +178,16 @@ class FenetreMenu(Fenetre):
     def __init__(self, param: dict) -> None:
         super().__init__(param)
         self._generer_titre()
-        # ajoute la partie gauche avec les bouttons
-        self.generer_boutton('left_layout')  # Ajouter les bouttons au layout gauche
+        # ajoute la partie gauche avec les boutons
+        self.generer_bouton('left_layout')  # Ajouter les boutons au layout gauche
         self.layouts['left_layout'].addStretch() # Pour pousser les éléments vers le haut
-        self.main_layout.addLayout(self.layouts['left_layout']) # Ajouter le layout gauche au layout principal
-        # ajoute la partie droite avec les icones et le boutton exit
+        self.layouts['main_layout'].addLayout(self.layouts['left_layout']) # Ajouter le layout gauche au layout principal
+        # ajoute la partie droite avec les icones et le bouton exit
         self._generer_icone_engrenage(self.layouts['right_layout'])
         self.layouts['right_layout'].addStretch()
-        self.generer_boutton('right_layout') # Ajouter les bouttons au layout droit
-        self.main_layout.addLayout(self.layouts['right_layout'])
-        self.setLayout(self.main_layout) # Définir le layout principal pour la fenêtre
+        self.generer_bouton('right_layout') # Ajouter les boutons au layout droit
+        self.layouts['main_layout'].addLayout(self.layouts['right_layout'])
+        self.setLayout(self.layouts['main_layout']) # Définir le layout principal pour la fenêtre
 
 
     def _generer_titre(self) -> None:
@@ -226,15 +232,12 @@ class FenetreCreationProjet(Fenetre):
     def __init__(self, param: dict) -> None:
         super().__init__(param)
         self._param = param
-        self.setWindowTitle(param['titre'])
-        self.setFixedSize(*param['geometrie'])
-        self.setStyleSheet(param['styleSheet'])
         self.generer_widget_page()
-
+        self.layouts['boutons_layout'].insertStretch(0, 1)
         # Layout vertical pour le stack + boutons
-        self.generer_boutton('bouttons_layout')
-        self.layouts['layout_principal'].addLayout(self.layouts['bouttons_layout'])
-        self.setLayout(self.layouts['layout_principal'])
+        self.generer_bouton('boutons_layout')
+        self.layouts['main_layout'].addLayout(self.layouts['boutons_layout'])
+        self.setLayout(self.layouts['main_layout'])
 
 
     def generer_widget_page(self) -> None:
@@ -248,7 +251,7 @@ class FenetreCreationProjet(Fenetre):
             page_instance = page_method()
             self.stack.addWidget(page_instance)
             self.pages.append(page_instance)
-        self.layouts['layout_principal'].addWidget(self.stack)
+        self.layouts['main_layout'].addWidget(self.stack)
 
 
     def create_page0(self):
