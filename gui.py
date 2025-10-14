@@ -51,9 +51,9 @@ MENU = {
         }
         QPushButton {
             background: #fff; /* Couleur de fond blanche */
-            border: 2px solid #222; /* Bordure sombre */
+            border: 1px solid #222; /* Bordure sombre */
             border-radius: 6px; /* Bords arrondis */
-            font-size: 16px; /* Taille de police */
+            font-size: 12px; /* Taille de police */
             font-weight: bold; /* Poids de police */
             padding: 10px 0; /* Rembourrage */
             margin-bottom: 12px; /* Espace entre les boutons */
@@ -90,9 +90,9 @@ CREATION_PROJET = {
         }
         QPushButton {
             background: #fff; /* Couleur de fond blanche */
-            border: 2px solid #222; /* Bordure sombre */
+            border: 1px solid #222; /* Bordure sombre */
             border-radius: 6px; /* Bords arrondis */
-            font-size: 16px; /* Taille de police */
+            font-size: 12px; /* Taille de police */
             font-weight: bold; /* Poids de police */
             padding: 10px 0; /* Rembourrage */
             margin-bottom: 12px; /* Espace entre les boutons */
@@ -253,8 +253,60 @@ class FenetreCreationProjet(Fenetre):
             self.pages.append(page_instance)
         self.layouts['main_layout'].addWidget(self.stack)
 
-
     def create_page0(self):
+        page = qtw.QWidget()
+        layout = qtw.QVBoxLayout()
+
+        # --- Ligne principale contenant les champs
+        ligne = qtw.QHBoxLayout()
+
+        # 1️⃣ Label "nombre d’étage :"
+        lbl_nbr = qtw.QLabel("nombre d’étage :")
+        ligne.addWidget(lbl_nbr)
+
+        # 2️⃣ Zone de texte pour nombre d’étage (entier)
+        self.nbr_train_input = qtw.QLineEdit()
+        self.nbr_train_input.setValidator(qtg.QIntValidator(0, 100))  # seulement des entiers
+        self.nbr_train_input.setFixedWidth(60)
+        ligne.addWidget(self.nbr_train_input)
+
+        # 3️⃣ Label "1"
+        lbl_1 = qtw.QLabel("1")
+        ligne.addWidget(lbl_1)
+
+        # 4️⃣ Liste déroulante "engrenage droit"
+        self.type_engrenage = qtw.QComboBox()
+        self.type_engrenage.addItems(["engrenage droit", "engrenage hélicoïdal", "conique"])
+        ligne.addWidget(self.type_engrenage)
+
+        # 5️⃣ Label "σ max" (symbole sigma)
+        lbl_sigma = qtw.QLabel("σ max")
+        ligne.addWidget(lbl_sigma)
+
+        # 6️⃣ Zone de texte pour contrainte_max (float)
+        self.contrainte_max_input = qtw.QLineEdit()
+        self.contrainte_max_input.setValidator(qtg.QDoubleValidator(0.0, 9999.99, 2))
+        self.contrainte_max_input.setFixedWidth(80)
+        ligne.addWidget(self.contrainte_max_input)
+
+        # 7️⃣ Label "MPa"
+        lbl_mpa = qtw.QLabel("MPa")
+        ligne.addWidget(lbl_mpa)
+
+        # --- Espacement flexible à droite pour coller à gauche
+        ligne.addStretch()
+
+        # Ajoute la ligne complète dans le layout vertical
+        layout.addLayout(ligne)
+
+        # Ajoute un espace vide en bas
+        layout.addStretch()
+
+        page.setLayout(layout)
+        return page
+
+
+    def create_page1(self):
         page = qtw.QWidget()
         layout = qtw.QVBoxLayout()
         layout.addStretch()
@@ -264,14 +316,6 @@ class FenetreCreationProjet(Fenetre):
         page.setLayout(layout)
         return page
 
-    def create_page1(self):
-        page = qtw.QWidget()
-        layout = qtw.QVBoxLayout()
-        layout.addStretch()
-        layout.addWidget(qtw.QLabel("Page 2"))
-        layout.addStretch()
-        page.setLayout(layout)
-        return page
 
     def create_page2(self):
         page = qtw.QWidget()
