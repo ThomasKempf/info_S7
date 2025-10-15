@@ -300,6 +300,7 @@ class FenetreCreationProjet(Fenetre):
         ligne = qtw.QHBoxLayout()
         self._generer_label(ligne,label[0]) # nombre d’étage :
         param_zone_texte['contrainte_max']['varaible'] = self._generer_zone_texte(ligne,param_zone_texte['contrainte_max'])
+        ligne.addSpacing(100)
         self._generer_label(ligne,label[1]) # label 1
         liste_deroulante = self._generer_liste_deroulante(ligne,texte_ligne_deroutante)
         self._generer_label(ligne,label[2]) # σ max
