@@ -102,6 +102,8 @@ CREATION_PROJET = {
     'styleSheet': '''
         QWidget {
             background-color: #f8f8f8; /* Couleur de fond claire */
+            font-size: 16px; /* Taille de police globale */
+            
         }
         QPushButton {
             background: #fff; /* Couleur de fond blanche */
@@ -233,7 +235,7 @@ class FenetreMenu(Fenetre):
         self.layouts['left_layout'].addWidget(titre)  # Ajouter le titre au layout gauche
     
 
-    def _generer_icone_engrenage(self,layout : qtw.QVBoxLayout) -> None:
+    def _generer_icone_engrenage(self,layout:qtw.QVBoxLayout) -> None:
         '''
         Fonction pour générer l'icône d'engrenage dans le layout spécifié
         uniquement dans la classe FenetreMenu parce que l'affichage est spécifique au menu.
@@ -295,39 +297,17 @@ class FenetreCreationProjet(Fenetre):
         page = qtw.QWidget()
         layout = qtw.QVBoxLayout()
 
-        # --- Ligne principale contenant les champs
         ligne = qtw.QHBoxLayout()
-
-        # 1️⃣ Label "nombre d’étage :"
-        self._generer_label(ligne,label[0])
-
-        # 2️⃣ Zone de texte pour nombre d’étage (entier)
+        self._generer_label(ligne,label[0]) # nombre d’étage :
         param_zone_texte['contrainte_max']['varaible'] = self._generer_zone_texte(ligne,param_zone_texte['contrainte_max'])
-
-        # 3️⃣ Label "1"
-        self._generer_label(ligne,label[1])
-
-        # 4️⃣ Liste déroulante "engrenage droit"
+        self._generer_label(ligne,label[1]) # label 1
         liste_deroulante = self._generer_liste_deroulante(ligne,texte_ligne_deroutante)
-
-        # 5️⃣ Label "σ max" (symbole sigma)
-        self._generer_label(ligne,label[2])
-
-        # 6️⃣ Zone de texte pour contrainte_max (float)
+        self._generer_label(ligne,label[2]) # σ max
         param_zone_texte['nbr_train']['varaible'] = self._generer_zone_texte(ligne,param_zone_texte['nbr_train'])
-
-        # 7️⃣ Label "MPa"
-        self._generer_label(ligne,label[3])
-
-        # --- Espacement flexible à droite pour coller à gauche
-        ligne.addStretch()
-
-        # Ajoute la ligne complète dans le layout vertical
-        layout.addLayout(ligne)
-
-        # Ajoute un espace vide en bas
-        layout.addStretch()
-
+        self._generer_label(ligne,label[3]) # MPa
+        ligne.addStretch()# --- Espacement flexible à droite pour coller à gauche
+        layout.addLayout(ligne)# Ajoute la ligne complète dans le layout vertical
+        layout.addStretch()# Ajoute un espace vide en bas
         page.setLayout(layout)
         return page
 
