@@ -81,7 +81,8 @@ CREATION_PROJET = {
                     'largeur':80
                 }
             },
-            'label':['nombre d’étage :','1','σ max','MPa']
+            'label':['nombre d’étage :','1','σ max','MPa'],
+            'liste_deroulante':["engrenage droit", "engrenage hélicoïdal", "conique"],
         },
         'structure':None,
         'param_train':None
@@ -197,6 +198,12 @@ class Fenetre(qtw.QWidget):
         ligne.addWidget(lbl_nbr)
 
 
+    def _generer_liste_deroulante(self,ligne:qtw.QHBoxLayout,choix:list[str]):
+        liste_deroulante = qtw.QComboBox()
+        liste_deroulante.addItems(choix)
+        ligne.addWidget(liste_deroulante)
+        return liste_deroulante
+
 class FenetreMenu(Fenetre):
     '''
     Classe pour genere uniquement la fenêtre de menu.
@@ -284,6 +291,7 @@ class FenetreCreationProjet(Fenetre):
         param_page = self._param['page']['entree_sortie']
         param_zone_texte = param_page['zone_texte']
         label = param_page['label']
+        texte_ligne_deroutante = param_page['liste_deroulante']
         page = qtw.QWidget()
         layout = qtw.QVBoxLayout()
 
@@ -300,9 +308,7 @@ class FenetreCreationProjet(Fenetre):
         self._generer_label(ligne,label[1])
 
         # 4️⃣ Liste déroulante "engrenage droit"
-        self.type_engrenage = qtw.QComboBox()
-        self.type_engrenage.addItems(["engrenage droit", "engrenage hélicoïdal", "conique"])
-        ligne.addWidget(self.type_engrenage)
+        liste_deroulante = self._generer_liste_deroulante(ligne,texte_ligne_deroutante)
 
         # 5️⃣ Label "σ max" (symbole sigma)
         self._generer_label(ligne,label[2])
