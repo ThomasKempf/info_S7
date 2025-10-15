@@ -95,6 +95,12 @@ CREATION_PROJET = {
             'sens': 'horizontal',
             'boutons': {'Precedent':{'taille': [210, 50], 'action': 'precedente_page'},
                          'Next':{'taille': [210, 50], 'action': 'next_page'}}
+        },
+        'bloc_gauche_layout':{
+            'sens': 'horizontal'
+        },
+        'bloc_droit_layout':{
+            'sens': 'horizontal'
         }
     },
     'geometrie': [1000, 600],
@@ -102,7 +108,6 @@ CREATION_PROJET = {
     'styleSheet': '''
         QWidget {
             background-color: #f8f8f8; /* Couleur de fond claire */
-            font-size: 16px; /* Taille de police globale */
             
         }
         QPushButton {
@@ -294,23 +299,64 @@ class FenetreCreationProjet(Fenetre):
         param_zone_texte = param_page['zone_texte']
         label = param_page['label']
         texte_ligne_deroutante = param_page['liste_deroulante']
+        special_style = """
+            QWidget {
+                background: #fff; /* Couleur de fond blanche */
+                border: 1px solid #222;
+                border-radius: 6px;
+                padding: 8px;
+            }
+        """
+        
         page = qtw.QWidget()
         layout = qtw.QVBoxLayout()
 
+        # --- Ligne principale
         ligne = qtw.QHBoxLayout()
-        self._generer_label(ligne,label[0]) # nombre d’étage :
-        param_zone_texte['contrainte_max']['varaible'] = self._generer_zone_texte(ligne,param_zone_texte['contrainte_max'])
-        ligne.addSpacing(100)
-        self._generer_label(ligne,label[1]) # label 1
-        liste_deroulante = self._generer_liste_deroulante(ligne,texte_ligne_deroutante)
-        self._generer_label(ligne,label[2]) # σ max
-        param_zone_texte['nbr_train']['varaible'] = self._generer_zone_texte(ligne,param_zone_texte['nbr_train'])
-        self._generer_label(ligne,label[3]) # MPa
-        ligne.addStretch()# --- Espacement flexible à droite pour coller à gauche
-        layout.addLayout(ligne)# Ajoute la ligne complète dans le layout vertical
-        layout.addStretch()# Ajoute un espace vide en bas
+
+        # ----------------------
+        # Bloc 1 : Label + zone de texte
+        # ----------------------
+        bloc_gauche = qtw.QWidget()
+        self._generer_label(self.layouts['bloc_gauche_layout'], label[0])  # nombre d’étage :
+        param_zone_texte['contrainte_max']['varaible'] = self._generer_zone_texte(self.layouts['bloc_gauche_layout'], param_zone_texte['contrainte_max'])
+        self.layouts['bloc_gauche_layout'].addStretch()
+        bloc_gauche.setLayout(self.layouts['bloc_gauche_layout'])
+
+        # Style du bloc gauche
+        bloc_gauche.setStyleSheet(special_style)
+
+        # ----------------------
+        # Bloc 2 : le reste à droite
+        # ----------------------
+        bloc_droit = qtw.QWidget()
+
+        self._generer_label(self.layouts['bloc_droit_layout'], label[1])  # 1
+        liste_deroulante = self._generer_liste_deroulante(self.layouts['bloc_droit_layout'], texte_ligne_deroutante)
+        self._generer_label(self.layouts['bloc_droit_layout'], label[2])  # σ max
+        param_zone_texte['nbr_train']['varaible'] = self._generer_zone_texte(
+            self.layouts['bloc_droit_layout'], param_zone_texte['nbr_train']
+        )
+        self._generer_label(self.layouts['bloc_droit_layout'], label[3])  # MPa
+
+        self.layouts['bloc_droit_layout'].addStretch()
+        bloc_droit.setLayout(self.layouts['bloc_droit_layout'])
+
+        # Style du bloc droit
+        bloc_droit.setStyleSheet(special_style)
+
+        # --- Ajout au layout principal
+        ligne.addWidget(bloc_gauche)
+        ligne.addSpacing(100)  # Espace fixe entre les deux blocs
+        ligne.addWidget(bloc_droit)
+        ligne.addStretch()
+
+        layout.addLayout(ligne)
+        layout.addStretch()
         page.setLayout(layout)
+
         return page
+
 
 
     def create_page1(self):
