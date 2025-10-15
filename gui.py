@@ -98,6 +98,9 @@ CREATION_PROJET = {
             'boutons': {'Precedent':{'taille': [210, 50], 'action': 'precedente_page'},
                          'Next':{'taille': [210, 50], 'action': 'next_page'}}
         },
+        'page0_layout':{
+            'sens': 'hvertical'
+        },
         'bloc_gauche_layout':{
             'sens': 'horizontal'
         },
@@ -124,7 +127,15 @@ CREATION_PROJET = {
         QPushButton:hover {
             background: #e0e0e0; /* Couleur de fond au survol */
         }
-    '''
+    ''',
+    'special_style':"""
+            QWidget {
+                background: #fff; /* Couleur de fond blanche */
+                border: 1px solid #222;
+                border-radius: 6px;
+                padding: 8px;
+            }
+        """
 }
 
 
@@ -194,7 +205,13 @@ class Fenetre(qtw.QWidget):
                 self.layouts[name] = qtw.QVBoxLayout()
 
 
-    def _generer_zone_texte(self,ligne:qtw.QHBoxLayout,param_zone_text:dict) ->None:
+    def _generer_zone_texte(self,ligne:qtw.QHBoxLayout,param_zone_text:dict) -> qtw.QLineEdit:
+        '''
+        genere une zone de texte ne fonction des parametre
+        ligne = ligne sur la quelle la zone est ajoutee
+        param_zone = parametre de la zone de texte, voir la structure si dessus dans les constante de parametre fenetre
+        retourne la varable contenant la zone de texte
+        '''
         variable = qtw.QLineEdit()
         variable.setValidator(param_zone_text['validator'])  # seulement des entiers
         variable.setFixedWidth(param_zone_text['largeur'])
@@ -203,12 +220,23 @@ class Fenetre(qtw.QWidget):
         return variable
     
 
-    def _generer_label(slef,ligne:qtw.QHBoxLayout,texte:str):
+    def _generer_label(slef,ligne:qtw.QHBoxLayout,texte:str) -> None:
+        '''
+        genere un label, du texte prédéfinie sur le quelle l'ont ne peut pas interragire
+        ligne = ligne sur la quelle le label est ajoutee
+        text = texte aui sera afficher sur la ligne
+        '''
         lbl_nbr = qtw.QLabel(texte)
         ligne.addWidget(lbl_nbr)
 
 
-    def _generer_liste_deroulante(self,ligne:qtw.QHBoxLayout,choix:list[str]):
+    def _generer_liste_deroulante(self,ligne:qtw.QHBoxLayout,choix:list[str]) -> qtw.QComboBox:
+        '''
+        genere une liste deroulante de str
+        ligne = ligne sur la quelle la liste est ajoutéee
+        choix = liste contenant les differents choix
+        retourne la variable contenant la liste_deroulante
+        '''
         liste_deroulante = qtw.QComboBox()
         liste_deroulante.addItems(choix)
         ligne.addWidget(liste_deroulante)
@@ -263,7 +291,7 @@ class FenetreMenu(Fenetre):
         layout.addWidget(widget, alignment=qtg.Qt.AlignmentFlag.AlignTop)
 
 
-    def ouvrir_fenetre_creation_projet(self):
+    def ouvrir_fenetre_creation_projet(self) -> None:
         '''
         Ouvre la fenêtre de création de projet.
         '''
@@ -274,6 +302,10 @@ class FenetreMenu(Fenetre):
 
 class FenetreCreationProjet(Fenetre):
     def __init__(self, param: dict) -> None:
+        '''
+        Initialise la fenetre en plus des bouton de base et de toute la structure
+        param = parametre de la page situee au dessus
+        '''
         super().__init__(param)
         self._param = param
         self.generer_widget_page()
@@ -297,72 +329,51 @@ class FenetreCreationProjet(Fenetre):
             self.pages.append(page_instance)
         self.layouts['main_layout'].addWidget(self.stack)
 
-    def create_page0(self):
+
+    def create_page0(self) -> qtw.QWidget:
+        '''
+        generation de la page 0 qui contient le choix du nombre de train, de leurs type et de leur materiaux
+        retourne la variable de la page
+        '''
         param_page = self._param['page']['entree_sortie']
         param_zone_texte = param_page['zone_texte']
         label = param_page['label']
         texte_ligne_deroutante = param_page['liste_deroulante']
-        special_style = """
-            QWidget {
-                background: #fff; /* Couleur de fond blanche */
-                border: 1px solid #222;
-                border-radius: 6px;
-                padding: 8px;
-            }
-        """
-        
+        special_style = self._param['special_style']
+        # creation page et ligne principale
         page = qtw.QWidget()
-        layout = qtw.QVBoxLayout()
-
-        # --- Ligne principale
         ligne = qtw.QHBoxLayout()
-
-        # ----------------------
         # Bloc 1 : Label + zone de texte
-        # ----------------------
         bloc_gauche = qtw.QWidget()
         self._generer_label(self.layouts['bloc_gauche_layout'], label[0])  # nombre d’étage :
         param_zone_texte['nbr_train']['varaible'] = self._generer_zone_texte(self.layouts['bloc_gauche_layout'], param_zone_texte['nbr_train'])
         self.layouts['bloc_gauche_layout'].addStretch()
         bloc_gauche.setLayout(self.layouts['bloc_gauche_layout'])
-
-        # Style du bloc gauche
         bloc_gauche.setStyleSheet(special_style)
-
-        # ----------------------
         # Bloc 2 : le reste à droite
-        # ----------------------
         bloc_droit = qtw.QWidget()
-
         self._generer_label(self.layouts['bloc_droit_layout'], label[1])  # 1
         liste_deroulante = self._generer_liste_deroulante(self.layouts['bloc_droit_layout'], texte_ligne_deroutante)
         self._generer_label(self.layouts['bloc_droit_layout'], label[2])  # σ max
-        param_zone_texte['contrainte_max']['varaible'] = self._generer_zone_texte(
-            self.layouts['bloc_droit_layout'], param_zone_texte['contrainte_max']
-        )
+        param_zone_texte['contrainte_max']['varaible'] = self._generer_zone_texte(self.layouts['bloc_droit_layout'], param_zone_texte['contrainte_max'])
         self._generer_label(self.layouts['bloc_droit_layout'], label[3])  # MPa
-
         self.layouts['bloc_droit_layout'].addStretch()
         bloc_droit.setLayout(self.layouts['bloc_droit_layout'])
-
-        # Style du bloc droit
         bloc_droit.setStyleSheet(special_style)
-
         # --- Ajout au layout principal
         ligne.addWidget(bloc_gauche)
         ligne.addSpacing(100)  # Espace fixe entre les deux blocs
         ligne.addWidget(bloc_droit)
         ligne.addStretch()
-
-        layout.addLayout(ligne)
-        layout.addStretch()
-        page.setLayout(layout)
-
+        # ajoute la ligne au layout
+        self.layouts['page0_layout'].addLayout(ligne)
+        self.layouts['page0_layout'].addStretch()
+        page.setLayout(self.layouts['page0_layout'])
         return page
 
 
 
-    def create_page1(self):
+    def create_page1(self) -> qtw.QWidget:
         page = qtw.QWidget()
         layout = qtw.QVBoxLayout()
         layout.addStretch()
@@ -373,7 +384,7 @@ class FenetreCreationProjet(Fenetre):
         return page
 
 
-    def create_page2(self):
+    def create_page2(self) -> qtw.QWidget:
         page = qtw.QWidget()
         layout = qtw.QVBoxLayout()
         layout.addStretch()
@@ -382,12 +393,18 @@ class FenetreCreationProjet(Fenetre):
         page.setLayout(layout)
         return page
 
-    def next_page(self):
+    def next_page(self) -> None:
+        '''
+        permet de passer a la page suivante
+        '''
         i = self.stack.currentIndex()
         if i < self.stack.count() - 1:
             self.stack.setCurrentIndex(i + 1)
 
-    def precedente_page(self):
+    def precedente_page(self) -> None:
+        '''
+        permet de passer a la page precedente
+        '''
         i = self.stack.currentIndex()
         if i > 0:
             self.stack.setCurrentIndex(i - 1)
