@@ -73,12 +73,14 @@ CREATION_PROJET = {
                 'nbr_train':{
                     'variable':None,
                     'validator': qtg.QDoubleValidator(0.0, 9999.99, 2),
-                    'largeur':60
+                    'largeur':60,
+                    'param_defaut':'1'
                 },
                 'contrainte_max':{
                     'variable':None,
                     'validator': qtg.QIntValidator(0, 100),
-                    'largeur':80
+                    'largeur':80,
+                    'param_defaut':'210 000'
                 }
             },
             'label':['nombre d’étage :','1','σ max','MPa'],
@@ -103,7 +105,7 @@ CREATION_PROJET = {
             'sens': 'horizontal'
         }
     },
-    'geometrie': [1000, 600],
+    'geometrie': [750, 600],
     'titre': 'Creation Projet',
     'styleSheet': '''
         QWidget {
@@ -196,6 +198,7 @@ class Fenetre(qtw.QWidget):
         variable = qtw.QLineEdit()
         variable.setValidator(param_zone_text['validator'])  # seulement des entiers
         variable.setFixedWidth(param_zone_text['largeur'])
+        variable.setText(param_zone_text['param_defaut'])
         ligne.addWidget(variable)
         return variable
     
@@ -319,7 +322,7 @@ class FenetreCreationProjet(Fenetre):
         # ----------------------
         bloc_gauche = qtw.QWidget()
         self._generer_label(self.layouts['bloc_gauche_layout'], label[0])  # nombre d’étage :
-        param_zone_texte['contrainte_max']['varaible'] = self._generer_zone_texte(self.layouts['bloc_gauche_layout'], param_zone_texte['contrainte_max'])
+        param_zone_texte['nbr_train']['varaible'] = self._generer_zone_texte(self.layouts['bloc_gauche_layout'], param_zone_texte['nbr_train'])
         self.layouts['bloc_gauche_layout'].addStretch()
         bloc_gauche.setLayout(self.layouts['bloc_gauche_layout'])
 
@@ -334,8 +337,8 @@ class FenetreCreationProjet(Fenetre):
         self._generer_label(self.layouts['bloc_droit_layout'], label[1])  # 1
         liste_deroulante = self._generer_liste_deroulante(self.layouts['bloc_droit_layout'], texte_ligne_deroutante)
         self._generer_label(self.layouts['bloc_droit_layout'], label[2])  # σ max
-        param_zone_texte['nbr_train']['varaible'] = self._generer_zone_texte(
-            self.layouts['bloc_droit_layout'], param_zone_texte['nbr_train']
+        param_zone_texte['contrainte_max']['varaible'] = self._generer_zone_texte(
+            self.layouts['bloc_droit_layout'], param_zone_texte['contrainte_max']
         )
         self._generer_label(self.layouts['bloc_droit_layout'], label[3])  # MPa
 
