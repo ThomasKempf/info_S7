@@ -80,7 +80,8 @@ CREATION_PROJET = {
                     'validator': qtg.QIntValidator(0, 100),
                     'largeur':80
                 }
-            }
+            },
+            'label':['nombre d’étage :','1','σ max','MPa']
         },
         'structure':None,
         'param_train':None
@@ -183,12 +184,17 @@ class Fenetre(qtw.QWidget):
                 self.layouts[name] = qtw.QVBoxLayout()
 
 
-    def _generer_zone_texte(self,ligne:str,param_zone_text:dict) ->None:
+    def _generer_zone_texte(self,ligne:qtw.QHBoxLayout,param_zone_text:dict) ->None:
         variable = qtw.QLineEdit()
         variable.setValidator(param_zone_text['validator'])  # seulement des entiers
         variable.setFixedWidth(param_zone_text['largeur'])
         ligne.addWidget(variable)
         return variable
+    
+
+    def _generer_label(slef,ligne:qtw.QHBoxLayout,texte:str):
+        lbl_nbr = qtw.QLabel(texte)
+        ligne.addWidget(lbl_nbr)
 
 
 class FenetreMenu(Fenetre):
@@ -277,6 +283,7 @@ class FenetreCreationProjet(Fenetre):
     def create_page0(self):
         param_page = self._param['page']['entree_sortie']
         param_zone_texte = param_page['zone_texte']
+        label = param_page['label']
         page = qtw.QWidget()
         layout = qtw.QVBoxLayout()
 
@@ -284,15 +291,13 @@ class FenetreCreationProjet(Fenetre):
         ligne = qtw.QHBoxLayout()
 
         # 1️⃣ Label "nombre d’étage :"
-        lbl_nbr = qtw.QLabel("nombre d’étage :")
-        ligne.addWidget(lbl_nbr)
+        self._generer_label(ligne,label[0])
 
         # 2️⃣ Zone de texte pour nombre d’étage (entier)
         param_zone_texte['contrainte_max']['varaible'] = self._generer_zone_texte(ligne,param_zone_texte['contrainte_max'])
 
         # 3️⃣ Label "1"
-        lbl_1 = qtw.QLabel("1")
-        ligne.addWidget(lbl_1)
+        self._generer_label(ligne,label[1])
 
         # 4️⃣ Liste déroulante "engrenage droit"
         self.type_engrenage = qtw.QComboBox()
@@ -300,15 +305,13 @@ class FenetreCreationProjet(Fenetre):
         ligne.addWidget(self.type_engrenage)
 
         # 5️⃣ Label "σ max" (symbole sigma)
-        lbl_sigma = qtw.QLabel("σ max")
-        ligne.addWidget(lbl_sigma)
+        self._generer_label(ligne,label[2])
 
         # 6️⃣ Zone de texte pour contrainte_max (float)
         param_zone_texte['nbr_train']['varaible'] = self._generer_zone_texte(ligne,param_zone_texte['nbr_train'])
 
         # 7️⃣ Label "MPa"
-        lbl_mpa = qtw.QLabel("MPa")
-        ligne.addWidget(lbl_mpa)
+        self._generer_label(ligne,label[3])
 
         # --- Espacement flexible à droite pour coller à gauche
         ligne.addStretch()
