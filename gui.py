@@ -397,12 +397,11 @@ class FenetreCreationProjet(Fenetre):
         self._generer_label(block_centre,label[4])
         block_centre.addStretch()
         # creation block droite
-        block_droite = qtw.QVBoxLayout()
-        block_droite.addStretch()
+        block_droite = qtw.QHBoxLayout()
         # widget couple
+        block_droite.addStretch()
         widget_couple,variqble_couple = self._ajout_nom_et_zone_texte_et_unitee(label[5],label[6],param_zone_texte['couple_sortie'])
         block_droite.addWidget(widget_couple)
-        block_droite.addStretch()
         # ajout des layoute au layoute principale
         layoute_page0 = qtw.QHBoxLayout()
         layoute_page0.addLayout(block_gauche)
