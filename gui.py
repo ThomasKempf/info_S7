@@ -402,6 +402,12 @@ class FenetreCreationProjet(Fenetre):
         block_gauche.addWidget(widget_puissance)
         # ajoute la ligne au layout
         block_gauche.addStretch()
+        # creation fleche
+        fleche_gauche = qtw.QLabel()
+        fleche_droite = qtw.QLabel()
+        pixmap = qtg.QPixmap("./fleche.png")  # ton fichier
+        fleche_gauche.setPixmap(pixmap)
+        fleche_droite.setPixmap(pixmap)
         # creation block centre
         block_centre = qtw.QVBoxLayout()
         block_centre.addStretch()
@@ -417,7 +423,9 @@ class FenetreCreationProjet(Fenetre):
         # ajout des layoute au layoute principale
         layoute_page0 = qtw.QHBoxLayout()
         layoute_page0.addLayout(block_gauche)
+        layoute_page0.addWidget(fleche_gauche)
         layoute_page0.addLayout(block_centre)
+        layoute_page0.addWidget(fleche_droite)
         layoute_page0.addLayout(block_droite)
         page.setLayout(layoute_page0)
         return page
