@@ -95,7 +95,7 @@ CREATION_PROJET = {
                     'param_defaut':None
                 }
             },
-            'label':['Vitess','RPM','Puissance','kW','Rapport réduction','Couple','Nm'],
+            'label':['Vitess','RPM','Puissance','kW','Rapport réduction','Reducteur','Couple','Nm'],
         },
         'structure interne':{
             'zone_texte':{
@@ -255,6 +255,7 @@ class Fenetre(qtw.QWidget):
         '''
         lbl_nbr = qtw.QLabel(texte)
         ligne.addWidget(lbl_nbr)
+        return lbl_nbr
 
 
     def _generer_liste_deroulante(self,ligne:qtw.QHBoxLayout,choix:list[str]) -> qtw.QComboBox:
@@ -374,6 +375,16 @@ class FenetreCreationProjet(Fenetre):
         generation de la page 0 qui contient le choix des parametre général du reducteur
         retourne la variable de la page
         '''
+        special_style = """
+                QWidget {
+                    background: #fff;           /* Couleur de fond blanche */
+                    border: 1px solid #222;     /* Bordure */
+                    border-radius: 6px;         /* Coins arrondis */
+                    padding: 60px;              /* Rembourrage interne */
+                    font-size: 18px;             /* Taille de la police */
+                    font-weight: bold;           /* Gras */
+                }
+        """
         param_page = self._param['page']['entree_sortie']
         param_zone_texte = param_page['zone_texte']
         label = param_page['label']
@@ -394,13 +405,14 @@ class FenetreCreationProjet(Fenetre):
         # creation block centre
         block_centre = qtw.QVBoxLayout()
         block_centre.addStretch()
-        self._generer_label(block_centre,label[4])
+        widget_centre = self._generer_label(block_centre,label[5])
+        widget_centre.setStyleSheet(special_style)
         block_centre.addStretch()
         # creation block droite
         block_droite = qtw.QHBoxLayout()
         # widget couple
         block_droite.addStretch()
-        widget_couple,variqble_couple = self._ajout_nom_et_zone_texte_et_unitee(label[5],label[6],param_zone_texte['couple_sortie'])
+        widget_couple,variqble_couple = self._ajout_nom_et_zone_texte_et_unitee(label[6],label[7],param_zone_texte['couple_sortie'])
         block_droite.addWidget(widget_couple)
         # ajout des layoute au layoute principale
         layoute_page0 = qtw.QHBoxLayout()
