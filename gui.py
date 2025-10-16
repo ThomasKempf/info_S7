@@ -70,6 +70,35 @@ CREATION_PROJET = {
     'page':{
         'entree_sortie':{
             'zone_texte':{
+                'puissance_entree':{
+                    'variable':None,
+                    'validator': qtg.QIntValidator(0, 100),
+                    'largeur':60,
+                    'param_defaut':None
+                },
+                'vitesse_entree':{
+                    'variable':None,
+                    'validator': qtg.QIntValidator(0, 100),
+                    'largeur':60,
+                    'param_defaut':None
+                },
+                'rapport_reduction':{
+                    'variable':None,
+                    'validator': qtg.QIntValidator(0, 100),
+                    'largeur':60,
+                    'param_defaut':None
+                },
+                'couple_sortie':{
+                    'variable':None,
+                    'validator': qtg.QIntValidator(0, 100),
+                    'largeur':60,
+                    'param_defaut':None
+                }
+            },
+            'label':['Vitess','RPM','Puissance','kW','Rapport réduction','Couple','Nm'],
+        },
+        'structure interne':{
+            'zone_texte':{
                 'nbr_train':{
                     'variable':None,
                     'validator': qtg.QDoubleValidator(0.0, 9999.99, 2),
@@ -85,9 +114,7 @@ CREATION_PROJET = {
             },
             'label':['nombre d’étage :','1','σ max','MPa'],
             'liste_deroulante':["engrenage droit", "engrenage hélicoïdal", "conique"],
-        },
-        'structure':None,
-        'param_train':None
+        }
     },
     'layout': {
         'main_layout':{
@@ -101,10 +128,22 @@ CREATION_PROJET = {
         'page0_layout':{
             'sens': 'hvertical'
         },
-        'bloc_gauche_layout':{
+        'page0_bloc_gauche_layout':{
+            'sens': 'vertical'
+        },
+        'page0_bloc_centre_layout':{
+            'sens': 'vertical'
+        },
+        'page0_bloc_droit_layout':{
+            'sens': 'vertical'
+        },
+        'page1_layout':{
+            'sens': 'hvertical'
+        },
+        'page1_bloc_gauche_layout':{
             'sens': 'horizontal'
         },
-        'bloc_droit_layout':{
+        'page1_bloc_droit_layout':{
             'sens': 'horizontal'
         }
     },
@@ -335,7 +374,7 @@ class FenetreCreationProjet(Fenetre):
         generation de la page 0 qui contient le choix du nombre de train, de leurs type et de leur materiaux
         retourne la variable de la page
         '''
-        param_page = self._param['page']['entree_sortie']
+        param_page = self._param['page']['structure interne']
         param_zone_texte = param_page['zone_texte']
         label = param_page['label']
         texte_ligne_deroutante = param_page['liste_deroulante']
@@ -345,20 +384,20 @@ class FenetreCreationProjet(Fenetre):
         ligne = qtw.QHBoxLayout()
         # Bloc 1 : Label + zone de texte
         bloc_gauche = qtw.QWidget()
-        self._generer_label(self.layouts['bloc_gauche_layout'], label[0])  # nombre d’étage :
-        param_zone_texte['nbr_train']['varaible'] = self._generer_zone_texte(self.layouts['bloc_gauche_layout'], param_zone_texte['nbr_train'])
-        self.layouts['bloc_gauche_layout'].addStretch()
-        bloc_gauche.setLayout(self.layouts['bloc_gauche_layout'])
+        self._generer_label(self.layouts['page1_bloc_gauche_layout'], label[0])  # nombre d’étage :
+        param_zone_texte['nbr_train']['varaible'] = self._generer_zone_texte(self.layouts['page1_bloc_gauche_layout'], param_zone_texte['nbr_train'])
+        self.layouts['page1_bloc_gauche_layout'].addStretch()
+        bloc_gauche.setLayout(self.layouts['page1_bloc_gauche_layout'])
         bloc_gauche.setStyleSheet(special_style)
         # Bloc 2 : le reste à droite
         bloc_droit = qtw.QWidget()
-        self._generer_label(self.layouts['bloc_droit_layout'], label[1])  # 1
-        liste_deroulante = self._generer_liste_deroulante(self.layouts['bloc_droit_layout'], texte_ligne_deroutante)
-        self._generer_label(self.layouts['bloc_droit_layout'], label[2])  # σ max
-        param_zone_texte['contrainte_max']['varaible'] = self._generer_zone_texte(self.layouts['bloc_droit_layout'], param_zone_texte['contrainte_max'])
-        self._generer_label(self.layouts['bloc_droit_layout'], label[3])  # MPa
-        self.layouts['bloc_droit_layout'].addStretch()
-        bloc_droit.setLayout(self.layouts['bloc_droit_layout'])
+        self._generer_label(self.layouts['page1_bloc_droit_layout'], label[1])  # 1
+        liste_deroulante = self._generer_liste_deroulante(self.layouts['page1_bloc_droit_layout'], texte_ligne_deroutante)
+        self._generer_label(self.layouts['page1_bloc_droit_layout'], label[2])  # σ max
+        param_zone_texte['contrainte_max']['varaible'] = self._generer_zone_texte(self.layouts['page1_bloc_droit_layout'], param_zone_texte['contrainte_max'])
+        self._generer_label(self.layouts['page1_bloc_droit_layout'], label[3])  # MPa
+        self.layouts['page1_bloc_droit_layout'].addStretch()
+        bloc_droit.setLayout(self.layouts['page1_bloc_droit_layout'])
         bloc_droit.setStyleSheet(special_style)
         # --- Ajout au layout principal
         ligne.addWidget(bloc_gauche)
@@ -366,9 +405,9 @@ class FenetreCreationProjet(Fenetre):
         ligne.addWidget(bloc_droit)
         ligne.addStretch()
         # ajoute la ligne au layout
-        self.layouts['page0_layout'].addLayout(ligne)
-        self.layouts['page0_layout'].addStretch()
-        page.setLayout(self.layouts['page0_layout'])
+        self.layouts['page1_layout'].addLayout(ligne)
+        self.layouts['page1_layout'].addStretch()
+        page.setLayout(self.layouts['page1_layout'])
         return page
 
 
