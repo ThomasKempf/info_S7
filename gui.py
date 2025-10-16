@@ -382,8 +382,9 @@ class FenetreCreationProjet(Fenetre):
         block_gauche = qtw.QVBoxLayout()
         block_gauche.addStretch()
         # block vitess
-        widget_vitess,variable_vitesse = self._ajout_nom_et_zone_texte_et_unitee(label[0],label[1],param_zone_texte['vitesse_entree'])
-        block_gauche.addWidget(widget_vitess)
+        widget_vitesse,variable_vitesse = self._ajout_nom_et_zone_texte_et_unitee(label[0],label[1],param_zone_texte['vitesse_entree'])
+        widget_vitesse.setContentsMargins(22, 0, 0, 0)
+        block_gauche.addWidget(widget_vitesse)
         # block puissance
         widget_puissance,variable_vitesse = self._ajout_nom_et_zone_texte_et_unitee(label[2],label[3],param_zone_texte['puissance_entree'])
         block_gauche.addWidget(widget_puissance)
