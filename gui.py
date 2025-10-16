@@ -125,18 +125,6 @@ CREATION_PROJET = {
             'boutons': {'Precedent':{'taille': [210, 50], 'action': 'precedente_page'},
                          'Next':{'taille': [210, 50], 'action': 'next_page'}}
         },
-        'page0_layout':{
-            'sens': 'horizontal'
-        },
-        'page0_bloc_gauche_layout':{
-            'sens': 'horizontal'
-        },
-        'page0_bloc_centre_layout':{
-            'sens': 'horizontal'
-        },
-        'page0_bloc_droit_layout':{
-            'sens': 'horizontal'
-        },
         'page1_layout':{
             'sens': 'hvertical'
         },
@@ -379,17 +367,29 @@ class FenetreCreationProjet(Fenetre):
         label = param_page['label']
         # creation page et ligne principale
         page = qtw.QWidget()
-        ligne_gauche = qtw.QHBoxLayout()
-        # Bloc 1 : Label + zone de texte
-        bloc_gauche = qtw.QWidget()
-        self._generer_label(self.layouts['page0_bloc_gauche_layout'], label[0])  # puissance :
-        param_zone_texte['puissance_entree']['varaible'] = self._generer_zone_texte(self.layouts['page0_bloc_gauche_layout'], param_zone_texte['puissance_entree'])
-        self.layouts['page0_bloc_gauche_layout'].addStretch()
-        bloc_gauche.setLayout(self.layouts['page0_bloc_gauche_layout'])
-        ligne_gauche.addWidget(bloc_gauche)
+        block_gauche = qtw.QVBoxLayout()
+        # block vitess
+        layout_vitesse = qtw.QHBoxLayout()
+        widget_vitess = qtw.QWidget()
+        self._generer_label(layout_vitesse, label[0])  # puissance :
+        param_zone_texte['puissance_entree']['varaible'] = self._generer_zone_texte(layout_vitesse, param_zone_texte['puissance_entree'])
+        self._generer_label(layout_vitesse, label[1])  # RPM :
+        layout_vitesse.addStretch()
+        widget_vitess.setLayout(layout_vitesse)
+        block_gauche.addWidget(widget_vitess)
+        # block puissance
+        layout_puissance = qtw.QHBoxLayout()
+        widget_vitess = qtw.QWidget()
+        self._generer_label(layout_puissance, label[2])  # puissance :
+        param_zone_texte['vitesse_entree']['varaible'] = self._generer_zone_texte(layout_puissance, param_zone_texte['vitesse_entree'])
+        self._generer_label(layout_puissance, label[3])  # RPM :
+        layout_puissance.addStretch()
+        widget_vitess.setLayout(layout_puissance)
+        block_gauche.addWidget(widget_vitess)
         # ajoute la ligne au layout
-        self.layouts['page0_layout'].addLayout(ligne_gauche)
-        page.setLayout(self.layouts['page0_layout'])
+        layoute_page0 = qtw.QHBoxLayout()
+        layoute_page0.addLayout(block_gauche)
+        page.setLayout(layoute_page0)
         return page
 
         return page
