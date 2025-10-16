@@ -126,16 +126,16 @@ CREATION_PROJET = {
                          'Next':{'taille': [210, 50], 'action': 'next_page'}}
         },
         'page0_layout':{
-            'sens': 'hvertical'
+            'sens': 'horizontal'
         },
         'page0_bloc_gauche_layout':{
-            'sens': 'vertical'
+            'sens': 'horizontal'
         },
         'page0_bloc_centre_layout':{
-            'sens': 'vertical'
+            'sens': 'horizontal'
         },
         'page0_bloc_droit_layout':{
-            'sens': 'vertical'
+            'sens': 'horizontal'
         },
         'page1_layout':{
             'sens': 'hvertical'
@@ -371,7 +371,33 @@ class FenetreCreationProjet(Fenetre):
 
     def create_page0(self) -> qtw.QWidget:
         '''
-        generation de la page 0 qui contient le choix du nombre de train, de leurs type et de leur materiaux
+        generation de la page 0 qui contient le choix des parametre général du reducteur
+        retourne la variable de la page
+        '''
+        param_page = self._param['page']['entree_sortie']
+        param_zone_texte = param_page['zone_texte']
+        label = param_page['label']
+        # creation page et ligne principale
+        page = qtw.QWidget()
+        ligne_gauche = qtw.QHBoxLayout()
+        # Bloc 1 : Label + zone de texte
+        bloc_gauche = qtw.QWidget()
+        self._generer_label(self.layouts['page0_bloc_gauche_layout'], label[0])  # puissance :
+        param_zone_texte['puissance_entree']['varaible'] = self._generer_zone_texte(self.layouts['page0_bloc_gauche_layout'], param_zone_texte['puissance_entree'])
+        self.layouts['page0_bloc_gauche_layout'].addStretch()
+        bloc_gauche.setLayout(self.layouts['page0_bloc_gauche_layout'])
+        ligne_gauche.addWidget(bloc_gauche)
+        # ajoute la ligne au layout
+        self.layouts['page0_layout'].addLayout(ligne_gauche)
+        page.setLayout(self.layouts['page0_layout'])
+        return page
+
+        return page
+
+
+    def create_page1(self) -> qtw.QWidget:
+        '''
+        generation de la page 1 qui contient le choix du nombre de train, de leurs type et de leur materiaux
         retourne la variable de la page
         '''
         param_page = self._param['page']['structure interne']
@@ -410,17 +436,6 @@ class FenetreCreationProjet(Fenetre):
         page.setLayout(self.layouts['page1_layout'])
         return page
 
-
-
-    def create_page1(self) -> qtw.QWidget:
-        page = qtw.QWidget()
-        layout = qtw.QVBoxLayout()
-        layout.addStretch()
-        layout.addWidget(qtw.QLabel("Bienvenue dans l'installation !"))
-        layout.addWidget(qtw.QLabel("Ceci est la première étape."))
-        layout.addStretch()
-        page.setLayout(layout)
-        return page
 
 
     def create_page2(self) -> qtw.QWidget:
