@@ -269,6 +269,18 @@ class Fenetre(qtw.QWidget):
         ligne.addWidget(liste_deroulante)
         return liste_deroulante
 
+
+    def _ajout_nom_et_zone_texte_et_unitee(self,nom:str,unitee:str,param_zone_texte):
+        layout = qtw.QHBoxLayout()
+        widget = qtw.QWidget()
+        self._generer_label(layout, nom)  # puissance :
+        variable = self._generer_zone_texte(layout, param_zone_texte)
+        self._generer_label(layout, unitee)  # RPM :
+        layout.addStretch()
+        widget.setLayout(layout)
+        return widget,variable
+
+
 class FenetreMenu(Fenetre):
     '''
     Classe pour genere uniquement la fenêtre de menu.
@@ -369,23 +381,11 @@ class FenetreCreationProjet(Fenetre):
         page = qtw.QWidget()
         block_gauche = qtw.QVBoxLayout()
         # block vitess
-        layout_vitesse = qtw.QHBoxLayout()
-        widget_vitess = qtw.QWidget()
-        self._generer_label(layout_vitesse, label[0])  # puissance :
-        param_zone_texte['puissance_entree']['varaible'] = self._generer_zone_texte(layout_vitesse, param_zone_texte['puissance_entree'])
-        self._generer_label(layout_vitesse, label[1])  # RPM :
-        layout_vitesse.addStretch()
-        widget_vitess.setLayout(layout_vitesse)
+        widget_vitess,variable_vitesse = self._ajout_nom_et_zone_texte_et_unitee(label[0],label[1],param_zone_texte['vitesse_entree'])
         block_gauche.addWidget(widget_vitess)
         # block puissance
-        layout_puissance = qtw.QHBoxLayout()
-        widget_vitess = qtw.QWidget()
-        self._generer_label(layout_puissance, label[2])  # puissance :
-        param_zone_texte['vitesse_entree']['varaible'] = self._generer_zone_texte(layout_puissance, param_zone_texte['vitesse_entree'])
-        self._generer_label(layout_puissance, label[3])  # RPM :
-        layout_puissance.addStretch()
-        widget_vitess.setLayout(layout_puissance)
-        block_gauche.addWidget(widget_vitess)
+        widget_puissance,variable_vitesse = self._ajout_nom_et_zone_texte_et_unitee(label[2],label[3],param_zone_texte['puissance_entree'])
+        block_gauche.addWidget(widget_puissance)
         # ajoute la ligne au layout
         layoute_page0 = qtw.QHBoxLayout()
         layoute_page0.addLayout(block_gauche)
