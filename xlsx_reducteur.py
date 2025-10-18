@@ -1,5 +1,6 @@
 import os
 from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
 
 NAME = 'reducteur'
 PATH = '.\\'
@@ -19,9 +20,17 @@ class Xlsx_file():
         self._wb = Workbook()
         self._ws = self._wb.active
 
-    def ecrire_liste_colonne(self, liste, ligne_depart, colonne):
+
+    def _ecrire_liste_colonne(self, liste, ligne_depart, colonne):
         for i, valeur in enumerate(liste):
             self._ws.cell(row=ligne_depart + i, column=colonne, value=valeur)
+
+
+    def _fusionner_cells(self, ligne, colone_depart, colone_fin):
+        start_letter = get_column_letter(colone_depart)
+        end_letter = get_column_letter(colone_fin)
+
+        self._ws.merge_cells(f"{start_letter}{ligne}:{end_letter}{ligne}")
 
     def save(self):
         self._wb.save(self._fichier_excel)
@@ -38,9 +47,10 @@ class ProjetXlsx(Xlsx_file):
 
     def _ecrire_valeur(self,param,liste_valeur,colone_description):
         liste_globale = [param['titre']] + param['description']
-        self.ecrire_liste_colonne(liste_globale,LIGNE_TITRE,colone_description)
-        self.ecrire_liste_colonne(liste_valeur,LIGNE_TITRE+1,colone_description+1)
-        self.ecrire_liste_colonne(param['unitee'],LIGNE_TITRE+1,colone_description+2)
+        self._ecrire_liste_colonne(liste_globale,LIGNE_TITRE,colone_description) # ecrit titre + description
+        self._fusionner_cells(LIGNE_TITRE,colone_description,colone_description+2)
+        self._ecrire_liste_colonne(liste_valeur,LIGNE_TITRE+1,colone_description+1)
+        self._ecrire_liste_colonne(param['unitee'],LIGNE_TITRE+1,colone_description+2)
 
 if __name__ == '__main__':
 
