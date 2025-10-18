@@ -12,7 +12,8 @@
 import sys
 from PySide6 import (
     QtWidgets as qtw,
-    QtGui as qtg
+    QtGui as qtg,
+    QtCore as qtc
 )
 
 # parametres que les fenetres on en commun 
@@ -172,6 +173,26 @@ CREATION_PROJET = {
 }
 
 
+ATTENTE_CREATION = {
+    'geometrie': [200, 60],
+    'titre': 'Creation Projet',
+    'layout': {
+        'main_layout':{
+            'sens': 'horizontal',
+        }
+    },
+    'label':['creation projet','.','..','...',' '],
+    'styleSheet':"""
+            QWidget {
+                background: #fff; /* Couleur de fond blanche */
+                font-size: 12px; /* Taille de police */
+                font-weight: bold; /* Poids de police */
+                padding: 10px 0; /* Rembourrage */
+                margin-bottom: 12px; /* Espace entre les boutons */
+        """
+}
+
+
 class bouton(qtw.QPushButton):
     '''
     Classe pour les boutons avec une taille optionnelle.
@@ -280,9 +301,9 @@ class Fenetre(qtw.QWidget):
     def _ajout_nom_et_zone_texte_et_unitee(self,nom:str,unitee:str,param_zone_texte):
         layout = qtw.QHBoxLayout()
         widget = qtw.QWidget()
-        self._generer_label(layout, nom)  # puissance :
+        self._generer_label(layout, nom)
         variable = self._generer_zone_texte(layout, param_zone_texte)
-        self._generer_label(layout, unitee)  # RPM :
+        self._generer_label(layout, unitee) 
         layout.addStretch()
         widget.setLayout(layout)
         return widget,variable
@@ -488,11 +509,7 @@ class FenetreCreationProjet(Fenetre):
 
     def create_page2(self) -> qtw.QWidget:
         page = qtw.QWidget()
-        layout = qtw.QVBoxLayout()
-        layout.addStretch()
-        layout.addWidget(qtw.QLabel("Page 3"))
-        layout.addStretch()
-        page.setLayout(layout)
+        self.close()
         return page
 
     def next_page(self) -> None:
@@ -502,6 +519,10 @@ class FenetreCreationProjet(Fenetre):
         i = self.stack.currentIndex()
         if i < self.stack.count() - 1:
             self.stack.setCurrentIndex(i + 1)
+        else:
+            self.fenetre_attente = FenetreAttenteCreation(ATTENTE_CREATION)
+            self.fenetre_attente.show()
+            self.close()
 
     def precedente_page(self) -> None:
         '''
@@ -510,6 +531,37 @@ class FenetreCreationProjet(Fenetre):
         i = self.stack.currentIndex()
         if i > 0:
             self.stack.setCurrentIndex(i - 1)
+
+
+
+class FenetreAttenteCreation(Fenetre):
+    def __init__(self, param: dict) -> None:
+        super().__init__(param)
+        self._param = param
+
+        # --- Création du layout principal ---
+        layout_main = qtw.QHBoxLayout()
+        self.setStyleSheet(param['styleSheet'])
+
+        # Label principal
+        self.label_texte = qtw.QLabel(param['label'][0])
+        layout_main.addWidget(self.label_texte)
+        # Label des points qui clignote
+        self.label_points = qtw.QLabel("")
+        layout_main.addWidget(self.label_points)
+        self.setLayout(layout_main)
+        # --- Animation des points ---
+        self._points = param['label'][1:]  # ['.', '..', '...',' ']
+        self._index = 0
+        # Timer pour l’animation
+        self.timer = qtc.QTimer()
+        self.timer.timeout.connect(self.clignoter)
+        self.timer.start(400)  # toutes les 400 ms
+
+    def clignoter(self):
+        """Fait alterner le texte du label pour simuler un clignotement."""
+        self.label_points.setText(self._points[self._index])
+        self._index = (self._index + 1) % len(self._points)
 
 
 
