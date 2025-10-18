@@ -65,7 +65,6 @@ MENU = {
     '''
 }
 
-
 # parametre specifique a la fenetre menu
 CREATION_PROJET = {
     'page':{
@@ -172,8 +171,26 @@ CREATION_PROJET = {
         """
 }
 
-
 ATTENTE_CREATION = {
+    'geometrie': [1000, 600],
+    'titre': 'Creation Projet',
+    'layout': {
+        'main_layout':{
+            'sens': 'horizontal',
+        }
+    },
+    'label':['creation projet','.','..','...',' '],
+    'styleSheet':"""
+            QWidget {
+                background: #fff; /* Couleur de fond blanche */
+                font-size: 12px; /* Taille de police */
+                font-weight: bold; /* Poids de police */
+                padding: 10px 0; /* Rembourrage */
+                margin-bottom: 12px; /* Espace entre les boutons */
+        """
+}
+
+PROJET = {
     'geometrie': [200, 60],
     'titre': 'Creation Projet',
     'layout': {
@@ -191,6 +208,7 @@ ATTENTE_CREATION = {
                 margin-bottom: 12px; /* Espace entre les boutons */
         """
 }
+
 
 
 class Simulation_train():
@@ -577,12 +595,19 @@ class FenetreAttenteCreation(Fenetre):
         self.timer = qtc.QTimer()
         self.timer.timeout.connect(self.clignoter)
         self.timer.start(400)  # toutes les 400 ms
+        self.fenetre_attente = FenetreProjet(PROJET)
+        self.fenetre_attente.show()
 
     def clignoter(self):
         """Fait alterner le texte du label pour simuler un clignotement."""
         self.label_points.setText(self._points[self._index])
         self._index = (self._index + 1) % len(self._points)
 
+
+class FenetreProjet(Fenetre):
+    def __init__(self, param: dict) -> None:
+        super().__init__(param)
+        self._param = param
 
 
 if __name__ == '__main__':
