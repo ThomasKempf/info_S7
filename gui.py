@@ -193,6 +193,26 @@ ATTENTE_CREATION = {
 }
 
 
+class Simulation_train():
+    def __init__(self, vitesse_entree: int, puissance_entree: int, couple_sortie: int, entraxe: int) -> None:
+        descritpition = {
+            'vitesse_entree': 1,
+            'puissance_entree': 2,
+            'couple_sortie': 3,
+            'rendement': 90,
+            'entraxe': 20,
+            'resistance_elastique': 3,
+            'k': 4,
+            'effort_tangenciel': 5,
+            'module': 6,
+            'engrenage1_rayon_p': 7,
+            'engrenage1_nbr_dents': 8,
+            'engrenage2_rayon_p': 9,
+            'engrenage2_nbr_dents': 10,
+            }
+        return descritpition
+
+
 class bouton(qtw.QPushButton):
     '''
     Classe pour les boutons avec une taille optionnelle.
