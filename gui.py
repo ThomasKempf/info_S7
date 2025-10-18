@@ -391,6 +391,7 @@ class FenetreCreationProjet(Fenetre):
                     font-weight: bold;           /* Gras */
                 }
         """
+
         param_page = self._param['page']['entree_sortie']
         param_zone_texte = param_page['zone_texte']
         label = param_page['label']
@@ -401,12 +402,12 @@ class FenetreCreationProjet(Fenetre):
         block_gauche.addStretch()
         # widget vitess
         widget_vitesse,variable_vitesse = self._ajout_nom_et_zone_texte_et_unitee(label[0],label[1],param_zone_texte['vitesse_entree'])
-        widget_vitesse.setContentsMargins(22, 0, 0, 0)
+        widget_vitesse.setContentsMargins(122, 0, 0, 0)
         block_gauche.addWidget(widget_vitesse)
         # widget puissance
         widget_puissance,variable_puissance = self._ajout_nom_et_zone_texte_et_unitee(label[2],label[3],param_zone_texte['puissance_entree'])
+        widget_puissance.setContentsMargins(100, 0, 0, 0)
         block_gauche.addWidget(widget_puissance)
-        # ajoute la ligne au layout
         block_gauche.addStretch()
         # creation fleche
         fleche_gauche = qtw.QLabel()
@@ -425,6 +426,7 @@ class FenetreCreationProjet(Fenetre):
         # widget couple
         block_droite.addStretch()
         widget_couple,variqble_couple = self._ajout_nom_et_zone_texte_et_unitee(label[6],label[7],param_zone_texte['couple_sortie'])
+        widget_couple.setContentsMargins(0, 0, 100, 0)
         block_droite.addWidget(widget_couple)
         # ajout des layoute au layoute principale
         layoute_page0 = qtw.QHBoxLayout()
