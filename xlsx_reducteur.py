@@ -7,12 +7,6 @@ PATH = '.\\'
 LIGNE_TITRE = 2
 COLONE_DEPART = 2
 
-GLOBAL = {
-    'titre': 'parametre globale',
-    'description': ['vitesse entree','puissance entree','couple sortie'],
-    'unitee': ['RPM','kW','Nm']
-
-}
 
 class Xlsx_file():
     def __init__(self) -> None:
@@ -36,23 +30,56 @@ class Xlsx_file():
         self._wb.save(self._fichier_excel)
 
 
+class Global():
+    def __init__(self) -> None:
+        self._titre = 'parametre globale'
+        self._description = {'vitesse entree': 0,
+                            'puissance entree': 0,
+                            'couple sortie': 0
+                    }
+        self._unitee = ['RPM','kW','Nm']
+
+
+    def _make_property(attr_name):   
+        def getter(self):
+            return getattr(self, f"_{attr_name}") # Retourne la valeur
+        def setter(self, value):
+            setattr(self, f"_{attr_name}", value) # Modifie la valeur
+        return property(getter, setter)
+    titre = _make_property("titre") 
+    description = _make_property("description") 
+    unitee = _make_property("unitee")
+
+
 class ProjetXlsx(Xlsx_file):
-    def __init__(self,vitesse_entree,puissance_entree,couple_sortie) -> None:
+    def __init__(self,param_global:Global) -> None:
         super().__init__()
         # ecriture des parametre globale
-        valeur = [vitesse_entree,puissance_entree,couple_sortie]
-        self._ecrire_valeur(GLOBAL,valeur,COLONE_DEPART)
+        self._param = [param_global]
+        self._ecrire_valeur( self._param[0],COLONE_DEPART)
         self.save
     
 
-    def _ecrire_valeur(self,param,liste_valeur,colone_description):
-        liste_globale = [param['titre']] + param['description']
+    def ecrire_train(self,description,num):
+        if num == len(self._description): # si num est égal à la longueur c'est que le train n'est pas incorporé
+            self._description.append(description)
+            self._param.append(description)
+            self._ecrire_valeur()
+             
+
+
+    def _ecrire_valeur(self,param,colone_description):
+        liste_valeur = list(param.description.values())
+        liste_description = list(param.description.keys())
+        liste_globale = [param.titre] + liste_description
         self._ecrire_liste_colonne(liste_globale,LIGNE_TITRE,colone_description) # ecrit titre + description
         self._fusionner_cells(LIGNE_TITRE,colone_description,colone_description+2)
         self._ecrire_liste_colonne(liste_valeur,LIGNE_TITRE+1,colone_description+1)
-        self._ecrire_liste_colonne(param['unitee'],LIGNE_TITRE+1,colone_description+2)
+        self._ecrire_liste_colonne(param.unitee,LIGNE_TITRE+1,colone_description+2)
 
 if __name__ == '__main__':
 
-    test = ProjetXlsx(1,1,1)
+    param_global = Global()
+    param_global.description['vitesse entree'] = 3
+    test = ProjetXlsx(param_global)
     test.save()
