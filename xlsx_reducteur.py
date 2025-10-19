@@ -94,7 +94,7 @@ class ProjetXlsx(Xlsx_file):
     def __init__(self,param_global:Global) -> None:
         super().__init__()
         # ecriture des parametre globale
-        self._param = [param_global]
+        self._param = [copy.deepcopy(param_global)]
         self._ecrire_valeur(self._param[0],colonne_DEPART)
         self.save
     
@@ -103,7 +103,7 @@ class ProjetXlsx(Xlsx_file):
         colonne_unitee = colonne_DEPART + num*(NBR_colonne_SEPRARATION + NBR_colonne_TRAIN)
         colonne_valeur = colonne_unitee + 1
         if num == len(self._param): # si num est égal à la longueur c'est que le train n'est pas incorporé
-            self._param.append(param)
+            self._param.append(copy.deepcopy(param))
             self._ecrire_valeur(self._param[num],colonne_unitee)
         elif num < len(self._param):
             for i, key in enumerate(param.description, start=1):
@@ -134,4 +134,7 @@ if __name__ == '__main__':
     test.ecrire_description(train_1,1)
     train_1.description['vitesse_entree'] = 4
     test.ecrire_description(train_1,1)
+    train_2 = Train(2)
+    train_2.description['rendement'] = 8
+    test.ecrire_description(train_2,2)
     test.save()
