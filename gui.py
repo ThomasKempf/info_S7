@@ -15,6 +15,7 @@ from PySide6 import (
     QtGui as qtg,
     QtCore as qtc
 )
+import xlsx_reducteur as xlsx
 
 # parametres que les fenetres on en commun 
 DEFAULT = {
@@ -255,7 +256,7 @@ class Titre(qtw.QLabel):
         self.setFont(font) 
         self.setStyleSheet(param['StyleSheet']) # Style du titre
         self.setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
-
+        
 
 class Fenetre(qtw.QWidget):
     '''
@@ -341,10 +342,14 @@ class Fenetre(qtw.QWidget):
         widget = qtw.QWidget()
         self._generer_label(layout, nom)
         variable = self._generer_zone_texte(layout, param_zone_texte)
+        variable.textChanged.connect(self.ma_fonction)
         self._generer_label(layout, unitee) 
         layout.addStretch()
         widget.setLayout(layout)
         return widget,variable
+    
+    def ma_fonction(nouvelle_valeur):
+        print("La valeur a changé :", nouvelle_valeur)
 
 
 class FenetreMenu(Fenetre):
@@ -460,11 +465,11 @@ class FenetreCreationProjet(Fenetre):
         block_gauche = qtw.QVBoxLayout()
         block_gauche.addStretch()
         # widget vitess
-        widget_vitesse,variable_vitesse = self._ajout_nom_et_zone_texte_et_unitee(label[0],label[1],param_zone_texte['vitesse_entree'])
+        widget_vitesse,self._variable_vitesse = self._ajout_nom_et_zone_texte_et_unitee(label[0],label[1],param_zone_texte['vitesse_entree'])
         widget_vitesse.setContentsMargins(122, 0, 0, 0)
         block_gauche.addWidget(widget_vitesse)
         # widget puissance
-        widget_puissance,variable_puissance = self._ajout_nom_et_zone_texte_et_unitee(label[2],label[3],param_zone_texte['puissance_entree'])
+        widget_puissance,self._variable_puissance = self._ajout_nom_et_zone_texte_et_unitee(label[2],label[3],param_zone_texte['puissance_entree'])
         widget_puissance.setContentsMargins(100, 0, 0, 0)
         block_gauche.addWidget(widget_puissance)
         block_gauche.addStretch()
@@ -484,7 +489,7 @@ class FenetreCreationProjet(Fenetre):
         block_droite = qtw.QHBoxLayout()
         # widget couple
         block_droite.addStretch()
-        widget_couple,variqble_couple = self._ajout_nom_et_zone_texte_et_unitee(label[6],label[7],param_zone_texte['couple_sortie'])
+        widget_couple,self._variable_couple = self._ajout_nom_et_zone_texte_et_unitee(label[6],label[7],param_zone_texte['couple_sortie'])
         widget_couple.setContentsMargins(0, 0, 100, 0)
         block_droite.addWidget(widget_couple)
         # ajout des layoute au layoute principale
@@ -544,12 +549,6 @@ class FenetreCreationProjet(Fenetre):
         return page
 
 
-
-    def create_page2(self) -> qtw.QWidget:
-        page = qtw.QWidget()
-        self.close()
-        return page
-
     def next_page(self) -> None:
         '''
         permet de passer a la page suivante
@@ -558,8 +557,16 @@ class FenetreCreationProjet(Fenetre):
         if i < self.stack.count() - 1:
             self.stack.setCurrentIndex(i + 1)
         else:
+            self.param_projet = [xlsx.Global()]
             self.fenetre_attente = FenetreAttenteCreation(ATTENTE_CREATION)
             self.fenetre_attente.show()
+            print(self.param_projet[0])
+            global_description = self.param_projet[0].description
+            global_description['vitesse_entree'] = int(self._variable_vitesse.text())
+            global_description['puissance_entree'] = int(self._variable_puissance.text())
+            global_description['couple_sortie'] = int(self._variable_couple.text())
+            self._projet_file = xlsx.ProjetXlsx(self.param_projet[0])
+            self._projet_file.save()
             self.close()
 
     def precedente_page(self) -> None:

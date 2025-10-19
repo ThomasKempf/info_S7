@@ -35,12 +35,12 @@ class Xlsx_file():
 
 class Global():
     def __init__(self) -> None:
-        self._titre = 'parametre globale'
-        self._description = {'vitesse_entree': 0,
+        self.titre = 'parametre globale'
+        self.description = {'vitesse_entree': 0,
                             'puissance_entree': 0,
                             'couple_sortie': 0
                     }
-        self._unitee = ['RPM','kW','Nm']
+        self.unitee = ['RPM','kW','Nm']
 
 
     def _make_property(attr_name):   
@@ -58,7 +58,7 @@ class Train(Global):
     def __init__(self,num:int) -> None:
         super().__init__()
         self.titre = f'train_{num}'
-        self._description = {
+        self.description = {
             'vitesse_entree': 0,
             'puissance_entree': 0,
             'couple_sortie': 0,
@@ -107,12 +107,10 @@ class ProjetXlsx(Xlsx_file):
             self._ecrire_valeur(self._param[num],colonne_unitee)
         elif num < len(self._param):
             for i, key in enumerate(param.description, start=1):
-                print(param.description[key],' ',self._param[num].description[key])
                 if param.description[key] != self._param[num].description[key]:
                     ligne = LIGNE_TITRE + i
                     self._ws.cell(row=ligne, column=colonne_valeur, value=param.description[key])
                     self._param[num].description[key] = param.description[key]
-        print('hello 3')
                       
 
 
