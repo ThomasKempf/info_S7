@@ -1,11 +1,14 @@
 import os
+import copy
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 
 NAME = 'reducteur'
 PATH = '.\\'
 LIGNE_TITRE = 2
-COLONE_DEPART = 2
+colonne_DEPART = 2 # numero de colonne de la premiere valeur
+NBR_colonne_SEPRARATION = 1 # nombre de colonne separant les train
+NBR_colonne_TRAIN = 3 # nombre de colonne pris par un train
 
 
 class Xlsx_file():
@@ -20,9 +23,9 @@ class Xlsx_file():
             self._ws.cell(row=ligne_depart + i, column=colonne, value=valeur)
 
 
-    def _fusionner_cells(self, ligne, colone_depart, colone_fin):
-        start_letter = get_column_letter(colone_depart)
-        end_letter = get_column_letter(colone_fin)
+    def _fusionner_cells(self, ligne, colonne_depart, colonne_fin):
+        start_letter = get_column_letter(colonne_depart)
+        end_letter = get_column_letter(colonne_fin)
 
         self._ws.merge_cells(f"{start_letter}{ligne}:{end_letter}{ligne}")
 
@@ -33,9 +36,9 @@ class Xlsx_file():
 class Global():
     def __init__(self) -> None:
         self._titre = 'parametre globale'
-        self._description = {'vitesse entree': 0,
-                            'puissance entree': 0,
-                            'couple sortie': 0
+        self._description = {'vitesse_entree': 0,
+                            'puissance_entree': 0,
+                            'couple_sortie': 0
                     }
         self._unitee = ['RPM','kW','Nm']
 
@@ -51,35 +54,84 @@ class Global():
     unitee = _make_property("unitee")
 
 
+class Train(Global):
+    def __init__(self,num:int) -> None:
+        super().__init__()
+        self.titre = f'train_{num}'
+        self._description = {
+            'vitesse_entree': 0,
+            'puissance_entree': 0,
+            'couple_sortie': 0,
+            'rendement': 0,
+            'entraxe': 0,
+            'σ_max': 0,
+            'k': 0,
+            'effort_tangenciel': 0,
+            'module':0,
+            'engrenage1_rayon_p': 0,
+		    'engrenage1_nbr_dents': 0,
+		    'engrenage2_rayon_p': 0,
+		    'engrenage2_nbr_dents': 0,
+        }
+        self.unitee = [
+            'RPM',
+            'kW',
+            'Nm',
+            '%',
+            'mm',
+            'Mpa',
+            ' ',
+            'N',
+            ' ',
+            'mm',
+            ' ',
+            'mm',
+            ' '
+            ]
+
+
 class ProjetXlsx(Xlsx_file):
     def __init__(self,param_global:Global) -> None:
         super().__init__()
         # ecriture des parametre globale
         self._param = [param_global]
-        self._ecrire_valeur( self._param[0],COLONE_DEPART)
+        self._ecrire_valeur(self._param[0],colonne_DEPART)
         self.save
     
 
-    def ecrire_train(self,description,num):
-        if num == len(self._description): # si num est égal à la longueur c'est que le train n'est pas incorporé
-            self._description.append(description)
-            self._param.append(description)
-            self._ecrire_valeur()
-             
+    def ecrire_description(self,param,num):
+        colonne_unitee = colonne_DEPART + num*(NBR_colonne_SEPRARATION + NBR_colonne_TRAIN)
+        colonne_valeur = colonne_unitee + 1
+        if num == len(self._param): # si num est égal à la longueur c'est que le train n'est pas incorporé
+            self._param.append(param)
+            self._ecrire_valeur(self._param[num],colonne_unitee)
+        elif num < len(self._param):
+            for i, key in enumerate(param.description, start=1):
+                print(param.description[key],' ',self._param[num].description[key])
+                if param.description[key] != self._param[num].description[key]:
+                    ligne = LIGNE_TITRE + i
+                    self._ws.cell(row=ligne, column=colonne_valeur, value=param.description[key])
+                    self._param[num].description[key] = param.description[key]
+        print('hello 3')
+                      
 
 
-    def _ecrire_valeur(self,param,colone_description):
+    def _ecrire_valeur(self,param:dict[int],colonne_description:int):
         liste_valeur = list(param.description.values())
         liste_description = list(param.description.keys())
         liste_globale = [param.titre] + liste_description
-        self._ecrire_liste_colonne(liste_globale,LIGNE_TITRE,colone_description) # ecrit titre + description
-        self._fusionner_cells(LIGNE_TITRE,colone_description,colone_description+2)
-        self._ecrire_liste_colonne(liste_valeur,LIGNE_TITRE+1,colone_description+1)
-        self._ecrire_liste_colonne(param.unitee,LIGNE_TITRE+1,colone_description+2)
+        self._ecrire_liste_colonne(liste_globale,LIGNE_TITRE,colonne_description) # ecrit titre + description
+        self._fusionner_cells(LIGNE_TITRE,colonne_description,colonne_description+2)
+        self._ecrire_liste_colonne(liste_valeur,LIGNE_TITRE+1,colonne_description+1)
+        self._ecrire_liste_colonne(param.unitee,LIGNE_TITRE+1,colonne_description+2)
 
 if __name__ == '__main__':
 
     param_global = Global()
-    param_global.description['vitesse entree'] = 3
+    param_global.description['vitesse_entree'] = 3
     test = ProjetXlsx(param_global)
+    train_1 = Train(1)
+    test.ecrire_description(train_1,1)
+    train_1.description['vitesse_entree'] = 4
+    test.ecrire_description(train_1,1)
     test.save()
