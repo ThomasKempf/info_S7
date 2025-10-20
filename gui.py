@@ -198,6 +198,12 @@ PROJET = {
         }
     },
     'label':['creation projet','.','..','...',' '],
+    'zone_texte':{
+        'variable':None,
+            'validator': qtg.QIntValidator(0, 100),
+            'largeur':60,
+            'param_defaut':None
+    },
     'styleSheet':"""
             QWidget {
                 background: #fff; /* Couleur de fond blanche */
@@ -350,14 +356,11 @@ class Fenetre(qtw.QWidget):
         widget = qtw.QWidget()
         self._generer_label(layout, nom)
         variable = self._generer_zone_texte(layout, param_zone_texte)
-        variable.textChanged.connect(self.ma_fonction)
         self._generer_label(layout, unitee) 
         layout.addStretch()
         widget.setLayout(layout)
         return widget,variable
     
-    def ma_fonction(nouvelle_valeur):
-        print("La valeur a changé :", nouvelle_valeur)
 
 
 class FenetreMenu(Fenetre):
@@ -647,11 +650,24 @@ class FenetreProjet(Fenetre):
         self.setStyleSheet(self._param_feuille['styleSheet'])
         # crer 
         layout_train1 = qtw.QVBoxLayout()
+        layout_train1.addStretch()
         titre = Titre('Train_1')
         layout_train1.addWidget(titre) 
+        self.train1 = {'widget':{},'variable':{}}
+        for i, (key, value) in enumerate(self._param[1].description.items()):
+            unitee  = self._param[1].unitee[i]
+            self.train1['widget'][key],self.train1['variable'][key] = self._ajout_nom_et_zone_texte_et_unitee(key,unitee,self._param_feuille['zone_texte'])
+            self.train1['variable'][key].setText(str(value))
+            self.train1['variable'][key].textChanged.connect(self.ma_fonction)
+            layout_train1.addWidget(self.train1['widget'][key]) 
+        layout_train1.addStretch()
+            
 
         layout_main.addLayout(layout_train1)
         self.setLayout(layout_main)
+
+    def ma_fonction(self,nouvelle_valeur):
+        print("La valeur a changé :", nouvelle_valeur)
 
 
 if __name__ == '__main__':
