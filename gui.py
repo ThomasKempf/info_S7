@@ -191,7 +191,6 @@ ATTENTE_CREATION = {
 }
 
 PROJET = {
-    'geometrie': [1000, 600],
     'titre': 'Projet',
     'layout': {
         'main_layout':{
@@ -273,8 +272,11 @@ class Fenetre(qtw.QWidget):
         super().__init__()
         self._parametre = param
         self.setWindowTitle(self._parametre['titre'])
-        self.setFixedSize(*self._parametre['geometrie'])
         self.setStyleSheet(self._parametre['styleSheet'])
+        if 'geometrie' in self._parametre:
+            self.setFixedSize(*self._parametre['geometrie'])
+        else:
+            self.showMaximized()
         self.generer_layouts()
 
 
@@ -633,9 +635,16 @@ class FenetreAttenteCreation(Fenetre):
 
 
 class FenetreProjet(Fenetre):
-    def __init__(self, param: dict,param_projet:list,projet_file:xlsx.ProjetXlsx) -> None:
-        super().__init__(param)
+    def __init__(self, param_feuille: dict,param:list,file:xlsx.ProjetXlsx) -> None:
+        super().__init__(param_feuille)
+        self.showMaximized()
         self._param = param
+        self._file = file
+        self. genere_laoute_train()
+
+    def genere_laoute_train(self):
+        layout_main = qtw.QHBoxLayout()
+        
 
 
 if __name__ == '__main__':
