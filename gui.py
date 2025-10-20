@@ -637,14 +637,21 @@ class FenetreAttenteCreation(Fenetre):
 class FenetreProjet(Fenetre):
     def __init__(self, param_feuille: dict,param:list,file:xlsx.ProjetXlsx) -> None:
         super().__init__(param_feuille)
-        self.showMaximized()
+        self._param_feuille = param_feuille
         self._param = param
         self._file = file
         self. genere_laoute_train()
 
     def genere_laoute_train(self):
         layout_main = qtw.QHBoxLayout()
-        
+        self.setStyleSheet(self._param_feuille['styleSheet'])
+        # crer 
+        layout_train1 = qtw.QVBoxLayout()
+        titre = Titre('Train_1')
+        layout_train1.addWidget(titre) 
+
+        layout_main.addLayout(layout_train1)
+        self.setLayout(layout_main)
 
 
 if __name__ == '__main__':
