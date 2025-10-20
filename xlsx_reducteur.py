@@ -64,7 +64,7 @@ class Train(Global):
             'couple_sortie': 0,
             'rendement': 0,
             'entraxe': 0,
-            'σ_max': 0,
+            'resistance_elastique': 0,
             'k': 0,
             'effort_tangenciel': 0,
             'module':0,

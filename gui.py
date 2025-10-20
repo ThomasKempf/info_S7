@@ -8,7 +8,6 @@
     Il utilise la bibliothèque PySide6 pour créer des fenêtres, des boutons et des titres personnalisés.
 
 """
-
 import sys
 from PySide6 import (
     QtWidgets as qtw,
@@ -75,13 +74,13 @@ CREATION_PROJET = {
                     'variable':None,
                     'validator': qtg.QIntValidator(0, 100),
                     'largeur':60,
-                    'param_defaut':None
+                    'param_defaut':'4000'
                 },
                 'vitesse_entree':{
                     'variable':None,
                     'validator': qtg.QIntValidator(0, 100),
                     'largeur':60,
-                    'param_defaut':None
+                    'param_defaut':'1500'
                 },
                 'rapport_reduction':{
                     'variable':None,
@@ -93,7 +92,7 @@ CREATION_PROJET = {
                     'variable':None,
                     'validator': qtg.QIntValidator(0, 100),
                     'largeur':60,
-                    'param_defaut':None
+                    'param_defaut':'380'
                 }
             },
             'label':['Vitess','RPM','Puissance','kW','Rapport réduction','Reducteur','Couple','Nm'],
@@ -116,7 +115,7 @@ CREATION_PROJET = {
                     'variable':None,
                     'validator': qtg.QIntValidator(0, 100),
                     'largeur':80,
-                    'param_defaut':'210 000'
+                    'param_defaut':'210000'
                 }
             },
             'label':['nombre d’étage :','1','Entraxe','mm','σ max','MPa',],
@@ -173,7 +172,7 @@ CREATION_PROJET = {
 }
 
 ATTENTE_CREATION = {
-    'geometrie': [1000, 600],
+    'geometrie': [200, 60],
     'titre': 'Creation Projet',
     'layout': {
         'main_layout':{
@@ -192,8 +191,8 @@ ATTENTE_CREATION = {
 }
 
 PROJET = {
-    'geometrie': [200, 60],
-    'titre': 'Creation Projet',
+    'geometrie': [1000, 600],
+    'titre': 'Projet',
     'layout': {
         'main_layout':{
             'sens': 'horizontal',
@@ -213,23 +212,30 @@ PROJET = {
 
 
 class Simulation_train():
-    def __init__(self, vitesse_entree: int, puissance_entree: int, couple_sortie: int, entraxe: int) -> None:
-        descritpition = {
-            'vitesse_entree': 1,
-            'puissance_entree': 2,
-            'couple_sortie': 3,
-            'rendement': 90,
-            'entraxe': 20,
-            'resistance_elastique': 3,
-            'k': 4,
-            'effort_tangenciel': 5,
-            'module': 6,
-            'engrenage1_rayon_p': 7,
-            'engrenage1_nbr_dents': 8,
-            'engrenage2_rayon_p': 9,
-            'engrenage2_nbr_dents': 10,
-            }
-        return descritpition
+    def __init__(self, vitesse_entree: int, puissance_entree: int, couple_sortie: int, entraxe: int, resistance_elastique: int) -> None:
+        self.description = {
+            'vitesse_entree': 10,
+            'puissance_entree': 20,
+            'couple_sortie': 30,
+            'rendement': 5,
+            'entraxe': 7,
+            'resistance_elastique': 9,
+            'k': 0,
+            'effort_tangenciel': 10,
+            'module':5,
+            'engrenage1_rayon_p': 9,
+		    'engrenage1_nbr_dents': 4,
+		    'engrenage2_rayon_p': 98,
+		    'engrenage2_nbr_dents': 42,
+        }
+
+        def _make_property(attr_name):   
+            def getter(self):
+                return getattr(self, f"_{attr_name}") # Retourne la valeur
+            def setter(self, value):
+                setattr(self, f"_{attr_name}", value) # Modifie la valeur
+            return property(getter, setter)
+        description = _make_property("description") 
 
 
 class bouton(qtw.QPushButton):
@@ -529,10 +535,10 @@ class FenetreCreationProjet(Fenetre):
         self._generer_label(self.layouts['page1_bloc_droit_layout'], label[1])  # 1
         liste_deroulante = self._generer_liste_deroulante(self.layouts['page1_bloc_droit_layout'], texte_ligne_deroutante)
         self._generer_label(self.layouts['page1_bloc_droit_layout'], label[2])  # entraxe
-        param_zone_texte['entraxe']['varaible'] = self._generer_zone_texte(self.layouts['page1_bloc_droit_layout'], param_zone_texte['entraxe'])
+        self._varaible_entraxe = self._generer_zone_texte(self.layouts['page1_bloc_droit_layout'], param_zone_texte['entraxe'])
         self._generer_label(self.layouts['page1_bloc_droit_layout'], label[3])  # mm
         self._generer_label(self.layouts['page1_bloc_droit_layout'], label[4])  # σ max
-        param_zone_texte['contrainte_max']['varaible'] = self._generer_zone_texte(self.layouts['page1_bloc_droit_layout'], param_zone_texte['contrainte_max'])
+        self._varaible_contrainte_max = self._generer_zone_texte(self.layouts['page1_bloc_droit_layout'], param_zone_texte['contrainte_max'])
         self._generer_label(self.layouts['page1_bloc_droit_layout'], label[5])  # MPa
         self.layouts['page1_bloc_droit_layout'].addStretch()
         bloc_droit.setLayout(self.layouts['page1_bloc_droit_layout'])
@@ -557,17 +563,34 @@ class FenetreCreationProjet(Fenetre):
         if i < self.stack.count() - 1:
             self.stack.setCurrentIndex(i + 1)
         else:
-            self.param_projet = [xlsx.Global()]
-            self.fenetre_attente = FenetreAttenteCreation(ATTENTE_CREATION)
-            self.fenetre_attente.show()
-            print(self.param_projet[0])
-            global_description = self.param_projet[0].description
-            global_description['vitesse_entree'] = int(self._variable_vitesse.text())
-            global_description['puissance_entree'] = int(self._variable_puissance.text())
-            global_description['couple_sortie'] = int(self._variable_couple.text())
-            self._projet_file = xlsx.ProjetXlsx(self.param_projet[0])
-            self._projet_file.save()
+            # ouvre fenetre attente
+            fenetre_attente = FenetreAttenteCreation(ATTENTE_CREATION)
+            fenetre_attente.show()
             self.close()
+            # prendre les dernieres valeurs
+            description_global = {}
+            description_global['vitesse_entree'] = int(self._variable_vitesse.text())
+            description_global['puissance_entree'] = int(self._variable_puissance.text())
+            description_global['couple_sortie'] = int(self._variable_couple.text())
+            description_train = {}
+            entraxe = int(self._varaible_entraxe.text())
+            contrainte_max = int(self._varaible_contrainte_max.text())
+            train = Simulation_train(description_global['vitesse_entree'],
+                                     description_global['puissance_entree'],
+                                     description_global['couple_sortie'],
+                                     entraxe,
+                                     contrainte_max
+                                     )
+            param_projet = [xlsx.Global(),xlsx.Train(1)]
+            param_projet[0].description = description_global
+            param_projet[1].description = train.description
+            projet_file = xlsx.ProjetXlsx(param_projet[0])
+            projet_file.ecrire_description(param_projet[1],1)
+            projet_file.save()
+            self.fenetre_projet = FenetreProjet(PROJET,param_projet,projet_file)
+            self.fenetre_projet.show()
+            fenetre_attente.close()
+
 
     def precedente_page(self) -> None:
         '''
@@ -602,8 +625,6 @@ class FenetreAttenteCreation(Fenetre):
         self.timer = qtc.QTimer()
         self.timer.timeout.connect(self.clignoter)
         self.timer.start(400)  # toutes les 400 ms
-        self.fenetre_attente = FenetreProjet(PROJET)
-        self.fenetre_attente.show()
 
     def clignoter(self):
         """Fait alterner le texte du label pour simuler un clignotement."""
@@ -612,7 +633,7 @@ class FenetreAttenteCreation(Fenetre):
 
 
 class FenetreProjet(Fenetre):
-    def __init__(self, param: dict) -> None:
+    def __init__(self, param: dict,param_projet:list,projet_file:xlsx.ProjetXlsx) -> None:
         super().__init__(param)
         self._param = param
 
