@@ -323,19 +323,6 @@ class Fenetre(qtw.QWidget):
             self.showMaximized()
 
 
-    def generer_bouton(self,layout,boutons_param) -> None:
-        '''
-        fonction de base pour generer les boutons pour chaque fenetre
-        layout_name : nom du layout dans lequel ajouter les boutons
-        '''
-        self.boutons = {}
-        for nom_bouton in boutons_param:
-            # creer le bouton et l'ajouter au layout
-            self.boutons[nom_bouton] = bouton(nom_bouton, boutons_param[nom_bouton]['taille'])
-            self.boutons[nom_bouton].clicked.connect(getattr(self, boutons_param[nom_bouton]['action']))
-            layout.addWidget(self.boutons[nom_bouton])
-
-
     def _generer_zone_texte(self,ligne:qtw.QHBoxLayout,param_zone_text:dict) -> qtw.QLineEdit:
         '''
         genere une zone de texte ne fonction des parametre
@@ -397,26 +384,25 @@ class FenetreMenu(Fenetre):
         self._main_layout = qtw.QHBoxLayout()
         self._left_layout = qtw.QVBoxLayout()
         self._right_layout = qtw.QVBoxLayout()
-        self._generer_titre()
+        titre = Titre('Dimensionnement Réducteur')
+        self._left_layout.addWidget(titre) 
         # ajoute la partie gauche avec les boutons
-        self.generer_bouton(self._left_layout,param['layout']['left_layout']['boutons'])  # Ajouter les boutons au layout gauche
+        bouton_creer_projet = qtw.QPushButton('Créer Projet')
+        bouton_creer_projet.clicked.connect(self._ouvrir_fenetre_creation_projet)
+        self._left_layout.addWidget(bouton_creer_projet)
+        bouton_ouvrir_projet = qtw.QPushButton('Ouvrir Projet')
+        self._left_layout.addWidget(bouton_ouvrir_projet)
         self._left_layout.addStretch() # Pour pousser les éléments vers le haut
         self._main_layout.addLayout(self._left_layout) # Ajouter le layout gauche au layout principal
         # ajoute la partie droite avec les icones et le bouton exit
         self._generer_icone_engrenage(self._right_layout)
         self._right_layout.addStretch()
-        self.generer_bouton(self._right_layout,param['layout']['right_layout']['boutons']) # Ajouter les boutons au layout droit
+        bouton_exit = qtw.QPushButton('EXIT')
+        bouton_exit.setFixedSize(210,50)
+        bouton_exit.clicked.connect(self.close)
+        self._right_layout.addWidget(bouton_exit)
         self._main_layout.addLayout(self._right_layout)
         self.setLayout(self._main_layout) # Définir le layout principal pour la fenêtre
-
-
-    def _generer_titre(self) -> None:
-        '''
-        Fonction pour générer le titre de la fenêtre
-        uniquement dans la classe FenetreMenu parce que les autres fenêtres n'en ont pas besoin.
-        '''
-        titre = Titre('Dimensionnement Réducteur') # Titre personnalisé
-        self._left_layout.addWidget(titre)  # Ajouter le titre au layout gauche
     
 
     def _generer_icone_engrenage(self,layout:qtw.QVBoxLayout) -> None:
@@ -439,7 +425,7 @@ class FenetreMenu(Fenetre):
         layout.addWidget(widget, alignment=qtg.Qt.AlignmentFlag.AlignTop)
 
 
-    def ouvrir_fenetre_creation_projet(self) -> None:
+    def _ouvrir_fenetre_creation_projet(self) -> None:
         '''
         Ouvre la fenêtre de création de projet.
         '''
@@ -461,7 +447,14 @@ class FenetreCreationProjet(Fenetre):
         self.generer_widget_page()
         bouton_layout.insertStretch(0, 1)
         # Layout vertical pour le stack + boutons
-        self.generer_bouton(bouton_layout,param['layout']['boutons_layout']['boutons'])
+        bouton_precedent = qtw.QPushButton('Precedent')
+        bouton_precedent.setFixedSize(210,50)
+        bouton_precedent.clicked.connect(self.precedente_page)
+        bouton_layout.addWidget(bouton_precedent)
+        bouton_next = qtw.QPushButton('Next')
+        bouton_next.setFixedSize(210,50)
+        bouton_next.clicked.connect(self.next_page)
+        bouton_layout.addWidget(bouton_next)
         self._main_layout.addLayout(bouton_layout)
         self.setLayout(self._main_layout)
 
