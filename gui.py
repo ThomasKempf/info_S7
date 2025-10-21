@@ -200,7 +200,7 @@ PROJET = {
     'label':['creation projet','.','..','...',' '],
     'zone_texte':{
         'variable':None,
-            'validator': qtg.QIntValidator(0, 100),
+            'validator': qtg.QIntValidator(),
             'largeur':60,
             'param_defaut':None
     },
@@ -216,31 +216,69 @@ PROJET = {
 
 
 
-class Simulation_train():
-    def __init__(self, vitesse_entree: int, puissance_entree: int, couple_sortie: int, entraxe: int, resistance_elastique: int) -> None:
-        self.description = {
-            'vitesse_entree': 10,
-            'puissance_entree': 20,
-            'couple_sortie': 30,
+class Simulation_train:
+    def __init__(self,
+                 vitesse_entree: int = 10,
+                 puissance_entree: int = 20,
+                 couple_sortie: int = 30,
+                 entraxe: int = 7,
+                 resistance_elastique: int = 9):
+        # dictionnaire initial
+        self._description = {
+            'vitesse_entree': vitesse_entree,
+            'puissance_entree': puissance_entree,
+            'couple_sortie': couple_sortie,
             'rendement': 5,
-            'entraxe': 7,
-            'resistance_elastique': 9,
+            'entraxe': entraxe,
+            'resistance_elastique': resistance_elastique,
             'k': 0,
             'effort_tangenciel': 10,
-            'module':5,
+            'module': 5,
             'engrenage1_rayon_p': 9,
-		    'engrenage1_nbr_dents': 4,
-		    'engrenage2_rayon_p': 98,
-		    'engrenage2_nbr_dents': 42,
+            'engrenage1_nbr_dents': 4,
+            'engrenage2_rayon_p': 98,
+            'engrenage2_nbr_dents': 42,
         }
 
-        def _make_property(attr_name):   
-            def getter(self):
-                return getattr(self, f"_{attr_name}") # Retourne la valeur
-            def setter(self, value):
-                setattr(self, f"_{attr_name}", value) # Modifie la valeur
-            return property(getter, setter)
-        description = _make_property("description") 
+        # créer dynamiquement une propriété pour chaque clé du dict
+        for key in list(self._description.keys()):
+            self._make_property_for_key(key)
+
+    @property
+    def description(self):
+        """Renvoie le dict (toujours à jour)."""
+        return self._description
+
+    def _make_property_for_key(self, key):
+        """Crée et attache une propriété nommée comme 'key' sur la classe."""
+        def getter(self):
+            return self._description[key]
+
+        def setter(self, value):
+            # mettre à jour la clé demandée
+            self._description[key] = value
+            # incrémenter toutes les autres clés (selon la demande)
+            for other in self._description:
+                if other != key:
+                    try:
+                        # si la valeur est numérique, on incrémente
+                        self._description[other] += 1
+                    except TypeError:
+                        # si ce n'est pas numérique, on l'ignore
+                        pass
+            # Note : un setter ne peut pas "retourner" une valeur ; après affectation,
+            # l'utilisateur doit lire `obj.description` pour obtenir le dict mis à jour.
+
+        # attacher la propriété à la classe (pas à l'instance)
+        setattr(self.__class__, key, property(getter, setter))
+
+    def set_and_get(self, key, value):
+        """Méthode utilitaire : modifie la clé et retourne immédiatement le dict."""
+        if key not in self._description:
+            raise KeyError(f"Clé inconnue: {key}")
+        setattr(self, key, value)  # utilisera le setter défini plus haut
+        return self.description
+
 
 
 class bouton(qtw.QPushButton):
@@ -592,7 +630,7 @@ class FenetreCreationProjet(Fenetre):
             projet_file = xlsx.ProjetXlsx(param_projet[0])
             projet_file.ecrire_description(param_projet[1],1)
             projet_file.save()
-            self.fenetre_projet = FenetreProjet(PROJET,param_projet,projet_file)
+            self.fenetre_projet = FenetreProjet(PROJET,param_projet,projet_file,train)
             self.fenetre_projet.show()
             fenetre_attente.close()
 
@@ -638,8 +676,9 @@ class FenetreAttenteCreation(Fenetre):
 
 
 class FenetreProjet(Fenetre):
-    def __init__(self, param_feuille: dict,param:list,file:xlsx.ProjetXlsx) -> None:
+    def __init__(self, param_feuille: dict,param:list,file:xlsx.ProjetXlsx,train) -> None:
         super().__init__(param_feuille)
+        self._train = train
         self._param_feuille = param_feuille
         self._param = param
         self._file = file
@@ -653,22 +692,32 @@ class FenetreProjet(Fenetre):
         layout_train1.addStretch()
         titre = Titre('Train_1')
         layout_train1.addWidget(titre) 
-        self.train1 = {'widget':{},'variable':{}}
+        self._zone_text_train = {'widget':{},'variable':{}}
         for i, (key, value) in enumerate(self._param[1].description.items()):
             unitee  = self._param[1].unitee[i]
-            self.train1['widget'][key],self.train1['variable'][key] = self._ajout_nom_et_zone_texte_et_unitee(key,unitee,self._param_feuille['zone_texte'])
-            self.train1['variable'][key].setText(str(value))
-            self.train1['variable'][key].textChanged.connect(self.ma_fonction)
-            layout_train1.addWidget(self.train1['widget'][key]) 
+            self._zone_text_train['widget'][key],self._zone_text_train['variable'][key] = self._ajout_nom_et_zone_texte_et_unitee(key,unitee,self._param_feuille['zone_texte'])
+            self._zone_text_train['variable'][key].setText(str(value))
+            self._zone_text_train['variable'][key].editingFinished.connect(lambda k=key: self.modifie_parametre(self._zone_text_train['variable'][k].text(), k))
+            
+            layout_train1.addWidget(self._zone_text_train['widget'][key]) 
         layout_train1.addStretch()
             
 
         layout_main.addLayout(layout_train1)
         self.setLayout(layout_main)
 
-    def ma_fonction(self,nouvelle_valeur):
-        print("La valeur a changé :", nouvelle_valeur)
-
+    def modifie_parametre(self, nouvelle_valeur, value_name):
+        print('debut')
+        setattr(self._train, value_name, int(nouvelle_valeur))
+        self._param[1].description = self._train.description
+        self._file.ecrire_description(self._param[1],1)
+        self._file.save()
+        for key in self._zone_text_train['variable']:
+            if key != value_name:
+                self._zone_text_train['variable'][key].setText(str(self._param[1].description[key]))
+            else:
+                print('ecris:',key,' ',self._param[1].description[key])
+        print('finish')
 
 if __name__ == '__main__':
 
