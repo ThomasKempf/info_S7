@@ -321,33 +321,19 @@ class Fenetre(qtw.QWidget):
             self.setFixedSize(*self._parametre['geometrie'])
         else:
             self.showMaximized()
-        self.generer_layouts()
 
 
-    def generer_bouton(self,layout_name: str) -> None:
+    def generer_bouton(self,layout,boutons_param) -> None:
         '''
         fonction de base pour generer les boutons pour chaque fenetre
         layout_name : nom du layout dans lequel ajouter les boutons
         '''
         self.boutons = {}
-        boutons_param = self._parametre['layout'][layout_name]['boutons']
-        for texte_bouton in boutons_param:
+        for nom_bouton in boutons_param:
             # creer le bouton et l'ajouter au layout
-            self.boutons[texte_bouton] = bouton(texte_bouton, boutons_param[texte_bouton]['taille'])
-            self.boutons[texte_bouton].clicked.connect(getattr(self, boutons_param[texte_bouton]['action']))
-            self.layouts[layout_name].addWidget(self.boutons[texte_bouton])
-
-
-    def generer_layouts(self) -> None:
-        '''
-        Fonction de base pour générer les layouts de chaque fenêtre.
-        '''
-        self.layouts = {}
-        for name in self._parametre['layout']:
-            if self._parametre['layout'][name]['sens'] == 'horizontal':
-                self.layouts[name] = qtw.QHBoxLayout()
-            else:
-                self.layouts[name] = qtw.QVBoxLayout()
+            self.boutons[nom_bouton] = bouton(nom_bouton, boutons_param[nom_bouton]['taille'])
+            self.boutons[nom_bouton].clicked.connect(getattr(self, boutons_param[nom_bouton]['action']))
+            layout.addWidget(self.boutons[nom_bouton])
 
 
     def _generer_zone_texte(self,ligne:qtw.QHBoxLayout,param_zone_text:dict) -> qtw.QLineEdit:
@@ -408,17 +394,20 @@ class FenetreMenu(Fenetre):
     '''
     def __init__(self, param: dict) -> None:
         super().__init__(param)
+        self._main_layout = qtw.QHBoxLayout()
+        self._left_layout = qtw.QVBoxLayout()
+        self._right_layout = qtw.QVBoxLayout()
         self._generer_titre()
         # ajoute la partie gauche avec les boutons
-        self.generer_bouton('left_layout')  # Ajouter les boutons au layout gauche
-        self.layouts['left_layout'].addStretch() # Pour pousser les éléments vers le haut
-        self.layouts['main_layout'].addLayout(self.layouts['left_layout']) # Ajouter le layout gauche au layout principal
+        self.generer_bouton(self._left_layout,param['layout']['left_layout']['boutons'])  # Ajouter les boutons au layout gauche
+        self._left_layout.addStretch() # Pour pousser les éléments vers le haut
+        self._main_layout.addLayout(self._left_layout) # Ajouter le layout gauche au layout principal
         # ajoute la partie droite avec les icones et le bouton exit
-        self._generer_icone_engrenage(self.layouts['right_layout'])
-        self.layouts['right_layout'].addStretch()
-        self.generer_bouton('right_layout') # Ajouter les boutons au layout droit
-        self.layouts['main_layout'].addLayout(self.layouts['right_layout'])
-        self.setLayout(self.layouts['main_layout']) # Définir le layout principal pour la fenêtre
+        self._generer_icone_engrenage(self._right_layout)
+        self._right_layout.addStretch()
+        self.generer_bouton(self._right_layout,param['layout']['right_layout']['boutons']) # Ajouter les boutons au layout droit
+        self._main_layout.addLayout(self._right_layout)
+        self.setLayout(self._main_layout) # Définir le layout principal pour la fenêtre
 
 
     def _generer_titre(self) -> None:
@@ -427,7 +416,7 @@ class FenetreMenu(Fenetre):
         uniquement dans la classe FenetreMenu parce que les autres fenêtres n'en ont pas besoin.
         '''
         titre = Titre('Dimensionnement Réducteur') # Titre personnalisé
-        self.layouts['left_layout'].addWidget(titre)  # Ajouter le titre au layout gauche
+        self._left_layout.addWidget(titre)  # Ajouter le titre au layout gauche
     
 
     def _generer_icone_engrenage(self,layout:qtw.QVBoxLayout) -> None:
@@ -466,13 +455,15 @@ class FenetreCreationProjet(Fenetre):
         param = parametre de la page situee au dessus
         '''
         super().__init__(param)
+        self._main_layout = qtw.QVBoxLayout()
+        bouton_layout = qtw.QHBoxLayout()
         self._param = param
         self.generer_widget_page()
-        self.layouts['boutons_layout'].insertStretch(0, 1)
+        bouton_layout.insertStretch(0, 1)
         # Layout vertical pour le stack + boutons
-        self.generer_bouton('boutons_layout')
-        self.layouts['main_layout'].addLayout(self.layouts['boutons_layout'])
-        self.setLayout(self.layouts['main_layout'])
+        self.generer_bouton(bouton_layout,param['layout']['boutons_layout']['boutons'])
+        self._main_layout.addLayout(bouton_layout)
+        self.setLayout(self._main_layout)
 
 
     def generer_widget_page(self) -> None:
@@ -486,7 +477,7 @@ class FenetreCreationProjet(Fenetre):
             page_instance = page_method()
             self.stack.addWidget(page_instance)
             self.pages.append(page_instance)
-        self.layouts['main_layout'].addWidget(self.stack)
+        self._main_layout.addWidget(self.stack)
 
 
     def create_page0(self) -> qtw.QWidget:
@@ -558,6 +549,9 @@ class FenetreCreationProjet(Fenetre):
         generation de la page 1 qui contient le choix du nombre de train, de leurs type et de leur materiaux
         retourne la variable de la page
         '''
+        layout_page = qtw.QVBoxLayout()
+        layout_bloc_gauche = qtw.QHBoxLayout()
+        layout_bloc_droit = qtw.QHBoxLayout()
         param_page = self._param['page']['structure interne']
         param_zone_texte = param_page['zone_texte']
         label = param_page['label']
@@ -568,23 +562,23 @@ class FenetreCreationProjet(Fenetre):
         ligne = qtw.QHBoxLayout()
         # Bloc 1 : Label + zone de texte
         bloc_gauche = qtw.QWidget()
-        self._generer_label(self.layouts['page1_bloc_gauche_layout'], label[0])  # nombre d’étage :
-        param_zone_texte['nbr_train']['varaible'] = self._generer_zone_texte(self.layouts['page1_bloc_gauche_layout'], param_zone_texte['nbr_train'])
-        self.layouts['page1_bloc_gauche_layout'].addStretch()
-        bloc_gauche.setLayout(self.layouts['page1_bloc_gauche_layout'])
+        self._generer_label(layout_bloc_gauche, label[0])  # nombre d’étage :
+        param_zone_texte['nbr_train']['varaible'] = self._generer_zone_texte(layout_bloc_gauche, param_zone_texte['nbr_train'])
+        layout_bloc_gauche.addStretch()
+        bloc_gauche.setLayout(layout_bloc_gauche)
         bloc_gauche.setStyleSheet(special_style)
         # Bloc 2 : le reste à droite
         bloc_droit = qtw.QWidget()
-        self._generer_label(self.layouts['page1_bloc_droit_layout'], label[1])  # 1
-        liste_deroulante = self._generer_liste_deroulante(self.layouts['page1_bloc_droit_layout'], texte_ligne_deroutante)
-        self._generer_label(self.layouts['page1_bloc_droit_layout'], label[2])  # entraxe
-        self._varaible_entraxe = self._generer_zone_texte(self.layouts['page1_bloc_droit_layout'], param_zone_texte['entraxe'])
-        self._generer_label(self.layouts['page1_bloc_droit_layout'], label[3])  # mm
-        self._generer_label(self.layouts['page1_bloc_droit_layout'], label[4])  # σ max
-        self._varaible_contrainte_max = self._generer_zone_texte(self.layouts['page1_bloc_droit_layout'], param_zone_texte['contrainte_max'])
-        self._generer_label(self.layouts['page1_bloc_droit_layout'], label[5])  # MPa
-        self.layouts['page1_bloc_droit_layout'].addStretch()
-        bloc_droit.setLayout(self.layouts['page1_bloc_droit_layout'])
+        self._generer_label(layout_bloc_droit, label[1])  # 1
+        liste_deroulante = self._generer_liste_deroulante(layout_bloc_droit, texte_ligne_deroutante)
+        self._generer_label(layout_bloc_droit, label[2])  # entraxe
+        self._varaible_entraxe = self._generer_zone_texte(layout_bloc_droit, param_zone_texte['entraxe'])
+        self._generer_label(layout_bloc_droit, label[3])  # mm
+        self._generer_label(layout_bloc_droit, label[4])  # σ max
+        self._varaible_contrainte_max = self._generer_zone_texte(layout_bloc_droit, param_zone_texte['contrainte_max'])
+        self._generer_label(layout_bloc_droit, label[5])  # MPa
+        layout_bloc_droit.addStretch()
+        bloc_droit.setLayout(layout_bloc_droit)
         bloc_droit.setStyleSheet(special_style)
         # --- Ajout au layout principal
         ligne.addWidget(bloc_gauche)
@@ -592,9 +586,9 @@ class FenetreCreationProjet(Fenetre):
         ligne.addWidget(bloc_droit)
         ligne.addStretch()
         # ajoute la ligne au layout
-        self.layouts['page1_layout'].addLayout(ligne)
-        self.layouts['page1_layout'].addStretch()
-        page.setLayout(self.layouts['page1_layout'])
+        layout_page.addLayout(ligne)
+        layout_page.addStretch()
+        page.setLayout(layout_page)
         return page
 
 
@@ -697,17 +691,13 @@ class FenetreProjet(Fenetre):
             unitee  = self._param[1].unitee[i]
             self._zone_text_train['widget'][key],self._zone_text_train['variable'][key] = self._ajout_nom_et_zone_texte_et_unitee(key,unitee,self._param_feuille['zone_texte'])
             self._zone_text_train['variable'][key].setText(str(value))
-            self._zone_text_train['variable'][key].editingFinished.connect(lambda k=key: self.modifie_parametre(self._zone_text_train['variable'][k].text(), k))
-            
+            self._zone_text_train['variable'][key].editingFinished.connect(lambda k=key: self.modifie_parametre(self._zone_text_train['variable'][k].text(), k))  
             layout_train1.addWidget(self._zone_text_train['widget'][key]) 
         layout_train1.addStretch()
-            
-
         layout_main.addLayout(layout_train1)
         self.setLayout(layout_main)
 
     def modifie_parametre(self, nouvelle_valeur, value_name):
-        print('debut')
         setattr(self._train, value_name, int(nouvelle_valeur))
         self._param[1].description = self._train.description
         self._file.ecrire_description(self._param[1],1)
@@ -715,9 +705,6 @@ class FenetreProjet(Fenetre):
         for key in self._zone_text_train['variable']:
             if key != value_name:
                 self._zone_text_train['variable'][key].setText(str(self._param[1].description[key]))
-            else:
-                print('ecris:',key,' ',self._param[1].description[key])
-        print('finish')
 
 if __name__ == '__main__':
 
