@@ -191,26 +191,17 @@ class Fenetre(qtw.QWidget):
             self.setFixedSize(*self._parametre['geometrie'])
         else:
             self.showMaximized()
-    
-
-    def _generer_label(slef,ligne:qtw.QHBoxLayout,texte:str) -> None:
-        '''
-        genere un label, du texte prédéfinie sur le quelle l'ont ne peut pas interragire
-        ligne = ligne sur la quelle le label est ajoutee
-        text = texte aui sera afficher sur la ligne
-        '''
-        lbl_nbr = qtw.QLabel(texte)
-        ligne.addWidget(lbl_nbr)
-        return lbl_nbr
 
 
     def _ajout_nom_zone_texte_unitee(self,nom:str,unitee:str,text_defaut):
         layout = qtw.QHBoxLayout()
-        self._generer_label(layout, nom)
+        lbl_nom = qtw.QLabel(nom)
+        layout.addWidget(lbl_nom)
         variable = qtw.QLineEdit()
         variable.setText(text_defaut)
         layout.addWidget(variable)
-        self._generer_label(layout, unitee) 
+        lbl_unitee = qtw.QLabel(unitee)
+        layout.addWidget(lbl_unitee)
         layout.addStretch()
         widget = qtw.QWidget()
         widget.setLayout(layout)
@@ -366,8 +357,9 @@ class FenetreCreationProjet(Fenetre):
         # creation block centre
         block_centre = qtw.QVBoxLayout()
         block_centre.addStretch()
-        widget_centre = self._generer_label(block_centre,label[5])
-        widget_centre.setStyleSheet(special_style)
+        lbl_5 = qtw.QLabel(label[5])
+        block_centre.addWidget(lbl_5)
+        lbl_5.setStyleSheet(special_style)
         block_centre.addStretch()
         # creation block droite
         block_droite = qtw.QHBoxLayout()
@@ -415,7 +407,8 @@ class FenetreCreationProjet(Fenetre):
         ligne = qtw.QHBoxLayout()
         # Bloc 1 : Label + zone de texte
         bloc_gauche = qtw.QWidget()
-        self._generer_label(layout_bloc_gauche, label[0]) 
+        lbl_0 = qtw.QLabel(label[0])
+        layout_bloc_gauche.addWidget(lbl_0)
          # nombre d’étage :
         nbr_train = qtw.QLineEdit()
         nbr_train.setValidator(qtg.QDoubleValidator(0.0, 9999.99, 2))
@@ -426,23 +419,28 @@ class FenetreCreationProjet(Fenetre):
         bloc_gauche.setStyleSheet(special_style)
         # Bloc 2 : le reste à droite
         bloc_droit = qtw.QWidget()
-        self._generer_label(layout_bloc_droit, label[1])  # 1
+        lbl_1 = qtw.QLabel(label[1])
+        layout_bloc_droit.addWidget(lbl_1)
         liste_deroulante = qtw.QComboBox()
         liste_deroulante.addItems(texte_ligne_deroutante)
         layout_bloc_droit.addWidget(liste_deroulante)
-        self._generer_label(layout_bloc_droit, label[2]) 
+        lbl_2 = qtw.QLabel(label[2])
+        layout_bloc_droit.addWidget(lbl_2)
         # entraxe
         self._varaible_entraxe = qtw.QLineEdit()
         self._varaible_entraxe.setValidator(qtg.QIntValidator(0, 100))
         self._varaible_entraxe.setFixedWidth(80)
         self._varaible_entraxe.setText('20')
-        self._generer_label(layout_bloc_droit, label[3])  # mm
-        self._generer_label(layout_bloc_droit, label[4])  # σ max
+        lbl_3 = qtw.QLabel(label[3])
+        layout_bloc_droit.addWidget(lbl_3)
+        lbl_4 = qtw.QLabel(label[4])
+        layout_bloc_droit.addWidget(lbl_4)
         self._varaible_contrainte_max = qtw.QLineEdit()
         self._varaible_contrainte_max.setValidator(qtg.QIntValidator(0, 100))
         self._varaible_contrainte_max.setFixedWidth(80)
         self._varaible_contrainte_max.setText('210000')
-        self._generer_label(layout_bloc_droit, label[5])  # MPa
+        lbl_5 = qtw.QLabel(label[5])
+        layout_bloc_droit.addWidget(lbl_5)
         layout_bloc_droit.addStretch()
         bloc_droit.setLayout(layout_bloc_droit)
         bloc_droit.setStyleSheet(special_style)
