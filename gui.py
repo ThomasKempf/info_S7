@@ -186,22 +186,6 @@ class bouton(qtw.QPushButton):
         super().__init__(texte)
         if taille:
             self.setFixedSize(*taille)  # Définir une taille fixe si spécifiée
-
-
-class Titre(qtw.QLabel):
-    '''
-    Classe pour les titres avec un style personnalisé.
-    texte : Texte du titre a afficher
-    param : Dictionnaire contenant les paramètres de style, voir DEFAULT
-    '''
-    def __init__(self, texte: str) -> None:
-        param = DEFAULT['titre']
-        super().__init__(texte)
-        self.setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop) # Alignement à gauche et en haut
-        font = qtg.QFont(param['police'], param['taille'], qtg.QFont.Weight.Bold) # Police personnalisée
-        self.setFont(font) 
-        self.setStyleSheet(param['StyleSheet']) # Style du titre
-        self.setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
         
 
 class Fenetre(qtw.QWidget):
@@ -282,7 +266,11 @@ class FenetreMenu(Fenetre):
         self._main_layout = qtw.QHBoxLayout()
         self._left_layout = qtw.QVBoxLayout()
         self._right_layout = qtw.QVBoxLayout()
-        titre = Titre('Dimensionnement Réducteur')
+        titre = qtw.QLabel('Dimensionnement Réducteur')
+        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop) # Alignement à gauche et en haut
+        titre.setFont(qtg.QFont('Arial',20, qtg.QFont.Weight.Bold)) 
+        titre.setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px') # Style du titre
+        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
         self._left_layout.addWidget(titre) 
         # ajoute la partie gauche avec les boutons
         bouton_creer_projet = qtw.QPushButton('Créer Projet')
@@ -592,7 +580,11 @@ class FenetreProjet(Fenetre):
         # crer 
         layout_train1 = qtw.QVBoxLayout()
         layout_train1.addStretch()
-        titre = Titre('Train_1')
+        titre = qtw.QLabel('Train_1')
+        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop) # Alignement à gauche et en haut
+        titre.setFont(qtg.QFont('Arial',20, qtg.QFont.Weight.Bold)) 
+        titre.setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px') # Style du titre
+        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
         layout_train1.addWidget(titre) 
         self._zone_text_train = {'widget':{},'variable':{}}
         for i, (key, value) in enumerate(self._param[1].description.items()):
