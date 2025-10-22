@@ -23,20 +23,6 @@ DEFAULT = {
 
 # parametre specifique a la fenetre menu
 MENU = {
-    'layout': {
-        'main_layout':{
-            'sens': 'horizontal',
-        },
-        'left_layout':{
-            'sens': 'vertical',
-            'boutons': {'Créer Projet':{'taille': None, 'action': 'ouvrir_fenetre_creation_projet'},
-                         'Ouvrir Projet':{'taille': None, 'action': 'ouvrir_fenetre_creation_projet'}}
-        },
-        'right_layout':{
-            'sens': 'vertical',
-            'boutons': {'EXIT':{'taille': [210, 50], 'action': 'close'}}
-        }
-    },
     'widget_engrenage':{
         'taille': [210, 210],
         'placement_engrenages': [(60, 105), (150, 150), (150, 52)],
@@ -69,76 +55,11 @@ MENU = {
 CREATION_PROJET = {
     'page':{
         'entree_sortie':{
-            'zone_texte':{
-                'puissance_entree':{
-                    'variable':None,
-                    'validator': qtg.QIntValidator(0, 100),
-                    'largeur':60,
-                    'param_defaut':'4000'
-                },
-                'vitesse_entree':{
-                    'variable':None,
-                    'validator': qtg.QIntValidator(0, 100),
-                    'largeur':60,
-                    'param_defaut':'1500'
-                },
-                'rapport_reduction':{
-                    'variable':None,
-                    'validator': qtg.QIntValidator(0, 100),
-                    'largeur':60,
-                    'param_defaut':None
-                },
-                'couple_sortie':{
-                    'variable':None,
-                    'validator': qtg.QIntValidator(0, 100),
-                    'largeur':60,
-                    'param_defaut':'380'
-                }
-            },
             'label':['Vitess','RPM','Puissance','kW','Rapport réduction','Reducteur','Couple','Nm'],
         },
         'structure interne':{
-            'zone_texte':{
-                'nbr_train':{
-                    'variable':None,
-                    'validator': qtg.QDoubleValidator(0.0, 9999.99, 2),
-                    'largeur':60,
-                    'param_defaut':'1'
-                },
-                'entraxe':{
-                    'variable':None,
-                    'validator': qtg.QIntValidator(0, 100),
-                    'largeur':80,
-                    'param_defaut':'20'
-                },
-                'contrainte_max':{
-                    'variable':None,
-                    'validator': qtg.QIntValidator(0, 100),
-                    'largeur':80,
-                    'param_defaut':'210000'
-                }
-            },
             'label':['nombre d’étage :','1','Entraxe','mm','σ max','MPa',],
             'liste_deroulante':['engrenage droit', 'engrenage hélicoïdal', 'conique'],
-        }
-    },
-    'layout': {
-        'main_layout':{
-            'sens': 'vertical',
-        },
-        'boutons_layout':{
-            'sens': 'horizontal',
-            'boutons': {'Precedent':{'taille': [210, 50], 'action': 'precedente_page'},
-                         'Next':{'taille': [210, 50], 'action': 'next_page'}}
-        },
-        'page1_layout':{
-            'sens': 'hvertical'
-        },
-        'page1_bloc_gauche_layout':{
-            'sens': 'horizontal'
-        },
-        'page1_bloc_droit_layout':{
-            'sens': 'horizontal'
         }
     },
     'geometrie': [1000, 600],
@@ -174,11 +95,6 @@ CREATION_PROJET = {
 ATTENTE_CREATION = {
     'geometrie': [200, 60],
     'titre': 'Creation Projet',
-    'layout': {
-        'main_layout':{
-            'sens': 'horizontal',
-        }
-    },
     'label':['creation projet','.','..','...',' '],
     'styleSheet':"""
             QWidget {
@@ -192,11 +108,6 @@ ATTENTE_CREATION = {
 
 PROJET = {
     'titre': 'Projet',
-    'layout': {
-        'main_layout':{
-            'sens': 'horizontal',
-        }
-    },
     'label':['creation projet','.','..','...',' '],
     'zone_texte':{
         'variable':None,
@@ -323,7 +234,7 @@ class Fenetre(qtw.QWidget):
             self.showMaximized()
 
 
-    def _generer_zone_texte(self,ligne:qtw.QHBoxLayout,param_zone_text:dict) -> qtw.QLineEdit:
+    def _generer_zone_texte(self,ligne:qtw.QHBoxLayout,text_defaut,validator=None,largeur = 60) -> qtw.QLineEdit:
         '''
         genere une zone de texte ne fonction des parametre
         ligne = ligne sur la quelle la zone est ajoutee
@@ -331,9 +242,10 @@ class Fenetre(qtw.QWidget):
         retourne la varable contenant la zone de texte
         '''
         variable = qtw.QLineEdit()
-        variable.setValidator(param_zone_text['validator'])  # seulement des entiers
-        variable.setFixedWidth(param_zone_text['largeur'])
-        variable.setText(param_zone_text['param_defaut'])
+        if validator:
+            variable.setValidator(validator)  # seulement des entiers
+        variable.setFixedWidth(largeur)
+        variable.setText(text_defaut)
         ligne.addWidget(variable)
         return variable
     
@@ -362,11 +274,11 @@ class Fenetre(qtw.QWidget):
         return liste_deroulante
 
 
-    def _ajout_nom_et_zone_texte_et_unitee(self,nom:str,unitee:str,param_zone_texte):
+    def _ajout_nom_et_zone_texte_et_unitee(self,nom:str,unitee:str,text_defaut,validator=None,largeur=60):
         layout = qtw.QHBoxLayout()
         widget = qtw.QWidget()
         self._generer_label(layout, nom)
-        variable = self._generer_zone_texte(layout, param_zone_texte)
+        variable = self._generer_zone_texte(layout, text_defaut,validator,largeur)
         self._generer_label(layout, unitee) 
         layout.addStretch()
         widget.setLayout(layout)
@@ -490,7 +402,6 @@ class FenetreCreationProjet(Fenetre):
         """
 
         param_page = self._param['page']['entree_sortie']
-        param_zone_texte = param_page['zone_texte']
         label = param_page['label']
         # creation page et ligne principale
         page = qtw.QWidget()
@@ -498,11 +409,11 @@ class FenetreCreationProjet(Fenetre):
         block_gauche = qtw.QVBoxLayout()
         block_gauche.addStretch()
         # widget vitess
-        widget_vitesse,self._variable_vitesse = self._ajout_nom_et_zone_texte_et_unitee(label[0],label[1],param_zone_texte['vitesse_entree'])
+        widget_vitesse,self._variable_vitesse = self._ajout_nom_et_zone_texte_et_unitee(label[0],label[1],'4000',qtg.QIntValidator(0, 100))
         widget_vitesse.setContentsMargins(122, 0, 0, 0)
         block_gauche.addWidget(widget_vitesse)
         # widget puissance
-        widget_puissance,self._variable_puissance = self._ajout_nom_et_zone_texte_et_unitee(label[2],label[3],param_zone_texte['puissance_entree'])
+        widget_puissance,self._variable_puissance = self._ajout_nom_et_zone_texte_et_unitee(label[2],label[3],'1500',qtg.QIntValidator(0, 100))
         widget_puissance.setContentsMargins(100, 0, 0, 0)
         block_gauche.addWidget(widget_puissance)
         block_gauche.addStretch()
@@ -522,7 +433,7 @@ class FenetreCreationProjet(Fenetre):
         block_droite = qtw.QHBoxLayout()
         # widget couple
         block_droite.addStretch()
-        widget_couple,self._variable_couple = self._ajout_nom_et_zone_texte_et_unitee(label[6],label[7],param_zone_texte['couple_sortie'])
+        widget_couple,self._variable_couple = self._ajout_nom_et_zone_texte_et_unitee(label[6],label[7],'380',qtg.QIntValidator(0, 100))
         widget_couple.setContentsMargins(0, 0, 100, 0)
         block_droite.addWidget(widget_couple)
         # ajout des layoute au layoute principale
@@ -546,7 +457,6 @@ class FenetreCreationProjet(Fenetre):
         layout_bloc_gauche = qtw.QHBoxLayout()
         layout_bloc_droit = qtw.QHBoxLayout()
         param_page = self._param['page']['structure interne']
-        param_zone_texte = param_page['zone_texte']
         label = param_page['label']
         texte_ligne_deroutante = param_page['liste_deroulante']
         special_style = self._param['special_style']
@@ -555,8 +465,12 @@ class FenetreCreationProjet(Fenetre):
         ligne = qtw.QHBoxLayout()
         # Bloc 1 : Label + zone de texte
         bloc_gauche = qtw.QWidget()
-        self._generer_label(layout_bloc_gauche, label[0])  # nombre d’étage :
-        param_zone_texte['nbr_train']['varaible'] = self._generer_zone_texte(layout_bloc_gauche, param_zone_texte['nbr_train'])
+        self._generer_label(layout_bloc_gauche, label[0]) 
+         # nombre d’étage :
+        nbr_train = qtw.QLineEdit()
+        nbr_train.setValidator(qtg.QDoubleValidator(0.0, 9999.99, 2))
+        nbr_train.setFixedWidth(60)
+        nbr_train.setText('1')
         layout_bloc_gauche.addStretch()
         bloc_gauche.setLayout(layout_bloc_gauche)
         bloc_gauche.setStyleSheet(special_style)
@@ -564,11 +478,18 @@ class FenetreCreationProjet(Fenetre):
         bloc_droit = qtw.QWidget()
         self._generer_label(layout_bloc_droit, label[1])  # 1
         liste_deroulante = self._generer_liste_deroulante(layout_bloc_droit, texte_ligne_deroutante)
-        self._generer_label(layout_bloc_droit, label[2])  # entraxe
-        self._varaible_entraxe = self._generer_zone_texte(layout_bloc_droit, param_zone_texte['entraxe'])
+        self._generer_label(layout_bloc_droit, label[2]) 
+        # entraxe
+        self._varaible_entraxe = qtw.QLineEdit()
+        self._varaible_entraxe.setValidator(qtg.QIntValidator(0, 100))
+        self._varaible_entraxe.setFixedWidth(80)
+        self._varaible_entraxe.setText('20')
         self._generer_label(layout_bloc_droit, label[3])  # mm
         self._generer_label(layout_bloc_droit, label[4])  # σ max
-        self._varaible_contrainte_max = self._generer_zone_texte(layout_bloc_droit, param_zone_texte['contrainte_max'])
+        self._varaible_contrainte_max = qtw.QLineEdit()
+        self._varaible_contrainte_max.setValidator(qtg.QIntValidator(0, 100))
+        self._varaible_contrainte_max.setFixedWidth(80)
+        self._varaible_contrainte_max.setText('210000')
         self._generer_label(layout_bloc_droit, label[5])  # MPa
         layout_bloc_droit.addStretch()
         bloc_droit.setLayout(layout_bloc_droit)
