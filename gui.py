@@ -193,6 +193,15 @@ class Fenetre(qtw.QWidget):
             self.showMaximized()
 
 
+    def ajoute_widgets(self,layout,list):
+        for i in range(len(list)):
+            layout.addWidget(list[i])
+
+    def ajoute_layoutes(self,layout,list):
+        for i in range(len(list)):
+            layout.addLayout(list[i])
+
+
     def _ajout_nom_zone_texte_unitee(self,nom:str,unitee:str,text_defaut):
         layout = qtw.QHBoxLayout()
         lbl_nom = qtw.QLabel(nom)
@@ -216,20 +225,7 @@ class FenetreMenu(Fenetre):
     '''
     def __init__(self, param: dict) -> None:
         super().__init__(param)
-        # creer different composant
-        self.titre = self.creer_titre()
-        # bouton_creer_projet
-        self.bouton_creer_projet = qtw.QPushButton('Créer Projet')
-        self.bouton_creer_projet.clicked.connect(self._ouvrir_fenetre_creation_projet)
-        # bouton_ouvrir_projet
-        self.bouton_ouvrir_projet = qtw.QPushButton('Ouvrir Projet')
-        # bouton exit
-        self.bouton_exit = qtw.QPushButton('EXIT')
-        self.bouton_exit.setFixedSize(210,50)
-        self.bouton_exit.clicked.connect(self.close)
-        # engrenage
-        self.widget_engrenage = self._generer_icone_engrenage()
-        # generer la fenetre
+        self.creer_composant()
         self.genere_layout()
     
 
@@ -271,20 +267,38 @@ class FenetreMenu(Fenetre):
         self.close()
 
 
+    def creer_composant(self):
+        # creer different composant
+        self.titre = self.creer_titre()
+        # bouton_creer_projet
+        self.bouton_creer_projet = qtw.QPushButton('Créer Projet')
+        self.bouton_creer_projet.clicked.connect(self._ouvrir_fenetre_creation_projet)
+        # bouton_ouvrir_projet
+        self.bouton_ouvrir_projet = qtw.QPushButton('Ouvrir Projet')
+        # bouton exit
+        self.bouton_exit = qtw.QPushButton('EXIT')
+        self.bouton_exit.setFixedSize(210,50)
+        self.bouton_exit.clicked.connect(self.close)
+        # engrenage
+        self.widget_engrenage = self._generer_icone_engrenage()
+
+
     def genere_layout(self):
-        self._main_layout = qtw.QHBoxLayout()
+        # genere le layoute de droite
         left_layout = qtw.QVBoxLayout()
-        right_layout = qtw.QVBoxLayout()
-        left_layout.addWidget(self.titre) 
-        left_layout.addWidget(self.bouton_creer_projet)
-        left_layout.addWidget(self.bouton_ouvrir_projet)
+        liste = [self.titre,self.bouton_creer_projet,self.bouton_ouvrir_projet]
+        self.ajoute_widgets(left_layout,liste)
         left_layout.addStretch() # Pour pousser les éléments vers le haut
-        self._main_layout.addLayout(left_layout) # Ajouter le layout gauche au layout principal
+        # genere le layoute de gauche
+        right_layout = qtw.QVBoxLayout()
         right_layout.addWidget(self.widget_engrenage, alignment=qtg.Qt.AlignmentFlag.AlignTop)
         right_layout.addStretch()
         right_layout.addWidget(self.bouton_exit)
-        self._main_layout.addLayout(right_layout)
-        self.setLayout(self._main_layout) # Définir le layout principal pour la fenêtre
+        # genere le layoute principale
+        main_layout = qtw.QHBoxLayout()
+        liste = [left_layout,right_layout]
+        self.ajoute_layoutes(main_layout,liste)
+        self.setLayout(main_layout) # Définir le layout principal pour la fenêtre
 
 
 class FenetreCreationProjet(Fenetre):
