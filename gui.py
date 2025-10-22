@@ -177,17 +177,6 @@ class Simulation_train:
         return self.description
 
 
-
-class bouton(qtw.QPushButton):
-    '''
-    Classe pour les boutons avec une taille optionnelle.
-    '''
-    def __init__(self, texte: str, taille: list = None) -> None:
-        super().__init__(texte)
-        if taille:
-            self.setFixedSize(*taille)  # Définir une taille fixe si spécifiée
-        
-
 class Fenetre(qtw.QWidget):
     '''
     classe de base pour les fenetres
