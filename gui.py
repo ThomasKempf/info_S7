@@ -216,35 +216,24 @@ class FenetreMenu(Fenetre):
     '''
     def __init__(self, param: dict) -> None:
         super().__init__(param)
-        self._main_layout = qtw.QHBoxLayout()
-        left_layout = qtw.QVBoxLayout()
-        right_layout = qtw.QVBoxLayout()
-        titre = qtw.QLabel('Dimensionnement Réducteur')
-        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop) # Alignement à gauche et en haut
-        titre.setFont(qtg.QFont('Arial',20, qtg.QFont.Weight.Bold)) 
-        titre.setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px') # Style du titre
-        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
-        left_layout.addWidget(titre) 
-        # ajoute la partie gauche avec les boutons
-        bouton_creer_projet = qtw.QPushButton('Créer Projet')
-        bouton_creer_projet.clicked.connect(self._ouvrir_fenetre_creation_projet)
-        left_layout.addWidget(bouton_creer_projet)
-        bouton_ouvrir_projet = qtw.QPushButton('Ouvrir Projet')
-        left_layout.addWidget(bouton_ouvrir_projet)
-        left_layout.addStretch() # Pour pousser les éléments vers le haut
-        self._main_layout.addLayout(left_layout) # Ajouter le layout gauche au layout principal
-        # ajoute la partie droite avec les icones et le bouton exit
-        self._generer_icone_engrenage(right_layout)
-        right_layout.addStretch()
-        bouton_exit = qtw.QPushButton('EXIT')
-        bouton_exit.setFixedSize(210,50)
-        bouton_exit.clicked.connect(self.close)
-        right_layout.addWidget(bouton_exit)
-        self._main_layout.addLayout(right_layout)
-        self.setLayout(self._main_layout) # Définir le layout principal pour la fenêtre
+        # creer different composant
+        self.titre = self.creer_titre()
+        # bouton_creer_projet
+        self.bouton_creer_projet = qtw.QPushButton('Créer Projet')
+        self.bouton_creer_projet.clicked.connect(self._ouvrir_fenetre_creation_projet)
+        # bouton_ouvrir_projet
+        self.bouton_ouvrir_projet = qtw.QPushButton('Ouvrir Projet')
+        # bouton exit
+        self.bouton_exit = qtw.QPushButton('EXIT')
+        self.bouton_exit.setFixedSize(210,50)
+        self.bouton_exit.clicked.connect(self.close)
+        # engrenage
+        self.widget_engrenage = self._generer_icone_engrenage()
+        # generer la fenetre
+        self.genere_layout()
     
 
-    def _generer_icone_engrenage(self,layout:qtw.QVBoxLayout) -> None:
+    def _generer_icone_engrenage(self) -> None:
         '''
         Fonction pour générer l'icône d'engrenage dans le layout spécifié
         uniquement dans la classe FenetreMenu parce que l'affichage est spécifique au menu.
@@ -261,7 +250,16 @@ class FenetreMenu(Fenetre):
             y = pos[1] - gear.height() // 2
             gear.move(x, y)  # Positionner l'icône
         # Ajouter le widget contenant les engrenages dans ton layout principal
-        layout.addWidget(widget, alignment=qtg.Qt.AlignmentFlag.AlignTop)
+        return widget
+
+
+    def creer_titre(self):
+        titre = qtw.QLabel('Dimensionnement Réducteur')
+        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop) # Alignement à gauche et en haut
+        titre.setFont(qtg.QFont('Arial',20, qtg.QFont.Weight.Bold)) 
+        titre.setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px') # Style du titre
+        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
+        return titre
 
 
     def _ouvrir_fenetre_creation_projet(self) -> None:
@@ -271,6 +269,22 @@ class FenetreMenu(Fenetre):
         self.fentre_projet = FenetreCreationProjet(CREATION_PROJET)
         self.fentre_projet.show()
         self.close()
+
+
+    def genere_layout(self):
+        self._main_layout = qtw.QHBoxLayout()
+        left_layout = qtw.QVBoxLayout()
+        right_layout = qtw.QVBoxLayout()
+        left_layout.addWidget(self.titre) 
+        left_layout.addWidget(self.bouton_creer_projet)
+        left_layout.addWidget(self.bouton_ouvrir_projet)
+        left_layout.addStretch() # Pour pousser les éléments vers le haut
+        self._main_layout.addLayout(left_layout) # Ajouter le layout gauche au layout principal
+        right_layout.addWidget(self.widget_engrenage, alignment=qtg.Qt.AlignmentFlag.AlignTop)
+        right_layout.addStretch()
+        right_layout.addWidget(self.bouton_exit)
+        self._main_layout.addLayout(right_layout)
+        self.setLayout(self._main_layout) # Définir le layout principal pour la fenêtre
 
 
 class FenetreCreationProjet(Fenetre):
