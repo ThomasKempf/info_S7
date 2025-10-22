@@ -217,12 +217,11 @@ class Fenetre(qtw.QWidget):
         return liste_deroulante
 
 
-    def _ajout_nom_zone_texte_unitee(self,nom:str,unitee:str,text_defaut,largeur=60):
+    def _ajout_nom_zone_texte_unitee(self,nom:str,unitee:str,text_defaut):
         layout = qtw.QHBoxLayout()
         widget = qtw.QWidget()
         self._generer_label(layout, nom)
         variable = qtw.QLineEdit()
-        variable.setFixedWidth(largeur)
         variable.setText(text_defaut)
         layout.addWidget(variable)
         self._generer_label(layout, unitee) 
@@ -360,11 +359,13 @@ class FenetreCreationProjet(Fenetre):
         block_gauche.addStretch()
         # widget vitess
         widget_vitesse,self._variable_vitesse = self._ajout_nom_zone_texte_unitee(label[0],label[1],'4000')
+        self._variable_vitesse.setFixedWidth(60)
         self._variable_vitesse.setValidator(qtg.QIntValidator(0, 100))
         widget_vitesse.setContentsMargins(122, 0, 0, 0)
         block_gauche.addWidget(widget_vitesse)
         # widget puissance
         widget_puissance,self._variable_puissance = self._ajout_nom_zone_texte_unitee(label[2],label[3],'1500')
+        self._variable_puissance.setFixedWidth(60)
         self._variable_puissance.setValidator(qtg.QIntValidator(0, 100))
         widget_puissance.setContentsMargins(100, 0, 0, 0)
         block_gauche.addWidget(widget_puissance)
@@ -386,6 +387,7 @@ class FenetreCreationProjet(Fenetre):
         # widget couple
         block_droite.addStretch()
         widget_couple,self._variable_couple = self._ajout_nom_zone_texte_unitee(label[6],label[7],'380')
+        self._variable_couple.setFixedWidth(60)
         self._variable_couple.setValidator(qtg.QIntValidator(0, 100))
         widget_couple.setContentsMargins(0, 0, 100, 0)
         block_droite.addWidget(widget_couple)
@@ -569,6 +571,7 @@ class FenetreProjet(Fenetre):
         for i, (key, value) in enumerate(self._param[1].description.items()):
             unitee  = self._param[1].unitee[i]
             self._zone_text_train['widget'][key],self._zone_text_train['variable'][key] = self._ajout_nom_zone_texte_unitee(key,unitee,str(value))
+            self._zone_text_train['variable'][key].setFixedWidth(60)
             self._zone_text_train['variable'][key].setValidator(qtg.QIntValidator())
             self._zone_text_train['variable'][key].editingFinished.connect(lambda k=key: self.modifie_parametre(self._zone_text_train['variable'][k].text(), k))  
             layout_train1.addWidget(self._zone_text_train['widget'][key]) 
