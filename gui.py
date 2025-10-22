@@ -204,28 +204,15 @@ class Fenetre(qtw.QWidget):
         return lbl_nbr
 
 
-    def _generer_liste_deroulante(self,ligne:qtw.QHBoxLayout,choix:list[str]) -> qtw.QComboBox:
-        '''
-        genere une liste deroulante de str
-        ligne = ligne sur la quelle la liste est ajoutéee
-        choix = liste contenant les differents choix
-        retourne la variable contenant la liste_deroulante
-        '''
-        liste_deroulante = qtw.QComboBox()
-        liste_deroulante.addItems(choix)
-        ligne.addWidget(liste_deroulante)
-        return liste_deroulante
-
-
     def _ajout_nom_zone_texte_unitee(self,nom:str,unitee:str,text_defaut):
         layout = qtw.QHBoxLayout()
-        widget = qtw.QWidget()
         self._generer_label(layout, nom)
         variable = qtw.QLineEdit()
         variable.setText(text_defaut)
         layout.addWidget(variable)
         self._generer_label(layout, unitee) 
         layout.addStretch()
+        widget = qtw.QWidget()
         widget.setLayout(layout)
         return widget,variable
     
@@ -440,7 +427,9 @@ class FenetreCreationProjet(Fenetre):
         # Bloc 2 : le reste à droite
         bloc_droit = qtw.QWidget()
         self._generer_label(layout_bloc_droit, label[1])  # 1
-        liste_deroulante = self._generer_liste_deroulante(layout_bloc_droit, texte_ligne_deroutante)
+        liste_deroulante = qtw.QComboBox()
+        liste_deroulante.addItems(texte_ligne_deroutante)
+        layout_bloc_droit.addWidget(liste_deroulante)
         self._generer_label(layout_bloc_droit, label[2]) 
         # entraxe
         self._varaible_entraxe = qtw.QLineEdit()
