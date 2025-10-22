@@ -81,15 +81,7 @@ CREATION_PROJET = {
         QPushButton:hover {
             background: #e0e0e0; /* Couleur de fond au survol */
         }
-    ''',
-    'special_style':"""
-            QWidget {
-                background: #fff; /* Couleur de fond blanche */
-                border: 1px solid #222;
-                border-radius: 6px;
-                padding: 8px;
-            }
-        """
+    '''
 }
 
 ATTENTE_CREATION = {
@@ -109,12 +101,6 @@ ATTENTE_CREATION = {
 PROJET = {
     'titre': 'Projet',
     'label':['creation projet','.','..','...',' '],
-    'zone_texte':{
-        'variable':None,
-            'validator': qtg.QIntValidator(),
-            'largeur':60,
-            'param_defaut':None
-    },
     'styleSheet':"""
             QWidget {
                 background: #fff; /* Couleur de fond blanche */
@@ -453,13 +439,21 @@ class FenetreCreationProjet(Fenetre):
         generation de la page 1 qui contient le choix du nombre de train, de leurs type et de leur materiaux
         retourne la variable de la page
         '''
+        special_style = """
+            QWidget {
+                background: #fff; /* Couleur de fond blanche */
+                border: 1px solid #222;
+                border-radius: 6px;
+                padding: 8px;
+            }
+        """
+
         layout_page = qtw.QVBoxLayout()
         layout_bloc_gauche = qtw.QHBoxLayout()
         layout_bloc_droit = qtw.QHBoxLayout()
         param_page = self._param['page']['structure interne']
         label = param_page['label']
         texte_ligne_deroutante = param_page['liste_deroulante']
-        special_style = self._param['special_style']
         # creation page et ligne principale
         page = qtw.QWidget()
         ligne = qtw.QHBoxLayout()
@@ -603,8 +597,7 @@ class FenetreProjet(Fenetre):
         self._zone_text_train = {'widget':{},'variable':{}}
         for i, (key, value) in enumerate(self._param[1].description.items()):
             unitee  = self._param[1].unitee[i]
-            self._zone_text_train['widget'][key],self._zone_text_train['variable'][key] = self._ajout_nom_et_zone_texte_et_unitee(key,unitee,self._param_feuille['zone_texte'])
-            self._zone_text_train['variable'][key].setText(str(value))
+            self._zone_text_train['widget'][key],self._zone_text_train['variable'][key] = self._ajout_nom_et_zone_texte_et_unitee(key,unitee,str(value),validator=qtg.QIntValidator())
             self._zone_text_train['variable'][key].editingFinished.connect(lambda k=key: self.modifie_parametre(self._zone_text_train['variable'][k].text(), k))  
             layout_train1.addWidget(self._zone_text_train['widget'][key]) 
         layout_train1.addStretch()
