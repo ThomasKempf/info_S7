@@ -191,22 +191,6 @@ class Fenetre(qtw.QWidget):
             self.setFixedSize(*self._parametre['geometrie'])
         else:
             self.showMaximized()
-
-
-    def _generer_zone_texte(self,ligne:qtw.QHBoxLayout,text_defaut,validator=None,largeur = 60) -> qtw.QLineEdit:
-        '''
-        genere une zone de texte ne fonction des parametre
-        ligne = ligne sur la quelle la zone est ajoutee
-        param_zone = parametre de la zone de texte, voir la structure si dessus dans les constante de parametre fenetre
-        retourne la varable contenant la zone de texte
-        '''
-        variable = qtw.QLineEdit()
-        if validator:
-            variable.setValidator(validator)  # seulement des entiers
-        variable.setFixedWidth(largeur)
-        variable.setText(text_defaut)
-        ligne.addWidget(variable)
-        return variable
     
 
     def _generer_label(slef,ligne:qtw.QHBoxLayout,texte:str) -> None:
@@ -233,11 +217,14 @@ class Fenetre(qtw.QWidget):
         return liste_deroulante
 
 
-    def _ajout_nom_et_zone_texte_et_unitee(self,nom:str,unitee:str,text_defaut,validator=None,largeur=60):
+    def _ajout_nom_zone_texte_unitee(self,nom:str,unitee:str,text_defaut,largeur=60):
         layout = qtw.QHBoxLayout()
         widget = qtw.QWidget()
         self._generer_label(layout, nom)
-        variable = self._generer_zone_texte(layout, text_defaut,validator,largeur)
+        variable = qtw.QLineEdit()
+        variable.setFixedWidth(largeur)
+        variable.setText(text_defaut)
+        layout.addWidget(variable)
         self._generer_label(layout, unitee) 
         layout.addStretch()
         widget.setLayout(layout)
@@ -372,11 +359,13 @@ class FenetreCreationProjet(Fenetre):
         block_gauche = qtw.QVBoxLayout()
         block_gauche.addStretch()
         # widget vitess
-        widget_vitesse,self._variable_vitesse = self._ajout_nom_et_zone_texte_et_unitee(label[0],label[1],'4000',qtg.QIntValidator(0, 100))
+        widget_vitesse,self._variable_vitesse = self._ajout_nom_zone_texte_unitee(label[0],label[1],'4000')
+        self._variable_vitesse.setValidator(qtg.QIntValidator(0, 100))
         widget_vitesse.setContentsMargins(122, 0, 0, 0)
         block_gauche.addWidget(widget_vitesse)
         # widget puissance
-        widget_puissance,self._variable_puissance = self._ajout_nom_et_zone_texte_et_unitee(label[2],label[3],'1500',qtg.QIntValidator(0, 100))
+        widget_puissance,self._variable_puissance = self._ajout_nom_zone_texte_unitee(label[2],label[3],'1500')
+        self._variable_puissance.setValidator(qtg.QIntValidator(0, 100))
         widget_puissance.setContentsMargins(100, 0, 0, 0)
         block_gauche.addWidget(widget_puissance)
         block_gauche.addStretch()
@@ -396,7 +385,8 @@ class FenetreCreationProjet(Fenetre):
         block_droite = qtw.QHBoxLayout()
         # widget couple
         block_droite.addStretch()
-        widget_couple,self._variable_couple = self._ajout_nom_et_zone_texte_et_unitee(label[6],label[7],'380',qtg.QIntValidator(0, 100))
+        widget_couple,self._variable_couple = self._ajout_nom_zone_texte_unitee(label[6],label[7],'380')
+        self._variable_couple.setValidator(qtg.QIntValidator(0, 100))
         widget_couple.setContentsMargins(0, 0, 100, 0)
         block_droite.addWidget(widget_couple)
         # ajout des layoute au layoute principale
@@ -578,7 +568,8 @@ class FenetreProjet(Fenetre):
         self._zone_text_train = {'widget':{},'variable':{}}
         for i, (key, value) in enumerate(self._param[1].description.items()):
             unitee  = self._param[1].unitee[i]
-            self._zone_text_train['widget'][key],self._zone_text_train['variable'][key] = self._ajout_nom_et_zone_texte_et_unitee(key,unitee,str(value),validator=qtg.QIntValidator())
+            self._zone_text_train['widget'][key],self._zone_text_train['variable'][key] = self._ajout_nom_zone_texte_unitee(key,unitee,str(value))
+            self._zone_text_train['variable'][key].setValidator(qtg.QIntValidator())
             self._zone_text_train['variable'][key].editingFinished.connect(lambda k=key: self.modifie_parametre(self._zone_text_train['variable'][k].text(), k))  
             layout_train1.addWidget(self._zone_text_train['widget'][key]) 
         layout_train1.addStretch()
