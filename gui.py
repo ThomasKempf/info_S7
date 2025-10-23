@@ -308,36 +308,39 @@ class FenetreCreationProjet(Fenetre):
         param = parametre de la page situee au dessus
         '''
         super().__init__(param)
-        self._main_layout = qtw.QVBoxLayout()
-        bouton_layout = qtw.QHBoxLayout()
         self._param = param
-        self.generer_widget_page()
-        bouton_layout.insertStretch(0, 1)
+        self._widget_pages = self.generer_widget_page(nbr_page=2)
         # Layout vertical pour le stack + boutons
         bouton_precedent = qtw.QPushButton('Precedent')
         bouton_precedent.setFixedSize(210,50)
         bouton_precedent.clicked.connect(self.precedente_page)
-        bouton_layout.addWidget(bouton_precedent)
         bouton_next = qtw.QPushButton('Next')
         bouton_next.setFixedSize(210,50)
         bouton_next.clicked.connect(self.next_page)
+        
+        bouton_layout = qtw.QHBoxLayout()
+        bouton_layout.insertStretch(0, 1)
+        bouton_layout.addWidget(bouton_precedent)
         bouton_layout.addWidget(bouton_next)
+
+        self._main_layout = qtw.QVBoxLayout()
+        self._main_layout.addWidget(self._widget_pages)
         self._main_layout.addLayout(bouton_layout)
         self.setLayout(self._main_layout)
 
 
-    def generer_widget_page(self) -> None:
+    def generer_widget_page(self,nbr_page) -> None:
         '''
         Fonction pour générer les pages du QStackedWidget.
         '''
-        self.stack = qtw.QStackedWidget()
-        self.pages = []
-        for i in range(len(self._param['page'])):
+        stack = qtw.QStackedWidget()
+        pages = []
+        for i in range(nbr_page):
             page_method = getattr(self, f"create_page{i}")
             page_instance = page_method()
-            self.stack.addWidget(page_instance)
-            self.pages.append(page_instance)
-        self._main_layout.addWidget(self.stack)
+            stack.addWidget(page_instance)
+            pages.append(page_instance)
+        return stack
 
 
     def create_page0(self) -> qtw.QWidget:
@@ -488,9 +491,9 @@ class FenetreCreationProjet(Fenetre):
         '''
         permet de passer a la page suivante
         '''
-        i = self.stack.currentIndex()
-        if i < self.stack.count() - 1:
-            self.stack.setCurrentIndex(i + 1)
+        i = self._widget_pages.currentIndex()
+        if i < self._widget_pages.count() - 1:
+            self._widget_pages.setCurrentIndex(i + 1)
         else:
             # ouvre fenetre attente
             fenetre_attente = FenetreAttenteCreation(ATTENTE_CREATION)
