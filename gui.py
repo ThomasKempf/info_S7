@@ -311,22 +311,29 @@ class FenetreCreationProjet(Fenetre):
         self._param = param
         self._widget_pages = self.generer_widget_page(nbr_page=2)
         # Layout vertical pour le stack + boutons
-        bouton_precedent = qtw.QPushButton('Precedent')
-        bouton_precedent.setFixedSize(210,50)
-        bouton_precedent.clicked.connect(self.precedente_page)
-        bouton_next = qtw.QPushButton('Next')
-        bouton_next.setFixedSize(210,50)
-        bouton_next.clicked.connect(self.next_page)
         
+
         bouton_layout = qtw.QHBoxLayout()
         bouton_layout.insertStretch(0, 1)
-        bouton_layout.addWidget(bouton_precedent)
-        bouton_layout.addWidget(bouton_next)
+        self.generer_bouton_next_precedent(bouton_layout)
 
         self._main_layout = qtw.QVBoxLayout()
         self._main_layout.addWidget(self._widget_pages)
         self._main_layout.addLayout(bouton_layout)
         self.setLayout(self._main_layout)
+
+
+    def generer_bouton_next_precedent(self,layout):
+        texte = ['Precedent','Next']
+        taille = [210,50]
+        fonction = ['precedente_page','next_page']
+        widget = [0,0]
+        for i in range(len(texte)):
+            widget[i] = qtw.QPushButton(texte[i])
+            widget[i].setFixedSize(*taille)
+            widget[i].clicked.connect(getattr(self, fonction[i]))
+            layout.addWidget(widget[i])
+        
 
 
     def generer_widget_page(self,nbr_page) -> None:
