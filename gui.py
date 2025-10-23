@@ -227,6 +227,40 @@ class FenetreMenu(Fenetre):
         super().__init__(param)
         self.creer_composant()
         self.genere_layout()
+
+
+    def creer_composant(self):
+        # creer different composant
+        self.titre = self.creer_titre()
+        # bouton_creer_projet
+        self.bouton_creer_projet = qtw.QPushButton('Créer Projet')
+        self.bouton_creer_projet.clicked.connect(self._ouvrir_fenetre_creation_projet)
+        # bouton_ouvrir_projet
+        self.bouton_ouvrir_projet = qtw.QPushButton('Ouvrir Projet')
+        # bouton exit
+        self.bouton_exit = qtw.QPushButton('EXIT')
+        self.bouton_exit.setFixedSize(210,50)
+        self.bouton_exit.clicked.connect(self.close)
+        # engrenage
+        self.widget_engrenage = self._generer_icone_engrenage()
+
+
+    def genere_layout(self):
+        # genere le layoute de droite
+        left_layout = qtw.QVBoxLayout()
+        liste = [self.titre,self.bouton_creer_projet,self.bouton_ouvrir_projet]
+        self.ajoute_widgets(left_layout,liste)
+        left_layout.addStretch() # Pour pousser les éléments vers le haut
+        # genere le layoute de gauche
+        right_layout = qtw.QVBoxLayout()
+        right_layout.addWidget(self.widget_engrenage, alignment=qtg.Qt.AlignmentFlag.AlignTop)
+        right_layout.addStretch()
+        right_layout.addWidget(self.bouton_exit)
+        # genere le layoute principale
+        main_layout = qtw.QHBoxLayout()
+        liste = [left_layout,right_layout]
+        self.ajoute_layoutes(main_layout,liste)
+        self.setLayout(main_layout) # Définir le layout principal pour la fenêtre
     
 
     def _generer_icone_engrenage(self) -> None:
@@ -267,40 +301,6 @@ class FenetreMenu(Fenetre):
         self.close()
 
 
-    def creer_composant(self):
-        # creer different composant
-        self.titre = self.creer_titre()
-        # bouton_creer_projet
-        self.bouton_creer_projet = qtw.QPushButton('Créer Projet')
-        self.bouton_creer_projet.clicked.connect(self._ouvrir_fenetre_creation_projet)
-        # bouton_ouvrir_projet
-        self.bouton_ouvrir_projet = qtw.QPushButton('Ouvrir Projet')
-        # bouton exit
-        self.bouton_exit = qtw.QPushButton('EXIT')
-        self.bouton_exit.setFixedSize(210,50)
-        self.bouton_exit.clicked.connect(self.close)
-        # engrenage
-        self.widget_engrenage = self._generer_icone_engrenage()
-
-
-    def genere_layout(self):
-        # genere le layoute de droite
-        left_layout = qtw.QVBoxLayout()
-        liste = [self.titre,self.bouton_creer_projet,self.bouton_ouvrir_projet]
-        self.ajoute_widgets(left_layout,liste)
-        left_layout.addStretch() # Pour pousser les éléments vers le haut
-        # genere le layoute de gauche
-        right_layout = qtw.QVBoxLayout()
-        right_layout.addWidget(self.widget_engrenage, alignment=qtg.Qt.AlignmentFlag.AlignTop)
-        right_layout.addStretch()
-        right_layout.addWidget(self.bouton_exit)
-        # genere le layoute principale
-        main_layout = qtw.QHBoxLayout()
-        liste = [left_layout,right_layout]
-        self.ajoute_layoutes(main_layout,liste)
-        self.setLayout(main_layout) # Définir le layout principal pour la fenêtre
-
-
 class FenetreCreationProjet(Fenetre):
     def __init__(self, param: dict) -> None:
         '''
@@ -311,29 +311,10 @@ class FenetreCreationProjet(Fenetre):
         self._param = param
         self._widget_pages = self.generer_widget_page(nbr_page=2)
         # Layout vertical pour le stack + boutons
-        
-
-        bouton_layout = qtw.QHBoxLayout()
-        bouton_layout.insertStretch(0, 1)
-        self.generer_bouton_next_precedent(bouton_layout)
-
-        self._main_layout = qtw.QVBoxLayout()
-        self._main_layout.addWidget(self._widget_pages)
-        self._main_layout.addLayout(bouton_layout)
-        self.setLayout(self._main_layout)
-
-
-    def generer_bouton_next_precedent(self,layout):
-        texte = ['Precedent','Next']
-        taille = [210,50]
-        fonction = ['precedente_page','next_page']
-        widget = [0,0]
-        for i in range(len(texte)):
-            widget[i] = qtw.QPushButton(texte[i])
-            widget[i].setFixedSize(*taille)
-            widget[i].clicked.connect(getattr(self, fonction[i]))
-            layout.addWidget(widget[i])
-        
+        self._bouton_layout = qtw.QHBoxLayout()
+        self._bouton_layout.insertStretch(0, 1)
+        self.generer_bouton_next_precedent(self._bouton_layout)
+        self.generer_layout()
 
 
     def generer_widget_page(self,nbr_page) -> None:
@@ -348,6 +329,25 @@ class FenetreCreationProjet(Fenetre):
             stack.addWidget(page_instance)
             pages.append(page_instance)
         return stack
+
+
+    def generer_layout(self):
+        main_layout = qtw.QVBoxLayout()
+        main_layout.addWidget(self._widget_pages)
+        main_layout.addLayout(self._bouton_layout)
+        self.setLayout(main_layout)
+
+    def generer_bouton_next_precedent(self,layout):
+        texte = ['Precedent','Next']
+        taille = [210,50]
+        fonction = ['precedente_page','next_page']
+        widget = [0,0]
+        for i in range(len(texte)):
+            widget[i] = qtw.QPushButton(texte[i])
+            widget[i].setFixedSize(*taille)
+            widget[i].clicked.connect(getattr(self, fonction[i]))
+            layout.addWidget(widget[i])
+        
 
 
     def create_page0(self) -> qtw.QWidget:
