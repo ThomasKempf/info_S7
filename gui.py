@@ -55,7 +55,7 @@ MENU = {
 CREATION_PROJET = {
     'page':{
         'entree_sortie':{
-            'label':['Vitess','RPM','Puissance','kW','Rapport réduction','Reducteur','Couple','Nm'],
+            'label':['Vitess','RPM','Puissance','kW','Reducteur','Couple','Nm'],
         },
         'structure interne':{
             'label':['nombre d’étage :','1','Entraxe','mm','σ max','MPa',],
@@ -314,7 +314,7 @@ class FenetreCreationProjet(Fenetre):
         self._bouton_layout = qtw.QHBoxLayout()
         self._bouton_layout.insertStretch(0, 1)
         self.generer_bouton_next_precedent(self._bouton_layout)
-        self.generer_layout()
+        self.generer_layout_principale()
 
 
     def generer_widget_page(self,nbr_page) -> None:
@@ -331,7 +331,7 @@ class FenetreCreationProjet(Fenetre):
         return stack
 
 
-    def generer_layout(self):
+    def generer_layout_principale(self):
         main_layout = qtw.QVBoxLayout()
         main_layout.addWidget(self._widget_pages)
         main_layout.addLayout(self._bouton_layout)
@@ -365,27 +365,7 @@ class FenetreCreationProjet(Fenetre):
                     font-weight: bold;           /* Gras */
                 }
         """
-
-        param_page = self._param['page']['entree_sortie']
-        label = param_page['label']
-        # creation page et ligne principale
-        page = qtw.QWidget()
-        # creation block de gauche
-        block_gauche = qtw.QVBoxLayout()
-        block_gauche.addStretch()
-        # widget vitess
-        widget_vitesse,self._variable_vitesse = self._ajout_nom_zone_texte_unitee(label[0],label[1],'4000')
-        self._variable_vitesse.setFixedWidth(60)
-        self._variable_vitesse.setValidator(qtg.QIntValidator(0, 100))
-        widget_vitesse.setContentsMargins(122, 0, 0, 0)
-        block_gauche.addWidget(widget_vitesse)
-        # widget puissance
-        widget_puissance,self._variable_puissance = self._ajout_nom_zone_texte_unitee(label[2],label[3],'1500')
-        self._variable_puissance.setFixedWidth(60)
-        self._variable_puissance.setValidator(qtg.QIntValidator(0, 100))
-        widget_puissance.setContentsMargins(100, 0, 0, 0)
-        block_gauche.addWidget(widget_puissance)
-        block_gauche.addStretch()
+        widgets,self._variables = self.genere_widgets_page0()
         # creation fleche
         fleche_gauche = qtw.QLabel()
         fleche_droite = qtw.QLabel()
@@ -393,31 +373,52 @@ class FenetreCreationProjet(Fenetre):
         fleche_gauche.setPixmap(pixmap)
         fleche_droite.setPixmap(pixmap)
         # creation block centre
+        lbl_5 = qtw.QLabel('Reducteur')
+        lbl_5.setStyleSheet(special_style)
+        # creation block droite
+
+        # ajout des layoute au layoute principale
+        block_gauche = qtw.QVBoxLayout()
+        block_gauche.addStretch()
+        block_gauche.addWidget(widgets['Vitesse'])
+        block_gauche.addWidget(widgets['Puissance'])
+        block_gauche.addStretch()
+
         block_centre = qtw.QVBoxLayout()
         block_centre.addStretch()
-        lbl_5 = qtw.QLabel(label[5])
         block_centre.addWidget(lbl_5)
-        lbl_5.setStyleSheet(special_style)
         block_centre.addStretch()
-        # creation block droite
+
         block_droite = qtw.QHBoxLayout()
-        # widget couple
         block_droite.addStretch()
-        widget_couple,self._variable_couple = self._ajout_nom_zone_texte_unitee(label[6],label[7],'380')
-        self._variable_couple.setFixedWidth(60)
-        self._variable_couple.setValidator(qtg.QIntValidator(0, 100))
-        widget_couple.setContentsMargins(0, 0, 100, 0)
-        block_droite.addWidget(widget_couple)
-        # ajout des layoute au layoute principale
+        block_droite.addWidget(widgets['Couple'])
+
         layoute_page0 = qtw.QHBoxLayout()
         layoute_page0.addLayout(block_gauche)
         layoute_page0.addWidget(fleche_gauche)
         layoute_page0.addLayout(block_centre)
         layoute_page0.addWidget(fleche_droite)
         layoute_page0.addLayout(block_droite)
+        page = qtw.QWidget()
         page.setLayout(layoute_page0)
         return page
 
+
+    def genere_widgets_page0(self):
+        label_param = {
+            'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','margin':[122,0,0,0]},
+            'Puissance':{'unitee':'kW','valeur_defaut':'1500','margin':[100,0,0,0]},
+            'Couple':{'unitee':'Nm','valeur_defaut':'380','margin':[0,0,100,0]}
+        }
+        widgets = {}
+        variables = {}
+        for key in (label_param):
+            param = label_param[key]
+            widgets[key],variables[key] = self._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
+            variables[key].setFixedWidth(60)
+            variables[key].setValidator(qtg.QIntValidator(0, 100))
+            widgets[key].setContentsMargins(*param['margin'])
+        return widgets,variables
 
 
     def create_page1(self) -> qtw.QWidget:
@@ -508,9 +509,9 @@ class FenetreCreationProjet(Fenetre):
             self.close()
             # prendre les dernieres valeurs
             description_global = {}
-            description_global['vitesse_entree'] = int(self._variable_vitesse.text())
-            description_global['puissance_entree'] = int(self._variable_puissance.text())
-            description_global['couple_sortie'] = int(self._variable_couple.text())
+            description_global['vitesse_entree'] = int(self._variables['Vitesse'].text())
+            description_global['puissance_entree'] = int(self._variables['Puissance'].text())
+            description_global['couple_sortie'] = int(self._variables['Couple'].text())
             description_train = {}
             entraxe = int(self._varaible_entraxe.text())
             contrainte_max = int(self._varaible_contrainte_max.text())
