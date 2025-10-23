@@ -337,6 +337,7 @@ class FenetreCreationProjet(Fenetre):
         main_layout.addLayout(self._bouton_layout)
         self.setLayout(main_layout)
 
+
     def generer_bouton_next_precedent(self,layout):
         texte = ['Precedent','Next']
         taille = [210,50]
@@ -365,39 +366,12 @@ class FenetreCreationProjet(Fenetre):
                     font-weight: bold;           /* Gras */
                 }
         """
-        widgets,self._variables = self.genere_widgets_page0()
-        # creation fleche
-        labels_fleches = self.genere_fleches(2)
-        # creation block centre
-        lbl_5 = qtw.QLabel('Reducteur')
-        lbl_5.setStyleSheet(special_style)
-        # creation block droite
-
-        # ajout des layoute au layoute principale
-        block_gauche = qtw.QVBoxLayout()
-        block_gauche.addStretch()
-        block_gauche.addWidget(widgets['Vitesse'])
-        block_gauche.addWidget(widgets['Puissance'])
-        block_gauche.addStretch()
-
-        block_centre = qtw.QVBoxLayout()
-        block_centre.addStretch()
-        block_centre.addWidget(lbl_5)
-        block_centre.addStretch()
-
-        block_droite = qtw.QHBoxLayout()
-        block_droite.addStretch()
-        block_droite.addWidget(widgets['Couple'])
-
-        layoute_page0 = qtw.QHBoxLayout()
-        layoute_page0.addLayout(block_gauche)
-        layoute_page0.addWidget(labels_fleches[0])
-        layoute_page0.addLayout(block_centre)
-        layoute_page0.addWidget(labels_fleches[1])
-        layoute_page0.addLayout(block_droite)
-        page = qtw.QWidget()
-        page.setLayout(layoute_page0)
-        return page
+        self._widgets,self._variables = self.genere_widgets_page0()
+        self._labels_fleches = self.genere_fleches_page0(2)
+        self._lbl_5 = qtw.QLabel('Reducteur')
+        self._lbl_5.setStyleSheet(special_style)
+        self._layout_enfant = self.genere_layoute_page0() 
+        return self.genere_layout_principale_page0()
 
 
     def genere_widgets_page0(self):
@@ -415,15 +389,42 @@ class FenetreCreationProjet(Fenetre):
             variables[key].setValidator(qtg.QIntValidator(0, 100))
             widgets[key].setContentsMargins(*param['margin'])
         return widgets,variables
-    
 
-    def genere_fleches(self,nbr_fleche):
+
+    def genere_fleches_page0(self,nbr_fleche):
         pixmap = qtg.QPixmap("./fleche.png")  # ton fichier
         label = [0]*nbr_fleche
         for i in range(nbr_fleche):
             label[i] = qtw.QLabel()
             label[i].setPixmap(pixmap)
         return label
+
+    def genere_layoute_page0(self):
+        block_gauche = qtw.QVBoxLayout()
+        block_gauche.addStretch()
+        block_gauche.addWidget(self._widgets['Vitesse'])
+        block_gauche.addWidget(self._widgets['Puissance'])
+        block_gauche.addStretch()
+        block_centre = qtw.QVBoxLayout()
+        block_centre.addStretch()
+        block_centre.addWidget(self._lbl_5)
+        block_centre.addStretch()
+        block_droit = qtw.QHBoxLayout()
+        block_droit.addStretch()
+        block_droit.addWidget(self._widgets['Couple'])
+        return [block_gauche,block_centre,block_droit]
+
+
+    def genere_layout_principale_page0(self):
+        layoute_page0 = qtw.QHBoxLayout()
+        layoute_page0.addLayout(self._layout_enfant[0])
+        layoute_page0.addWidget(self._labels_fleches[0])
+        layoute_page0.addLayout(self._layout_enfant[1])
+        layoute_page0.addWidget(self._labels_fleches[1])
+        layoute_page0.addLayout(self._layout_enfant[2])
+        page = qtw.QWidget()
+        page.setLayout(layoute_page0)
+        return page
 
 
     def create_page1(self) -> qtw.QWidget:
