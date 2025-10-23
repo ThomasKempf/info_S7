@@ -367,11 +367,7 @@ class FenetreCreationProjet(Fenetre):
         """
         widgets,self._variables = self.genere_widgets_page0()
         # creation fleche
-        fleche_gauche = qtw.QLabel()
-        fleche_droite = qtw.QLabel()
-        pixmap = qtg.QPixmap("./fleche.png")  # ton fichier
-        fleche_gauche.setPixmap(pixmap)
-        fleche_droite.setPixmap(pixmap)
+        labels_fleches = self.genere_fleches(2)
         # creation block centre
         lbl_5 = qtw.QLabel('Reducteur')
         lbl_5.setStyleSheet(special_style)
@@ -395,9 +391,9 @@ class FenetreCreationProjet(Fenetre):
 
         layoute_page0 = qtw.QHBoxLayout()
         layoute_page0.addLayout(block_gauche)
-        layoute_page0.addWidget(fleche_gauche)
+        layoute_page0.addWidget(labels_fleches[0])
         layoute_page0.addLayout(block_centre)
-        layoute_page0.addWidget(fleche_droite)
+        layoute_page0.addWidget(labels_fleches[1])
         layoute_page0.addLayout(block_droite)
         page = qtw.QWidget()
         page.setLayout(layoute_page0)
@@ -419,6 +415,15 @@ class FenetreCreationProjet(Fenetre):
             variables[key].setValidator(qtg.QIntValidator(0, 100))
             widgets[key].setContentsMargins(*param['margin'])
         return widgets,variables
+    
+
+    def genere_fleches(self,nbr_fleche):
+        pixmap = qtg.QPixmap("./fleche.png")  # ton fichier
+        label = [0]*nbr_fleche
+        for i in range(nbr_fleche):
+            label[i] = qtw.QLabel()
+            label[i].setPixmap(pixmap)
+        return label
 
 
     def create_page1(self) -> qtw.QWidget:
