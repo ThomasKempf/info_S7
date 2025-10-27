@@ -9,10 +9,9 @@ def run_tests():
     print("--- Demarrage des tests du modele Train via Importation ---")
 
     # 1. Test du Train Simple (Réduction)
-    # NOTE: Assurez-vous que votre classe Engrenage dans modeles.py a des valeurs par défaut !
     print("\n[1] Test du Train Simple (Reduction)")
     e_petit = Engrenage(nbr_dents=20)
-    e_grand = Engrenage(nbr_dents=90)
+    e_grand = Engrenage(nbr_dents=50)
     train_1 = TrainSimple(e_petit, e_grand)
     
     expected_rapport = 20 / 50
@@ -25,10 +24,10 @@ def run_tests():
     else:
         print(f"  REULTAT: Echec. Le rapport ne correspond pas ({train_1.rapport_reduction} != {expected_rapport}).")
 
-    # 2. Test du Train Simple (Multiplication)
-    print("\n[2] Test du Train Simple (Multiplication)")
+    # 2. Test du Train Simple 
+    print("\n[2] Test du Train Simple ")
     e_entree_rapide = Engrenage(nbr_dents=60)
-    e_sortie_lente = Engrenage(nbr_dents=30)
+    e_sortie_lente = Engrenage(nbr_dents=20)
     train_2 = TrainSimple(e_entree_rapide, e_sortie_lente)
     
     expected_rapport_2 = 60 / 20
