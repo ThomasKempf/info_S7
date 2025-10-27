@@ -2,7 +2,7 @@
 
 # classe engrenage 
 class Engrenage:
-    """Represente  engrenage avec un nombre de dents."""
+    #Represente  engrenage avec un nombre de dents.
     def __init__(self, nbr_dents: int,rayon_prim: float = 0.0, alpha: int = 0.0, beta: int = 0.0, module: float = 0.0):
         self.nbr_dents = nbr_dents
         self.rayon_prim = rayon_prim
@@ -13,25 +13,24 @@ class Engrenage:
 
 # Classe Train
 class Train:
-    """Classe de base concrete pour les trains d'engrenages."""
+    #Classe de base pour les trains d'engrenages.
     def __init__(self):
         self._rapport_reduction: float = 0.0
 
     def calculer_rapport(self):
-        # Cette méthode DOIT être surchargée.
         raise NotImplementedError(
-            "La methode 'calculer_rapport' doit être implementee par la sous-classe."
+            #La methode 'calculer_rapport' doit être implementee par la sous-classe.
         )
 
     @property
     def rapport_reduction(self) -> float:
-        """Propriété publique (getter) du rapport de reduction."""
+        #Propriété publique (getter) du rapport de reduction.
         return self._rapport_reduction
 
 # Classe TrainSimple
 class TrainSimple(Train):
-    """
-    Represente un train d'engrenages simple.
+    """"
+    Represente un train d'engrenages droits.
     Calcule le rapport de vitesse (i = Z_entree / Z_sortie).
     """
     def __init__(self, engrenage_entree: Engrenage, engrenage_sortie: Engrenage):
