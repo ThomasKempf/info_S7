@@ -451,14 +451,15 @@ class FenetreCreationProjet(Fenetre):
         page = qtw.QWidget()
         ligne = qtw.QHBoxLayout()
         # Bloc 1 : Label + zone de texte
+         # nombre d’étage :
         bloc_gauche = qtw.QWidget()
         lbl_0 = qtw.QLabel(label[0])
         layout_bloc_gauche.addWidget(lbl_0)
-         # nombre d’étage :
         nbr_train = qtw.QLineEdit()
         nbr_train.setValidator(qtg.QDoubleValidator(0.0, 9999.99, 2))
         nbr_train.setFixedWidth(60)
         nbr_train.setText('1')
+        layout_bloc_gauche.addWidget(nbr_train)
         layout_bloc_gauche.addStretch()
         bloc_gauche.setLayout(layout_bloc_gauche)
         bloc_gauche.setStyleSheet(special_style)
@@ -469,21 +470,25 @@ class FenetreCreationProjet(Fenetre):
         liste_deroulante = qtw.QComboBox()
         liste_deroulante.addItems(texte_ligne_deroutante)
         layout_bloc_droit.addWidget(liste_deroulante)
+        # entraxe
         lbl_2 = qtw.QLabel(label[2])
         layout_bloc_droit.addWidget(lbl_2)
-        # entraxe
         self._varaible_entraxe = qtw.QLineEdit()
         self._varaible_entraxe.setValidator(qtg.QIntValidator(0, 100))
         self._varaible_entraxe.setFixedWidth(80)
         self._varaible_entraxe.setText('20')
+        layout_bloc_droit.addWidget(self._varaible_entraxe)
         lbl_3 = qtw.QLabel(label[3])
         layout_bloc_droit.addWidget(lbl_3)
+        layout_bloc_droit.addChildWidget(self._varaible_entraxe)
+        # contrainte max
         lbl_4 = qtw.QLabel(label[4])
         layout_bloc_droit.addWidget(lbl_4)
         self._varaible_contrainte_max = qtw.QLineEdit()
         self._varaible_contrainte_max.setValidator(qtg.QIntValidator(0, 100))
         self._varaible_contrainte_max.setFixedWidth(80)
         self._varaible_contrainte_max.setText('210000')
+        layout_bloc_droit.addWidget(self._varaible_contrainte_max)
         lbl_5 = qtw.QLabel(label[5])
         layout_bloc_droit.addWidget(lbl_5)
         layout_bloc_droit.addStretch()
