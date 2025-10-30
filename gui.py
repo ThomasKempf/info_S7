@@ -441,9 +441,6 @@ class FenetreCreationProjet(Fenetre):
             }
         """
 
-        layout_page = qtw.QVBoxLayout()
-        layout_bloc_gauche = qtw.QHBoxLayout()
-        layout_bloc_droit = qtw.QHBoxLayout()
         param_page = self._param['page']['structure interne']
         label = param_page['label']
         texte_ligne_deroutante = param_page['liste_deroulante']
@@ -454,52 +451,56 @@ class FenetreCreationProjet(Fenetre):
          # nombre d’étage :
         bloc_gauche = qtw.QWidget()
         lbl_0 = qtw.QLabel(label[0])
+        layout_bloc_gauche = qtw.QHBoxLayout()
         layout_bloc_gauche.addWidget(lbl_0)
         nbr_train = qtw.QLineEdit()
         nbr_train.setValidator(qtg.QDoubleValidator(0.0, 9999.99, 2))
         nbr_train.setFixedWidth(60)
         nbr_train.setText('1')
-        layout_bloc_gauche.addWidget(nbr_train)
-        layout_bloc_gauche.addStretch()
         bloc_gauche.setLayout(layout_bloc_gauche)
         bloc_gauche.setStyleSheet(special_style)
         # Bloc 2 : le reste à droite
         bloc_droit = qtw.QWidget()
         lbl_1 = qtw.QLabel(label[1])
-        layout_bloc_droit.addWidget(lbl_1)
         liste_deroulante = qtw.QComboBox()
-        liste_deroulante.addItems(texte_ligne_deroutante)
-        layout_bloc_droit.addWidget(liste_deroulante)
         # entraxe
         lbl_2 = qtw.QLabel(label[2])
-        layout_bloc_droit.addWidget(lbl_2)
         self._varaible_entraxe = qtw.QLineEdit()
         self._varaible_entraxe.setValidator(qtg.QIntValidator(0, 100))
         self._varaible_entraxe.setFixedWidth(80)
         self._varaible_entraxe.setText('20')
-        layout_bloc_droit.addWidget(self._varaible_entraxe)
         lbl_3 = qtw.QLabel(label[3])
-        layout_bloc_droit.addWidget(lbl_3)
-        layout_bloc_droit.addChildWidget(self._varaible_entraxe)
         # contrainte max
         lbl_4 = qtw.QLabel(label[4])
-        layout_bloc_droit.addWidget(lbl_4)
         self._varaible_contrainte_max = qtw.QLineEdit()
         self._varaible_contrainte_max.setValidator(qtg.QIntValidator(0, 100))
         self._varaible_contrainte_max.setFixedWidth(80)
         self._varaible_contrainte_max.setText('210000')
-        layout_bloc_droit.addWidget(self._varaible_contrainte_max)
         lbl_5 = qtw.QLabel(label[5])
-        layout_bloc_droit.addWidget(lbl_5)
-        layout_bloc_droit.addStretch()
-        bloc_droit.setLayout(layout_bloc_droit)
         bloc_droit.setStyleSheet(special_style)
         # --- Ajout au layout principal
+        layout_bloc_droit = qtw.QHBoxLayout()
+
+        layout_bloc_gauche.addWidget(nbr_train)
+        layout_bloc_gauche.addStretch()
+        layout_bloc_droit.addWidget(lbl_1)
+        liste_deroulante.addItems(texte_ligne_deroutante)
+        layout_bloc_droit.addWidget(liste_deroulante)
+        layout_bloc_droit.addWidget(lbl_2)
+        layout_bloc_droit.addWidget(self._varaible_entraxe)
+        layout_bloc_droit.addWidget(lbl_3)
+        layout_bloc_droit.addChildWidget(self._varaible_entraxe)
+        bloc_droit.setLayout(layout_bloc_droit)
+        layout_bloc_droit.addWidget(lbl_4)
+        layout_bloc_droit.addWidget(self._varaible_contrainte_max)
+        layout_bloc_droit.addWidget(lbl_5)
+        layout_bloc_droit.addStretch()
         ligne.addWidget(bloc_gauche)
         ligne.addSpacing(100)  # Espace fixe entre les deux blocs
         ligne.addWidget(bloc_droit)
         ligne.addStretch()
         # ajoute la ligne au layout
+        layout_page = qtw.QVBoxLayout()
         layout_page.addLayout(ligne)
         layout_page.addStretch()
         page.setLayout(layout_page)
