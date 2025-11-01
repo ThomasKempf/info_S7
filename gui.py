@@ -483,48 +483,31 @@ class FenetreCreationProjet(Fenetre):
         labels = result['labels']
         self._lineedits = result['lineedits']
         liste_deroulante = result['comboboxes']['liste_deroulante']
+        liste_deroulante.addItems(texte_ligne_deroutante)
 
 
-        liste_deroulante = qtw.QComboBox()
-
-         # nombre d’étage :
+        
+        text = ['1','20','210000']
+        for i, key in enumerate(self._lineedits):
+            self._lineedits[key].setValidator(qtg.QDoubleValidator())
+            self._lineedits[key].setFixedWidth(80)
+            self._lineedits[key].setText(text[i])
+        # bloc gauche
         layouts['bloc_gauche'].addWidget(labels['nbr_etage'])
-        self._lineedits['nbr_train'].setValidator(qtg.QDoubleValidator(0.0, 9999.99, 2))
-        self._lineedits['nbr_train'].setFixedWidth(60)
-        self._lineedits['nbr_train'].setText('1')
         widgets['bloc_gauche'].setLayout(layouts['bloc_gauche'])
         widgets['bloc_gauche'].setStyleSheet(special_style)
-        # Bloc 2 : le reste à droite
-        # entraxe
-        self._lineedits['entraxe'].setValidator(qtg.QIntValidator(0, 100))
-        self._lineedits['entraxe'].setFixedWidth(80)
-        self._lineedits['entraxe'].setText('20')
-        # contrainte max
-        self._lineedits['contrainte_max'].setValidator(qtg.QIntValidator(0, 100))
-        self._lineedits['contrainte_max'].setFixedWidth(80)
-        self._lineedits['contrainte_max'].setText('210000')
-        widgets['bloc_droit'].setStyleSheet(special_style)
-        # --- Ajout au layout principal
-
         layouts['bloc_gauche'].addWidget(self._lineedits['nbr_train'])
-        layouts['bloc_gauche'].addStretch()
-        layouts['bloc_droit'].addWidget(labels['1'])
-        liste_deroulante.addItems(texte_ligne_deroutante)
-        layouts['bloc_droit'].addWidget(liste_deroulante)
-        layouts['bloc_droit'].addWidget(labels['entraxe'])
-        layouts['bloc_droit'].addWidget(self._lineedits['entraxe'])
-        layouts['bloc_droit'].addWidget(labels['mm'])
-        layouts['bloc_droit'].addChildWidget(self._lineedits['entraxe'])
+        # bloc droit
+        widgets['bloc_droit'].setStyleSheet(special_style)
+        liste_widgets = [labels['1'],liste_deroulante,labels['entraxe'],self._lineedits['entraxe'],labels['mm'],
+                         labels['σ_max'],self._lineedits['contrainte_max'],labels['mpa']]
+        self.ajoute_widgets(layouts['bloc_droit'],liste_widgets)
         widgets['bloc_droit'].setLayout(layouts['bloc_droit'])
-        layouts['bloc_droit'].addWidget(labels['σ_max'])
-        layouts['bloc_droit'].addWidget(self._lineedits['contrainte_max'])
-        layouts['bloc_droit'].addWidget(labels['mpa'])
-        layouts['bloc_droit'].addStretch()
+        # page
         layouts['ligne'].addWidget(widgets['bloc_gauche'])
         layouts['ligne'].addSpacing(100)  # Espace fixe entre les deux blocs
         layouts['ligne'].addWidget(widgets['bloc_droit'])
         layouts['ligne'].addStretch()
-        # ajoute la ligne au layout
         layouts['page'].addLayout(layouts['ligne'])
         layouts['page'].addStretch()
         widgets['page'].setLayout(layouts['page'])
