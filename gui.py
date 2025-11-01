@@ -193,6 +193,33 @@ class Fenetre(qtw.QWidget):
             self.showMaximized()
 
 
+    def genere_elements(self,elements_dict:dict,labels_text:list):
+        result = {'layouts':{},'widgets':{},'labels':{},'lineedits':{},'comboboxes':{}}
+        if 'layouts' in elements_dict:
+            for key in elements_dict['layouts']:
+                if elements_dict['layouts'][key] == 'v':
+                    result['layouts'][key] = qtw.QVBoxLayout()
+                elif elements_dict['layouts'][key] == 'h':
+                    result['layouts'][key] = qtw.QHBoxLayout()
+        if 'widgets' in elements_dict:
+            widgets = elements_dict['widgets']
+            for i in range(len(widgets)):
+                result['widgets'][widgets[i]] = qtw.QWidget()
+        if 'labels' in elements_dict:
+            labels = elements_dict['labels']
+            for i in range(len(labels)):
+                result['labels'][labels[i]] = qtw.QLabel(labels_text[i])
+        if 'lineedits' in elements_dict:
+            lineedits = elements_dict['lineedits']
+            for i in range(len(lineedits)):
+                result['lineedits'][lineedits[i]] = qtw.QLineEdit()
+        if 'comboboxes' in elements_dict:
+            comboboxes = elements_dict['comboboxes']
+            for i in range(len(comboboxes)):
+                result['comboboxes'][comboboxes[i]] = qtw.QComboBox()
+        return result
+
+
     def ajoute_widgets(self,layout,list):
         for i in range(len(list)):
             layout.addWidget(list[i])
@@ -440,71 +467,68 @@ class FenetreCreationProjet(Fenetre):
                 padding: 8px;
             }
         """
-
         param_page = self._param['page']['structure interne']
-        label = param_page['label']
         texte_ligne_deroutante = param_page['liste_deroulante']
-        # creation page et ligne principale
-        page = qtw.QWidget()
-        ligne = qtw.QHBoxLayout()
-        # Bloc 1 : Label + zone de texte
-         # nombre d’étage :
-        bloc_gauche = qtw.QWidget()
-        lbl_0 = qtw.QLabel(label[0])
-        layout_bloc_gauche = qtw.QHBoxLayout()
-        layout_bloc_gauche.addWidget(lbl_0)
-        nbr_train = qtw.QLineEdit()
-        nbr_train.setValidator(qtg.QDoubleValidator(0.0, 9999.99, 2))
-        nbr_train.setFixedWidth(60)
-        nbr_train.setText('1')
-        bloc_gauche.setLayout(layout_bloc_gauche)
-        bloc_gauche.setStyleSheet(special_style)
-        # Bloc 2 : le reste à droite
-        bloc_droit = qtw.QWidget()
-        lbl_1 = qtw.QLabel(label[1])
-        liste_deroulante = qtw.QComboBox()
-        # entraxe
-        lbl_2 = qtw.QLabel(label[2])
-        self._varaible_entraxe = qtw.QLineEdit()
-        self._varaible_entraxe.setValidator(qtg.QIntValidator(0, 100))
-        self._varaible_entraxe.setFixedWidth(80)
-        self._varaible_entraxe.setText('20')
-        lbl_3 = qtw.QLabel(label[3])
-        # contrainte max
-        lbl_4 = qtw.QLabel(label[4])
-        self._varaible_contrainte_max = qtw.QLineEdit()
-        self._varaible_contrainte_max.setValidator(qtg.QIntValidator(0, 100))
-        self._varaible_contrainte_max.setFixedWidth(80)
-        self._varaible_contrainte_max.setText('210000')
-        lbl_5 = qtw.QLabel(label[5])
-        bloc_droit.setStyleSheet(special_style)
-        # --- Ajout au layout principal
-        layout_bloc_droit = qtw.QHBoxLayout()
 
-        layout_bloc_gauche.addWidget(nbr_train)
-        layout_bloc_gauche.addStretch()
-        layout_bloc_droit.addWidget(lbl_1)
+        elements = {
+            'layouts':{'page':'v','ligne':'h','bloc_gauche':'h','bloc_droit':'h'},
+            'widgets':['page','bloc_gauche','bloc_droit'],
+            'labels':['nbr_etage','1','entraxe','mm','σ_max','mpa'],
+            'lineedits':['nbr_train','entraxe','contrainte_max'],
+            'comboboxes':['liste_deroulante']
+        }
+        result =self.genere_elements(elements,param_page['label'])
+        layouts = result['layouts']
+        widgets = result['widgets']
+        labels = result['labels']
+        self._lineedits = result['lineedits']
+        liste_deroulante = result['comboboxes']['liste_deroulante']
+
+
+        liste_deroulante = qtw.QComboBox()
+
+         # nombre d’étage :
+        layouts['bloc_gauche'].addWidget(labels['nbr_etage'])
+        self._lineedits['nbr_train'].setValidator(qtg.QDoubleValidator(0.0, 9999.99, 2))
+        self._lineedits['nbr_train'].setFixedWidth(60)
+        self._lineedits['nbr_train'].setText('1')
+        widgets['bloc_gauche'].setLayout(layouts['bloc_gauche'])
+        widgets['bloc_gauche'].setStyleSheet(special_style)
+        # Bloc 2 : le reste à droite
+        # entraxe
+        self._lineedits['entraxe'].setValidator(qtg.QIntValidator(0, 100))
+        self._lineedits['entraxe'].setFixedWidth(80)
+        self._lineedits['entraxe'].setText('20')
+        # contrainte max
+        self._lineedits['contrainte_max'].setValidator(qtg.QIntValidator(0, 100))
+        self._lineedits['contrainte_max'].setFixedWidth(80)
+        self._lineedits['contrainte_max'].setText('210000')
+        widgets['bloc_droit'].setStyleSheet(special_style)
+        # --- Ajout au layout principal
+
+        layouts['bloc_gauche'].addWidget(self._lineedits['nbr_train'])
+        layouts['bloc_gauche'].addStretch()
+        layouts['bloc_droit'].addWidget(labels['1'])
         liste_deroulante.addItems(texte_ligne_deroutante)
-        layout_bloc_droit.addWidget(liste_deroulante)
-        layout_bloc_droit.addWidget(lbl_2)
-        layout_bloc_droit.addWidget(self._varaible_entraxe)
-        layout_bloc_droit.addWidget(lbl_3)
-        layout_bloc_droit.addChildWidget(self._varaible_entraxe)
-        bloc_droit.setLayout(layout_bloc_droit)
-        layout_bloc_droit.addWidget(lbl_4)
-        layout_bloc_droit.addWidget(self._varaible_contrainte_max)
-        layout_bloc_droit.addWidget(lbl_5)
-        layout_bloc_droit.addStretch()
-        ligne.addWidget(bloc_gauche)
-        ligne.addSpacing(100)  # Espace fixe entre les deux blocs
-        ligne.addWidget(bloc_droit)
-        ligne.addStretch()
+        layouts['bloc_droit'].addWidget(liste_deroulante)
+        layouts['bloc_droit'].addWidget(labels['entraxe'])
+        layouts['bloc_droit'].addWidget(self._lineedits['entraxe'])
+        layouts['bloc_droit'].addWidget(labels['mm'])
+        layouts['bloc_droit'].addChildWidget(self._lineedits['entraxe'])
+        widgets['bloc_droit'].setLayout(layouts['bloc_droit'])
+        layouts['bloc_droit'].addWidget(labels['σ_max'])
+        layouts['bloc_droit'].addWidget(self._lineedits['contrainte_max'])
+        layouts['bloc_droit'].addWidget(labels['mpa'])
+        layouts['bloc_droit'].addStretch()
+        layouts['ligne'].addWidget(widgets['bloc_gauche'])
+        layouts['ligne'].addSpacing(100)  # Espace fixe entre les deux blocs
+        layouts['ligne'].addWidget(widgets['bloc_droit'])
+        layouts['ligne'].addStretch()
         # ajoute la ligne au layout
-        layout_page = qtw.QVBoxLayout()
-        layout_page.addLayout(ligne)
-        layout_page.addStretch()
-        page.setLayout(layout_page)
-        return page
+        layouts['page'].addLayout(layouts['ligne'])
+        layouts['page'].addStretch()
+        widgets['page'].setLayout(layouts['page'])
+        return widgets['page']
 
 
     def next_page(self) -> None:
@@ -525,8 +549,8 @@ class FenetreCreationProjet(Fenetre):
             description_global['puissance_entree'] = int(self._variables['Puissance'].text())
             description_global['couple_sortie'] = int(self._variables['Couple'].text())
             description_train = {}
-            entraxe = int(self._varaible_entraxe.text())
-            contrainte_max = int(self._varaible_contrainte_max.text())
+            entraxe = int(self._lineedits['entraxe'].text())
+            contrainte_max = int(self._lineedits['contrainte_max'].text())
             train = Simulation_train(description_global['vitesse_entree'],
                                      description_global['puissance_entree'],
                                      description_global['couple_sortie'],
