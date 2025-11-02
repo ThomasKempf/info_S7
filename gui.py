@@ -9,6 +9,7 @@
 
 """
 import sys
+from unittest import result
 from PySide6 import (
     QtWidgets as qtw,
     QtGui as qtg,
@@ -30,8 +31,8 @@ MENU = {
     },
     'geometrie': [700, 300],
     'titre': 'Menu',
-    'label':['Dimensionnement Réducteur'],
-    'boutons':['Créer Projet','Ouvrir Projet','EXIT'],
+    'labels':['Dimensionnement Réducteur'],
+    'buttons':['Créer Projet','Ouvrir Projet','EXIT'],
     'styleSheet': '''
         QWidget {
             background-color: #f8f8f8; /* Couleur de fond claire */
@@ -55,6 +56,7 @@ MENU = {
 
 # parametre specifique a la fenetre menu
 CREATION_PROJET = {
+    'boutons':['Next','Précedent'],
     'page':{
         'entree_sortie':{
             'label':['Vitess','RPM','Puissance','kW','Reducteur','Couple','Nm'],
@@ -184,7 +186,7 @@ class Fenetre(qtw.QWidget):
     classe de base pour les fenetres
     parametre : dictionnaire contenant les parametres de la fenetre, propre a chaque fenetre
     '''
-    def __init__(self, param: dict) -> None:
+    def __init__(self, param: dict,elements:dict) -> None:
         super().__init__()
         self._param = param
         self.setWindowTitle(param['titre'])
@@ -193,36 +195,48 @@ class Fenetre(qtw.QWidget):
             self.setFixedSize(*param['geometrie'])
         else:
             self.showMaximized()
+        result =self.genere_elements(elements,param)
+        for key in result:
+            setattr(self, key, result[key])
 
 
-    def genere_elements(self,elements_dict:dict,textes):
-        result = {'layouts':{},'widgets':{},'labels':{},'lineedits':{},'comboboxes':{},'buttons':{}}
-        if 'layouts' in elements_dict:
-            for key in elements_dict['layouts']:
-                if elements_dict['layouts'][key] == 'v':
-                    result['layouts'][key] = qtw.QVBoxLayout()
-                elif elements_dict['layouts'][key] == 'h':
-                    result['layouts'][key] = qtw.QHBoxLayout()
-        if 'widgets' in elements_dict:
-            widgets = elements_dict['widgets']
-            for i in range(len(widgets)):
-                result['widgets'][widgets[i]] = qtw.QWidget()
-        if 'labels' in elements_dict:
-            labels = elements_dict['labels']
-            for i in range(len(labels)):
-                result['labels'][labels[i]] = qtw.QLabel(textes['labels'][i])
-        if 'lineedits' in elements_dict:
-            lineedits = elements_dict['lineedits']
-            for i in range(len(lineedits)):
-                result['lineedits'][lineedits[i]] = qtw.QLineEdit()
-        if 'comboboxes' in elements_dict:
-            comboboxes = elements_dict['comboboxes']
-            for i in range(len(comboboxes)):
-                result['comboboxes'][comboboxes[i]] = qtw.QComboBox()
-        if 'buttons' in elements_dict:
-            buttons = elements_dict['buttons']
-            for i in range(len(buttons)):
-                result['buttons'][buttons[i]] = qtw.QPushButton(textes['buttons'][i])
+    def genere_elements(self,elements:dict,textes):
+        constructors = {
+        'layouts': lambda spec: qtw.QVBoxLayout() if spec == 'v' else qtw.QHBoxLayout(),
+        'widgets': lambda _: qtw.QWidget(),
+        'labels': lambda text: qtw.QLabel(text),
+        'lineedits': lambda _: qtw.QLineEdit(),
+        'comboboxes': lambda _: qtw.QComboBox(),
+        'buttons': lambda text: qtw.QPushButton(text),
+        'stack': lambda _: qtw.QStackedWidget()
+        }
+        result = {}
+        for key in constructors:
+            result[key] = {}  # initialiser chaque type d'élément avec un dict vide
+        for key, valeur_result in result.items():
+            # vérifie si le type d'élément est présent dans elements
+            if key not in elements:
+                continue
+            # crée variables temporaires
+            valeur = elements[key]
+            text_list = textes.get(key, [])
+            # créer les éléments
+            if key == 'layouts':
+                # Cas spécial : layouts est un dict (nom: 'v' ou 'h')
+                for name, spec in valeur.items():
+                    valeur_result[name] = constructors[key](spec)
+            else:
+                # Cas général : listes d'éléments
+                for i, name in enumerate(valeur):
+                    if i < len(text_list):
+                        text = text_list[i]
+                    else:
+                        text = ""
+                    if key in ('labels', 'buttons'):
+                        arg = text
+                    else:
+                        arg = None
+                    valeur_result[name] = constructors[key](arg)
         return result
 
 
@@ -257,24 +271,15 @@ class FenetreMenu(Fenetre):
     parametre : dictionnaire contenant les parametres de la fenetre, propre a chaque fenetre
     '''
     def __init__(self, param: dict) -> None:
-        super().__init__(param)
-        self.genere_composant()
-        self.adapt_composant()
-        self.ajoute_composants()
-
-
-    def genere_composant(self):
         elements = {
             'layouts':{'main':'h','left':'v','right':'v'},
             'widgets':['engrenages'],
             'labels':['titre'],
             'buttons':['creer_projet','ouvrir_projet','exit']
         }
-        result =self.genere_elements(elements,{'labels':self._param['label'], 'buttons':self._param['boutons']})
-        self.layouts = result['layouts']
-        self.engrenages = result['widgets']['engrenages']
-        self.titre = result['labels']['titre']
-        self.buttons = result['buttons']
+        super().__init__(param,elements)
+        self.adapt_composant()
+        self.ajoute_composants()
 
 
     def adapt_composant(self):
@@ -287,11 +292,11 @@ class FenetreMenu(Fenetre):
         self.buttons['exit'].setFixedSize(210,50)
         self.buttons['exit'].clicked.connect(self.close)
         # engrenage
-        self.widget_engrenage = self._generer_icone_engrenage(self.engrenages)
+        self.widget_engrenage = self._generer_icone_engrenage(self.widgets['engrenages'])
 
 
     def ajoute_composants(self):
-        liste = [self.titre,self.buttons['creer_projet'],self.buttons['ouvrir_projet']]
+        liste = [self.labels['titre'],self.buttons['creer_projet'],self.buttons['ouvrir_projet']]
         self.ajoute_widgets(self.layouts['left'],liste)
         self.layouts['left'].addStretch() # Pour pousser les éléments vers le haut
         self.layouts['right'].addWidget(self.widget_engrenage, alignment=qtg.Qt.AlignmentFlag.AlignTop)
@@ -322,10 +327,10 @@ class FenetreMenu(Fenetre):
 
 
     def adapter_titre(self):
-        self.titre.setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop) # Alignement à gauche et en haut
-        self.titre.setFont(qtg.QFont('Arial',20, qtg.QFont.Weight.Bold)) 
-        self.titre.setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px') # Style du titre
-        self.titre.setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
+        self.labels['titre'].setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop) # Alignement à gauche et en haut
+        self.labels['titre'].setFont(qtg.QFont('Arial',20, qtg.QFont.Weight.Bold)) 
+        self.labels['titre'].setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px') # Style du titre
+        self.labels['titre'].setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
 
 
     def _ouvrir_fenetre_creation_projet(self) -> None:
@@ -344,47 +349,50 @@ class FenetreCreationProjet(Fenetre):
         param = parametre de la page situee au dessus
         '''
         super().__init__(param)
+        elements = {
+            'layouts':{'main':'v','button':'h'},
+            'buttons':['next','precedent'],
+            'stack':['stack']
+        }
+        result =self.genere_elements(elements,{'buttons':self._param['boutons']})
+        self.layouts = result['layouts']
+        self.buttons = result['buttons']
+        self.stack = result['stack']['stack']
+
         self._param = param
         self._widget_pages = self.generer_widget_page(nbr_page=2)
         # Layout vertical pour le stack + boutons
-        self._bouton_layout = qtw.QHBoxLayout()
-        self._bouton_layout.insertStretch(0, 1)
-        self.generer_bouton_next_precedent(self._bouton_layout)
-        self.generer_layout_principale()
+        self.layouts['button'].insertStretch(0, 1)
+        self.generer_bouton_next_precedent(self.layouts['button'])
+        self.ajoute_composants()
 
 
     def generer_widget_page(self,nbr_page) -> None:
         '''
         Fonction pour générer les pages du QStackedWidget.
         '''
-        stack = qtw.QStackedWidget()
         pages = []
         for i in range(nbr_page):
             page_method = getattr(self, f"create_page{i}")
             page_instance = page_method()
-            stack.addWidget(page_instance)
+            self.stack.addWidget(page_instance)
             pages.append(page_instance)
-        return stack
+        return self.stack
 
 
-    def generer_layout_principale(self):
-        main_layout = qtw.QVBoxLayout()
-        main_layout.addWidget(self._widget_pages)
-        main_layout.addLayout(self._bouton_layout)
-        self.setLayout(main_layout)
+    def ajoute_composants(self):
+        self.layouts['main'].addWidget(self._widget_pages)
+        self.layouts['main'].addLayout(self.layouts['button'])
+        self.setLayout(self.layouts['main'])
 
 
     def generer_bouton_next_precedent(self,layout):
-        texte = ['Precedent','Next']
         taille = [210,50]
         fonction = ['precedente_page','next_page']
-        widget = [0,0]
-        for i in range(len(texte)):
-            widget[i] = qtw.QPushButton(texte[i])
-            widget[i].setFixedSize(*taille)
-            widget[i].clicked.connect(getattr(self, fonction[i]))
-            layout.addWidget(widget[i])
-        
+        for i, key in enumerate(self.buttons):
+            self.buttons[key].setFixedSize(*taille)
+            self.buttons[key].clicked.connect(getattr(self, fonction[i]))
+            layout.addWidget(self.buttons[key])
 
 
     def create_page0(self) -> qtw.QWidget:
