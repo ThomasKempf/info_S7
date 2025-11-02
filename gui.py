@@ -9,7 +9,6 @@
 
 """
 import sys
-from unittest import result
 from PySide6 import (
     QtWidgets as qtw,
     QtGui as qtg,
@@ -56,10 +55,15 @@ MENU = {
 
 # parametre specifique a la fenetre menu
 CREATION_PROJET = {
-    'boutons':['Next','Précedent'],
+    'buttons':['Next','Précedent'],
     'page':{
         'entree_sortie':{
-            'label':['Vitess','RPM','Puissance','kW','Reducteur','Couple','Nm'],
+            'labels_unitee':{
+                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','margin':[122,0,0,0]},
+                'Puissance':{'unitee':'kW','valeur_defaut':'1500','margin':[100,0,0,0]},
+                'Couple':{'unitee':'Nm','valeur_defaut':'380','margin':[0,0,100,0]}
+            },
+            'labels':['Reducteur']
         },
         'structure interne':{
             'label':['nombre d’étage :','1','Entraxe','mm','σ max','MPa',],
@@ -87,6 +91,7 @@ CREATION_PROJET = {
         }
     '''
 }
+
 
 ATTENTE_CREATION = {
     'geometrie': [200, 60],
@@ -348,19 +353,13 @@ class FenetreCreationProjet(Fenetre):
         Initialise la fenetre en plus des bouton de base et de toute la structure
         param = parametre de la page situee au dessus
         '''
-        super().__init__(param)
         elements = {
             'layouts':{'main':'v','button':'h'},
             'buttons':['next','precedent'],
             'stack':['stack']
         }
-        result =self.genere_elements(elements,{'buttons':self._param['boutons']})
-        self.layouts = result['layouts']
-        self.buttons = result['buttons']
-        self.stack = result['stack']['stack']
-
-        self._param = param
-        self._widget_pages = self.generer_widget_page(nbr_page=2)
+        super().__init__(param,elements)
+        self.generer_widget_page(nbr_page=2)
         # Layout vertical pour le stack + boutons
         self.layouts['button'].insertStretch(0, 1)
         self.generer_bouton_next_precedent(self.layouts['button'])
@@ -375,15 +374,8 @@ class FenetreCreationProjet(Fenetre):
         for i in range(nbr_page):
             page_method = getattr(self, f"create_page{i}")
             page_instance = page_method()
-            self.stack.addWidget(page_instance)
+            self.stack['stack'].addWidget(page_instance)
             pages.append(page_instance)
-        return self.stack
-
-
-    def ajoute_composants(self):
-        self.layouts['main'].addWidget(self._widget_pages)
-        self.layouts['main'].addLayout(self.layouts['button'])
-        self.setLayout(self.layouts['main'])
 
 
     def generer_bouton_next_precedent(self,layout):
@@ -394,6 +386,13 @@ class FenetreCreationProjet(Fenetre):
             self.buttons[key].clicked.connect(getattr(self, fonction[i]))
             layout.addWidget(self.buttons[key])
 
+
+    def ajoute_composants(self):
+        self.layouts['main'].addWidget(self.stack['stack'])
+        self.layouts['main'].addLayout(self.layouts['button'])
+        self.setLayout(self.layouts['main'])
+
+    # --- Création page 0 ---
 
     def create_page0(self) -> qtw.QWidget:
         '''
@@ -410,10 +409,21 @@ class FenetreCreationProjet(Fenetre):
                     font-weight: bold;           /* Gras */
                 }
         """
+        elements = {
+            'layouts':{'main_0':'h','block_gauche_0':'v','block_centre_0':'v','block_droit_0':'h'},
+            'labels':['reducteur'],
+        }
+        result =self.genere_elements(elements,{'labels':self._param['page']['entree_sortie']['labels']})
+        self.layouts_0 = result['layouts']
+        self.labels_0 = result['labels']
+        
+
+
+         # creer les widget specifique a la page 0
+
         self._widgets,self._variables = self.genere_widgets_page0()
         self._labels_fleches = self.genere_fleches_page0(2)
-        self._lbl_5 = qtw.QLabel('Reducteur')
-        self._lbl_5.setStyleSheet(special_style)
+        self.labels_0['reducteur'].setStyleSheet(special_style)
         self._layout_enfant = self.genere_layoute_page0() 
         return self.genere_layout_principale_page0()
 
@@ -444,30 +454,26 @@ class FenetreCreationProjet(Fenetre):
         return label
 
     def genere_layoute_page0(self):
-        block_gauche = qtw.QVBoxLayout()
-        block_gauche.addStretch()
-        block_gauche.addWidget(self._widgets['Vitesse'])
-        block_gauche.addWidget(self._widgets['Puissance'])
-        block_gauche.addStretch()
-        block_centre = qtw.QVBoxLayout()
-        block_centre.addStretch()
-        block_centre.addWidget(self._lbl_5)
-        block_centre.addStretch()
-        block_droit = qtw.QHBoxLayout()
-        block_droit.addStretch()
-        block_droit.addWidget(self._widgets['Couple'])
-        return [block_gauche,block_centre,block_droit]
+        self.layouts_0['block_gauche_0'].addStretch()
+        self.layouts_0['block_gauche_0'].addWidget(self._widgets['Vitesse'])
+        self.layouts_0['block_gauche_0'].addWidget(self._widgets['Puissance'])
+        self.layouts_0['block_gauche_0'].addStretch()
+        self.layouts_0['block_centre_0'].addStretch()
+        self.layouts_0['block_centre_0'].addWidget(self.labels_0['reducteur'])
+        self.layouts_0['block_centre_0'].addStretch()
+        self.layouts_0['block_droit_0'].addStretch()
+        self.layouts_0['block_droit_0'].addWidget(self._widgets['Couple'])
+        return [self.layouts_0['block_gauche_0'],self.layouts_0['block_centre_0'],self.layouts_0['block_droit_0']]
 
 
     def genere_layout_principale_page0(self):
-        layoute_page0 = qtw.QHBoxLayout()
-        layoute_page0.addLayout(self._layout_enfant[0])
-        layoute_page0.addWidget(self._labels_fleches[0])
-        layoute_page0.addLayout(self._layout_enfant[1])
-        layoute_page0.addWidget(self._labels_fleches[1])
-        layoute_page0.addLayout(self._layout_enfant[2])
+        self.layouts_0['main_0'].addLayout(self._layout_enfant[0])
+        self.layouts_0['main_0'].addWidget(self._labels_fleches[0])
+        self.layouts_0['main_0'].addLayout(self._layout_enfant[1])
+        self.layouts_0['main_0'].addWidget(self._labels_fleches[1])
+        self.layouts_0['main_0'].addLayout(self._layout_enfant[2])
         page = qtw.QWidget()
-        page.setLayout(layoute_page0)
+        page.setLayout(self.layouts_0['main_0'])
         return page
 
 
@@ -535,9 +541,9 @@ class FenetreCreationProjet(Fenetre):
         '''
         permet de passer a la page suivante
         '''
-        i = self._widget_pages.currentIndex()
-        if i < self._widget_pages.count() - 1:
-            self._widget_pages.setCurrentIndex(i + 1)
+        i = self.stack['stack'].currentIndex()
+        if i < self.stack['stack'].count() - 1:
+            self.stack['stack'].setCurrentIndex(i + 1)
         else:
             # ouvre fenetre attente
             fenetre_attente = FenetreAttenteCreation(ATTENTE_CREATION)
@@ -572,9 +578,16 @@ class FenetreCreationProjet(Fenetre):
         '''
         permet de passer a la page precedente
         '''
-        i = self.stack.currentIndex()
+        i = self.stack['stack'].currentIndex()
         if i > 0:
-            self.stack.setCurrentIndex(i - 1)
+            self.stack['stack'].setCurrentIndex(i - 1)
+
+
+
+class Page_0():
+    def __init__(self, fenetre: Fenetre) -> None:
+        pass
+
 
 
 
