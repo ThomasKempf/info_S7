@@ -30,6 +30,8 @@ MENU = {
     },
     'geometrie': [700, 300],
     'titre': 'Menu',
+    'label':['Dimensionnement Réducteur'],
+    'boutons':['Créer Projet','Ouvrir Projet','EXIT'],
     'styleSheet': '''
         QWidget {
             background-color: #f8f8f8; /* Couleur de fond claire */
@@ -184,7 +186,7 @@ class Fenetre(qtw.QWidget):
     '''
     def __init__(self, param: dict) -> None:
         super().__init__()
-        self._parametre = param
+        self._param = param
         self.setWindowTitle(param['titre'])
         self.setStyleSheet(param['styleSheet'])
         if 'geometrie' in param:
@@ -193,8 +195,8 @@ class Fenetre(qtw.QWidget):
             self.showMaximized()
 
 
-    def genere_elements(self,elements_dict:dict,labels_text:list):
-        result = {'layouts':{},'widgets':{},'labels':{},'lineedits':{},'comboboxes':{}}
+    def genere_elements(self,elements_dict:dict,textes):
+        result = {'layouts':{},'widgets':{},'labels':{},'lineedits':{},'comboboxes':{},'buttons':{}}
         if 'layouts' in elements_dict:
             for key in elements_dict['layouts']:
                 if elements_dict['layouts'][key] == 'v':
@@ -208,7 +210,7 @@ class Fenetre(qtw.QWidget):
         if 'labels' in elements_dict:
             labels = elements_dict['labels']
             for i in range(len(labels)):
-                result['labels'][labels[i]] = qtw.QLabel(labels_text[i])
+                result['labels'][labels[i]] = qtw.QLabel(textes['labels'][i])
         if 'lineedits' in elements_dict:
             lineedits = elements_dict['lineedits']
             for i in range(len(lineedits)):
@@ -217,6 +219,10 @@ class Fenetre(qtw.QWidget):
             comboboxes = elements_dict['comboboxes']
             for i in range(len(comboboxes)):
                 result['comboboxes'][comboboxes[i]] = qtw.QComboBox()
+        if 'buttons' in elements_dict:
+            buttons = elements_dict['buttons']
+            for i in range(len(buttons)):
+                result['buttons'][buttons[i]] = qtw.QPushButton(textes['buttons'][i])
         return result
 
 
@@ -252,52 +258,57 @@ class FenetreMenu(Fenetre):
     '''
     def __init__(self, param: dict) -> None:
         super().__init__(param)
-        self.creer_composant()
-        self.genere_layout()
+        self.genere_composant()
+        self.adapt_composant()
+        self.ajoute_composants()
 
 
-    def creer_composant(self):
+    def genere_composant(self):
+        elements = {
+            'layouts':{'main':'h','left':'v','right':'v'},
+            'widgets':['engrenages'],
+            'labels':['titre'],
+            'buttons':['creer_projet','ouvrir_projet','exit']
+        }
+        result =self.genere_elements(elements,{'labels':self._param['label'], 'buttons':self._param['boutons']})
+        self.layouts = result['layouts']
+        self.engrenages = result['widgets']['engrenages']
+        self.titre = result['labels']['titre']
+        self.buttons = result['buttons']
+
+
+    def adapt_composant(self):
         # creer different composant
-        self.titre = self.creer_titre()
+        self.adapter_titre()
         # bouton_creer_projet
-        self.bouton_creer_projet = qtw.QPushButton('Créer Projet')
-        self.bouton_creer_projet.clicked.connect(self._ouvrir_fenetre_creation_projet)
+        self.buttons['creer_projet'].clicked.connect(self._ouvrir_fenetre_creation_projet)
         # bouton_ouvrir_projet
-        self.bouton_ouvrir_projet = qtw.QPushButton('Ouvrir Projet')
         # bouton exit
-        self.bouton_exit = qtw.QPushButton('EXIT')
-        self.bouton_exit.setFixedSize(210,50)
-        self.bouton_exit.clicked.connect(self.close)
+        self.buttons['exit'].setFixedSize(210,50)
+        self.buttons['exit'].clicked.connect(self.close)
         # engrenage
-        self.widget_engrenage = self._generer_icone_engrenage()
+        self.widget_engrenage = self._generer_icone_engrenage(self.engrenages)
 
 
-    def genere_layout(self):
-        # genere le layoute de droite
-        left_layout = qtw.QVBoxLayout()
-        liste = [self.titre,self.bouton_creer_projet,self.bouton_ouvrir_projet]
-        self.ajoute_widgets(left_layout,liste)
-        left_layout.addStretch() # Pour pousser les éléments vers le haut
-        # genere le layoute de gauche
-        right_layout = qtw.QVBoxLayout()
-        right_layout.addWidget(self.widget_engrenage, alignment=qtg.Qt.AlignmentFlag.AlignTop)
-        right_layout.addStretch()
-        right_layout.addWidget(self.bouton_exit)
-        # genere le layoute principale
-        main_layout = qtw.QHBoxLayout()
-        liste = [left_layout,right_layout]
-        self.ajoute_layoutes(main_layout,liste)
-        self.setLayout(main_layout) # Définir le layout principal pour la fenêtre
+    def ajoute_composants(self):
+        liste = [self.titre,self.buttons['creer_projet'],self.buttons['ouvrir_projet']]
+        self.ajoute_widgets(self.layouts['left'],liste)
+        self.layouts['left'].addStretch() # Pour pousser les éléments vers le haut
+        self.layouts['right'].addWidget(self.widget_engrenage, alignment=qtg.Qt.AlignmentFlag.AlignTop)
+        self.layouts['right'].addStretch()
+        self.layouts['right'].addWidget(self.buttons['exit'])
+        liste = [self.layouts['left'],self.layouts['right']]
+        self.ajoute_layoutes(self.layouts['main'],liste)
+        self.setLayout(self.layouts['main']) # Définir le layout principal pour la fenêtre
     
 
-    def _generer_icone_engrenage(self) -> None:
+    def _generer_icone_engrenage(self,widget) -> None:
         '''
         Fonction pour générer l'icône d'engrenage dans le layout spécifié
         uniquement dans la classe FenetreMenu parce que l'affichage est spécifique au menu.
         layout : Layout dans lequel ajouter les icône d'engrenage
         '''
-        param = self._parametre['widget_engrenage']
-        widget = qtw.QWidget(self)
+        param = self._param['widget_engrenage']
         widget.setFixedSize(*param['taille'])  # Taille du conteneur
         for pos in param['placement_engrenages']:
             gear = qtw.QLabel('\u2699', widget)  # Unicode pour l'icône d'engrenage
@@ -310,13 +321,11 @@ class FenetreMenu(Fenetre):
         return widget
 
 
-    def creer_titre(self):
-        titre = qtw.QLabel('Dimensionnement Réducteur')
-        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop) # Alignement à gauche et en haut
-        titre.setFont(qtg.QFont('Arial',20, qtg.QFont.Weight.Bold)) 
-        titre.setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px') # Style du titre
-        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
-        return titre
+    def adapter_titre(self):
+        self.titre.setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop) # Alignement à gauche et en haut
+        self.titre.setFont(qtg.QFont('Arial',20, qtg.QFont.Weight.Bold)) 
+        self.titre.setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px') # Style du titre
+        self.titre.setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
 
 
     def _ouvrir_fenetre_creation_projet(self) -> None:
@@ -477,7 +486,7 @@ class FenetreCreationProjet(Fenetre):
             'lineedits':['nbr_train','entraxe','contrainte_max'],
             'comboboxes':['liste_deroulante']
         }
-        result =self.genere_elements(elements,param_page['label'])
+        result =self.genere_elements(elements,{'labels':param_page['label']})
         layouts = result['layouts']
         widgets = result['widgets']
         labels = result['labels']
