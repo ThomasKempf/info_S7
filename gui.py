@@ -569,7 +569,7 @@ class Page_1():
         generation de la page 1 qui contient le choix du nombre de train, de leurs type et de leur materiaux
         retourne la variable de la page
         '''
-        special_style = """
+        PAGE_1['styleSheet'] = """
             QWidget {
                 background: #fff; /* Couleur de fond blanche */
                 border: 1px solid #222;
@@ -577,45 +577,54 @@ class Page_1():
                 padding: 8px;
             }
         """
+        self._genere_variable_elements_variables()
+        self._add_element_block_gauche()
+        self._add_element_block_droite()
+        self._add_element_block_ligne()
+        
 
+    def _genere_variable_elements_variables(self):
         elements = {
             'layouts':{'page':'v','ligne':'h','bloc_gauche':'h','bloc_droit':'h'},
-            'widgets':['page','bloc_gauche','bloc_droit'],
+            'widgets':['bloc_gauche','bloc_droit'],
             'labels':['nbr_etage','1'],
             'lineedits':['nbr_train'],
             'comboboxes':['liste_deroulante']
         }
         result =fenetre.genere_elements(elements,PAGE_1)
-        layouts = result['layouts']
+        self.layouts = result['layouts']
         self.widgets = result['widgets']
-        labels = result['labels']
+        self.labels = result['labels']
         self.nbr_train = result['lineedits']['nbr_train']
-        liste_deroulante = result['comboboxes']['liste_deroulante']
-
-
-        widgets_unitee,self._variables = fenetre._genere_variables_unitees(PAGE_1['labels_unitee'])
-        self.widgets.update(widgets_unitee)
+        self.liste_deroulante = result['comboboxes']['liste_deroulante']
+        widgets,self._variables = fenetre._genere_variables_unitees(PAGE_1['labels_unitee'])
+        self.widgets.update(widgets)
+        # config nbr_train
         self.nbr_train.setValidator(qtg.QDoubleValidator())
         self.nbr_train.setFixedWidth(80)
         self.nbr_train.setText('1')
-        # bloc gauche
-        layouts['bloc_gauche'].addWidget(labels['nbr_etage'])
-        self.widgets['bloc_gauche'].setLayout(layouts['bloc_gauche'])
-        self.widgets['bloc_gauche'].setStyleSheet(special_style)
-        layouts['bloc_gauche'].addWidget(self.nbr_train)
-        # bloc droit
-        self.widgets['bloc_droit'].setStyleSheet(special_style)
-        liste_widgets = [labels['1'],liste_deroulante,self.widgets['entraxe'],self.widgets['σ_max']]
-        fenetre.ajoute_widgets(layouts['bloc_droit'],liste_widgets)
-        self.widgets['bloc_droit'].setLayout(layouts['bloc_droit'])
-        # page
-        layouts['ligne'].addWidget(self.widgets['bloc_gauche'])
-        layouts['ligne'].addSpacing(100)  # Espace fixe entre les deux blocs
-        layouts['ligne'].addWidget(self.widgets['bloc_droit'])
-        layouts['ligne'].addStretch()
-        layouts['page'].addLayout(layouts['ligne'])
-        layouts['page'].addStretch()
-        self.widgets['page'].setLayout(layouts['page'])
+        
+
+    def _add_element_block_gauche(self):
+        self.layouts['bloc_gauche'].addWidget(self.labels['nbr_etage'])
+        self.widgets['bloc_gauche'].setLayout(self.layouts['bloc_gauche'])
+        self.widgets['bloc_gauche'].setStyleSheet(PAGE_1['styleSheet'])
+        self.layouts['bloc_gauche'].addWidget(self.nbr_train)
+
+
+    def _add_element_block_droite(self):
+        self.widgets['bloc_droit'].setStyleSheet(PAGE_1['styleSheet'])
+        liste_widgets = [self.labels['1'],self.liste_deroulante,self.widgets['entraxe'],self.widgets['σ_max']]
+        fenetre.ajoute_widgets(self.layouts['bloc_droit'],liste_widgets)
+        self.widgets['bloc_droit'].setLayout(self.layouts['bloc_droit'])
+
+
+    def _add_element_block_ligne(self):
+        self.layouts['ligne'].addWidget(self.widgets['bloc_gauche'])
+        self.layouts['ligne'].addSpacing(100)  # Espace fixe entre les deux blocs
+        self.layouts['ligne'].addWidget(self.widgets['bloc_droit'])
+        self.layouts['ligne'].addStretch()
+
 
     def _genere_variable_unitee(self):
         widgets = {}
@@ -626,9 +635,13 @@ class Page_1():
             variables[key].setValidator(qtg.QIntValidator(0, 100))
         return widgets,variables
 
+
     def genere_page(self):
-        return self.widgets['page']
-        
+        self.layouts['page'].addLayout(self.layouts['ligne'])
+        self.layouts['page'].addStretch()
+        page = qtw.QWidget()
+        page.setLayout(self.layouts['page'])
+        return page
 
 
 class FenetreAttenteCreation(Fenetre):
