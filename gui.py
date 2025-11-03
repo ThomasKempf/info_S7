@@ -119,7 +119,7 @@ PAGE_1 = {
 ATTENTE_CREATION = {
     'geometrie': [200, 60],
     'titre': 'Creation Projet',
-    'labels':['Train_1'],
+    'labels':['creation projet','.','..','...',' '],
     'styleSheet':"""
             QWidget {
                 background: #fff; /* Couleur de fond blanche */
@@ -133,6 +133,7 @@ ATTENTE_CREATION = {
 PROJET = {
     'titre': 'Projet',
     'labels':['creation projet','.','..','...',' '],
+    'labels':['Train_1'],
     'styleSheet':"""
             QWidget {
                 background: #fff; /* Couleur de fond blanche */
@@ -281,13 +282,12 @@ class Fenetre(qtw.QWidget):
         return label
 
 
-    def ajoute_widgets(self,layout,list):
+    def ajoute(self,layout,list):
         for i in range(len(list)):
-            layout.addWidget(list[i])
-
-    def ajoute_layoutes(self,layout,list):
-        for i in range(len(list)):
-            layout.addLayout(list[i])
+            if isinstance(list[i], qtw.QLayout):
+                layout.addLayout(list[i])
+            else:
+                layout.addWidget(list[i])
 
 
     def _ajout_nom_zone_texte_unitee(self,nom:str,unitee:str,text_defaut):
@@ -329,8 +329,9 @@ class FenetreMenu(Fenetre):
         }
         super().__init__(param,elements)
         self.adapt_composant()
-        self.ajoute_composants()
-
+        self.add_left()
+        self.add_right()
+        self.add_main()
 
     def adapt_composant(self):
         # creer different composant
@@ -345,16 +346,23 @@ class FenetreMenu(Fenetre):
         self.widget_engrenage = self._generer_icone_engrenage(self.widgets['engrenages'])
 
 
-    def ajoute_composants(self):
+    def add_left(self):
         liste = [self.labels['titre'],self.buttons['creer_projet'],self.buttons['ouvrir_projet']]
-        self.ajoute_widgets(self.layouts['left'],liste)
+        self.ajoute(self.layouts['left'],liste)
         self.layouts['left'].addStretch() # Pour pousser les éléments vers le haut
+
+
+    def add_right(self):
         self.layouts['right'].addWidget(self.widget_engrenage, alignment=qtg.Qt.AlignmentFlag.AlignTop)
         self.layouts['right'].addStretch()
         self.layouts['right'].addWidget(self.buttons['exit'])
+
+    
+    def add_main(self):
         liste = [self.layouts['left'],self.layouts['right']]
-        self.ajoute_layoutes(self.layouts['main'],liste)
+        self.ajoute(self.layouts['main'],liste)
         self.setLayout(self.layouts['main']) # Définir le layout principal pour la fenêtre
+
     
 
     def _generer_icone_engrenage(self,widget) -> None:
@@ -435,8 +443,8 @@ class FenetreCreationProjet(Fenetre):
 
 
     def ajoute_composants(self):
-        self.layouts['main'].addWidget(self.stack['stack'])
-        self.layouts['main'].addLayout(self.layouts['button'])
+        liste = [self.stack['stack'],self.layouts['button']]
+        self.ajoute(self.layouts['main'],liste)
         self.setLayout(self.layouts['main'])
 
     # --- Création page 0 ---
@@ -535,8 +543,8 @@ class Page_0():
 
     def _add_element_block_gauche(self):
         self.layouts['block_gauche'].addStretch()
-        self.layouts['block_gauche'].addWidget(self._widgets['Vitesse'])
-        self.layouts['block_gauche'].addWidget(self._widgets['Puissance'])
+        liste = [self._widgets['Vitesse'],self._widgets['Puissance']]
+        fenetre.ajoute(self.layouts['block_gauche'],liste)
         self.layouts['block_gauche'].addStretch()
 
 
@@ -552,11 +560,9 @@ class Page_0():
 
 
     def genere_page(self):
-        self.layouts['main'].addLayout(self.layouts['block_gauche'])
-        self.layouts['main'].addWidget(self._labels_fleches[0])
-        self.layouts['main'].addLayout(self.layouts['block_centre'])
-        self.layouts['main'].addWidget(self._labels_fleches[1])
-        self.layouts['main'].addLayout(self.layouts['block_droit'])
+        liste = [self.layouts['block_gauche'],self._labels_fleches[0],
+                 self.layouts['block_centre'],self._labels_fleches[1],self.layouts['block_droit']]
+        fenetre.ajoute(self.layouts['main'],liste)
         page = qtw.QWidget()
         page.setLayout(self.layouts['main'])
         return page
@@ -606,16 +612,16 @@ class Page_1():
         
 
     def _add_element_block_gauche(self):
-        self.layouts['bloc_gauche'].addWidget(self.labels['nbr_etage'])
+        liste = [self.labels['nbr_etage'],self.nbr_train]
+        fenetre.ajoute(self.layouts['bloc_gauche'],liste)
         self.widgets['bloc_gauche'].setLayout(self.layouts['bloc_gauche'])
         self.widgets['bloc_gauche'].setStyleSheet(PAGE_1['styleSheet'])
-        self.layouts['bloc_gauche'].addWidget(self.nbr_train)
 
 
     def _add_element_block_droite(self):
-        self.widgets['bloc_droit'].setStyleSheet(PAGE_1['styleSheet'])
         liste_widgets = [self.labels['1'],self.liste_deroulante,self.widgets['entraxe'],self.widgets['σ_max']]
-        fenetre.ajoute_widgets(self.layouts['bloc_droit'],liste_widgets)
+        fenetre.ajoute(self.layouts['bloc_droit'],liste_widgets)
+        self.widgets['bloc_droit'].setStyleSheet(PAGE_1['styleSheet'])
         self.widgets['bloc_droit'].setLayout(self.layouts['bloc_droit'])
 
 
@@ -651,23 +657,25 @@ class FenetreAttenteCreation(Fenetre):
             'labels':['texte','points'],
         }
         super().__init__(param,elements)
-        main = self.layouts['main']
-        fenetre._param = param
+        self.genere_fenetre()
+        self.genere_changement_dynamique()
 
-        # --- Création du layout principal ---
-        self.setStyleSheet(param['styleSheet'])
-        # Label principal
-        main.addWidget(self.labels['texte'])
-        # Label des points qui clignote
-        main.addWidget(self.labels['points'])
+    def genere_fenetre(self):
+        main = self.layouts['main']
+        self.setStyleSheet(self._param['styleSheet'])
+        liste = [self.labels['texte'],self.labels['points']]
+        self.ajoute(main,liste)
         self.setLayout(main)
-        # --- Animation des points ---
-        self._points = param['labels'][1:]  # ['.', '..', '...',' ']
+
+
+    def genere_changement_dynamique(self):
+        self._points = self._param['labels'][1:]  # ['.', '..', '...',' ']
         self._index = 0
         # Timer pour l’animation
         self.timer = qtc.QTimer()
         self.timer.timeout.connect(self.clignoter)
         self.timer.start(400)  # toutes les 400 ms
+
 
     def clignoter(self):
         """Fait alterner le texte du label pour simuler un clignotement."""
