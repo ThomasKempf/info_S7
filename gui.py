@@ -56,20 +56,6 @@ MENU = {
 # parametre specifique a la fenetre menu
 CREATION_PROJET = {
     'buttons':['Précedent','Next'],
-    'page':{
-        'entree_sortie':{
-            'labels_unitee':{
-                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','margin':[122,0,0,0]},
-                'Puissance':{'unitee':'kW','valeur_defaut':'1500','margin':[100,0,0,0]},
-                'Couple':{'unitee':'Nm','valeur_defaut':'380','margin':[0,0,100,0]}
-            },
-            'labels':['Reducteur']
-        },
-        'structure interne':{
-            'label':['nombre d’étage :','1','Entraxe','mm','σ max','MPa',],
-            'liste_deroulante':['engrenage droit', 'engrenage hélicoïdal', 'conique'],
-        }
-    },
     'geometrie': [1000, 600],
     'titre': 'Creation Projet',
     'styleSheet': '''
@@ -117,8 +103,8 @@ PAGE_1 = {
                 'entraxe':{'unitee':'mm','valeur_defaut':'400','validator':qtg.QIntValidator(0, 10000)},
                 'σ_max':{'unitee':'Mpa','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000)},
             },
-    'label':['nombre d’étage :','1'],
-    'liste_deroulante':['engrenage droit', 'engrenage hélicoïdal', 'conique'],
+    'labels':['nombre d’étage :','1'],
+    'comboboxes':{'liste_deroulante':['engrenage droit', 'engrenage hélicoïdal', 'conique']},
     'styleSheet': """
                 QWidget {
                     background: #fff; /* Couleur de fond blanche */
@@ -267,6 +253,12 @@ class Fenetre(qtw.QWidget):
                 # Cas spécial : layouts est un dict (nom: 'v' ou 'h')
                 for name, spec in valeur.items():
                     valeur_result[name] = constructors[key](spec)
+            elif key == 'comboboxes':
+                # Cas spécial : comboboxes avec items
+                for name in valeur:
+                    combo = constructors[key](None)
+                    combo.addItems(textes[key][name])
+                    valeur_result[name] = combo
             else:
                 # Cas général : listes d'éléments
                 for i, name in enumerate(valeur):
@@ -280,6 +272,7 @@ class Fenetre(qtw.QWidget):
                         arg = None
                     valeur_result[name] = constructors[key](arg)
         return result
+
 
     def _genere_lable_image(self,name):
         pixmap = qtg.QPixmap(name)
@@ -509,7 +502,7 @@ class Page_0():
             'layouts':{'main':'h','block_gauche':'v','block_centre':'v','block_droit':'h'},
             'labels':['reducteur'],
         }
-        result = fenetre.genere_elements(elements,{'labels':PAGE_0['labels']})
+        result = fenetre.genere_elements(elements,PAGE_0)
         self.layouts = result['layouts']
         self.reducteur = result['labels']['reducteur']
         self._widgets,self._variables = self._genere_widgets_unitee()
@@ -584,8 +577,6 @@ class Page_1():
                 padding: 8px;
             }
         """
-        param_page = fenetre._param['page']['structure interne']
-        texte_ligne_deroutante = param_page['liste_deroulante']
 
         elements = {
             'layouts':{'page':'v','ligne':'h','bloc_gauche':'h','bloc_droit':'h'},
@@ -594,13 +585,13 @@ class Page_1():
             'lineedits':['nbr_train'],
             'comboboxes':['liste_deroulante']
         }
-        result =fenetre.genere_elements(elements,{'labels':PAGE_1['label']})
+        result =fenetre.genere_elements(elements,PAGE_1)
         layouts = result['layouts']
         self.widgets = result['widgets']
         labels = result['labels']
         self.nbr_train = result['lineedits']['nbr_train']
         liste_deroulante = result['comboboxes']['liste_deroulante']
-        liste_deroulante.addItems(texte_ligne_deroutante)
+
 
         widgets_unitee,self._variables = fenetre._genere_variables_unitees(PAGE_1['labels_unitee'])
         self.widgets.update(widgets_unitee)
