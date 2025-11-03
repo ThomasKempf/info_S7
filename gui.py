@@ -96,7 +96,7 @@ CREATION_PROJET = {
 ATTENTE_CREATION = {
     'geometrie': [200, 60],
     'titre': 'Creation Projet',
-    'labels':['creation projet','.','..','...',' '],
+    'labels':['Train_1'],
     'styleSheet':"""
             QWidget {
                 background: #fff; /* Couleur de fond blanche */
@@ -109,7 +109,7 @@ ATTENTE_CREATION = {
 
 PROJET = {
     'titre': 'Projet',
-    'label':['creation projet','.','..','...',' '],
+    'labels':['creation projet','.','..','...',' '],
     'styleSheet':"""
             QWidget {
                 background: #fff; /* Couleur de fond blanche */
@@ -633,25 +633,27 @@ class FenetreAttenteCreation(Fenetre):
 
 class FenetreProjet(Fenetre):
     def __init__(self, param_feuille: dict,param:list,file:xlsx.ProjetXlsx,train) -> None:
-        super().__init__(param_feuille)
+        elements = {
+            'layouts':{'main':'h','train1':'v'},
+            'labels':['titre'],
+        }
+        super().__init__(param_feuille,elements)
+        self.titre = self.labels['titre']
         self._train = train
         self._param_feuille = param_feuille
         self._param = param
         self._file = file
-        self. genere_laoute_train()
+        self. genere_laoyut_train()
 
-    def genere_laoute_train(self):
-        layout_main = qtw.QHBoxLayout()
+    def genere_laoyut_train(self):
         self.setStyleSheet(self._param_feuille['styleSheet'])
         # crer 
-        layout_train1 = qtw.QVBoxLayout()
-        layout_train1.addStretch()
-        titre = qtw.QLabel('Train_1')
-        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop) # Alignement à gauche et en haut
-        titre.setFont(qtg.QFont('Arial',20, qtg.QFont.Weight.Bold)) 
-        titre.setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px') # Style du titre
-        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
-        layout_train1.addWidget(titre) 
+        self.layouts['train1'].addStretch()
+        self.titre.setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop) # Alignement à gauche et en haut
+        self.titre.setFont(qtg.QFont('Arial',20, qtg.QFont.Weight.Bold)) 
+        self.titre.setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px') # Style du titre
+        self.titre.setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
+        self.layouts['train1'].addWidget(self.titre) 
         self._zone_text_train = {'widget':{},'variable':{}}
         for i, (key, value) in enumerate(self._param[1].description.items()):
             unitee  = self._param[1].unitee[i]
@@ -659,10 +661,10 @@ class FenetreProjet(Fenetre):
             self._zone_text_train['variable'][key].setFixedWidth(60)
             self._zone_text_train['variable'][key].setValidator(qtg.QIntValidator())
             self._zone_text_train['variable'][key].editingFinished.connect(lambda k=key: self.modifie_parametre(self._zone_text_train['variable'][k].text(), k))  
-            layout_train1.addWidget(self._zone_text_train['widget'][key]) 
-        layout_train1.addStretch()
-        layout_main.addLayout(layout_train1)
-        self.setLayout(layout_main)
+            self.layouts['train1'].addWidget(self._zone_text_train['widget'][key]) 
+        self.layouts['train1'].addStretch()
+        self.layouts['main'].addLayout(self.layouts['train1'])
+        self.setLayout(self.layouts['main'])
 
     def modifie_parametre(self, nouvelle_valeur, value_name):
         setattr(self._train, value_name, int(nouvelle_valeur))
