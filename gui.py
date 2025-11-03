@@ -313,6 +313,14 @@ class Fenetre(qtw.QWidget):
             widgets[key],variables[key] = fenetre._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
             variables[key].setValidator(param['validator'])
         return widgets,variables
+    
+
+    def creer_getters_variables_lineedits(self, objet, variables):
+        for key in variables:
+                prop_name = key.lower()
+                def _getter(k):
+                    return lambda objet: variables[k].text()
+                setattr(objet.__class__, prop_name, property(_getter(key)))
 
 
 class FenetreMenu(Fenetre):
@@ -466,12 +474,12 @@ class FenetreCreationProjet(Fenetre):
             self.close()
             # prendre les dernieres valeurs
             description_global = {}
-            description_global['vitesse_entree'] = int(self._page_0.vitesse)
-            description_global['puissance_entree'] = int(self._page_0.puissance)
-            description_global['couple_sortie'] = int(self._page_0.couple)
+            description_global['vitesse_entree'] = int(self._page[0].vitesse)
+            description_global['puissance_entree'] = int(self._page[0].puissance)
+            description_global['couple_sortie'] = int(self._page[0].couple)
             description_train = {}
-            entraxe = int(self._lineedits['entraxe'].text())
-            σ_max = int(self._lineedits['σ_max'].text())
+            entraxe = int(self._page[1].entraxe)
+            σ_max = int(self._page[1].σ_max)
             train = Simulation_train(description_global['vitesse_entree'],
                                      description_global['puissance_entree'],
                                      description_global['couple_sortie'],
@@ -498,7 +506,6 @@ class FenetreCreationProjet(Fenetre):
             self.stack['stack'].setCurrentIndex(i - 1)
 
 
-
 class Page_0():
     def __init__(self, fenetre: Fenetre) -> None:
         '''
@@ -519,11 +526,7 @@ class Page_0():
         self._add_element_block_gauche()
         self._add_element_block_centre()
         self._add_element_block_droit()
-        for key in self._variables:
-            prop_name = key.lower()
-            def _getter(k):
-                return lambda self: self._variables[k].text()
-            setattr(self.__class__, prop_name, property(_getter(key)))
+        fenetre.creer_getters_variables_lineedits(self, self._variables)
         
 
     def _genere_widgets_unitee(self):
@@ -587,6 +590,7 @@ class Page_1():
         self._add_element_block_gauche()
         self._add_element_block_droite()
         self._add_element_block_ligne()
+        fenetre.creer_getters_variables_lineedits(self, self._variables)
         
 
     def _genere_variable_elements_variables(self):
@@ -632,16 +636,6 @@ class Page_1():
         self.layouts['ligne'].addStretch()
 
 
-    def _genere_variable_unitee(self):
-        widgets = {}
-        variables = {}
-        for key in (PAGE_1['labels_unitee']):
-            param = PAGE_1['labels_unitee'][key]
-            widgets[key],variables[key] = fenetre._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
-            variables[key].setValidator(qtg.QIntValidator(0, 100))
-        return widgets,variables
-
-
     def genere_page(self):
         self.layouts['page'].addLayout(self.layouts['ligne'])
         self.layouts['page'].addStretch()
@@ -659,6 +653,7 @@ class FenetreAttenteCreation(Fenetre):
         super().__init__(param,elements)
         self.genere_fenetre()
         self.genere_changement_dynamique()
+
 
     def genere_fenetre(self):
         main = self.layouts['main']
