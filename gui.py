@@ -55,7 +55,7 @@ MENU = {
 
 # parametre specifique a la fenetre menu
 CREATION_PROJET = {
-    'buttons':['Next','Précedent'],
+    'buttons':['Précedent','Next'],
     'page':{
         'entree_sortie':{
             'labels_unitee':{
@@ -94,9 +94,9 @@ CREATION_PROJET = {
 
 PAGE_0 = {
     'labels_unitee':{
-                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','margin':[122,0,0,0]},
-                'Puissance':{'unitee':'kW','valeur_defaut':'1500','margin':[100,0,0,0]},
-                'Couple':{'unitee':'Nm','valeur_defaut':'380','margin':[0,0,100,0]}
+                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','validator':qtg.QIntValidator(0, 10000),'margin':[122,0,0,0]},
+                'Puissance':{'unitee':'kW','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000),'margin':[100,0,0,0]},
+                'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':qtg.QIntValidator(0, 10000),'margin':[0,0,100,0]}
             },
     'labels':['Reducteur'],
     'styleSheet': """
@@ -114,8 +114,8 @@ PAGE_0 = {
 
 PAGE_1 = {
     'labels_unitee':{
-                'entraxe':{'unitee':'mm','valeur_defaut':'400'},
-                'σ_max':{'unitee':'Mpa','valeur_defaut':'1500'},
+                'entraxe':{'unitee':'mm','valeur_defaut':'400','validator':qtg.QIntValidator(0, 10000)},
+                'σ_max':{'unitee':'Mpa','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000)},
             },
     'label':['nombre d’étage :','1'],
     'liste_deroulante':['engrenage droit', 'engrenage hélicoïdal', 'conique'],
@@ -312,6 +312,15 @@ class Fenetre(qtw.QWidget):
         return widget,variable
     
 
+    def _genere_variables_unitees(self,param_labels_unitee):
+        widgets = {}
+        variables = {}
+        for key in (param_labels_unitee):
+            param = param_labels_unitee[key]
+            widgets[key],variables[key] = fenetre._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
+            variables[key].setValidator(param['validator'])
+        return widgets,variables
+
 
 class FenetreMenu(Fenetre):
     '''
@@ -503,7 +512,7 @@ class Page_0():
         result = fenetre.genere_elements(elements,{'labels':PAGE_0['labels']})
         self.layouts = result['layouts']
         self.reducteur = result['labels']['reducteur']
-        self._widgets,self._variables = self._genere_variable_unitee()
+        self._widgets,self._variables = self._genere_widgets_unitee()
         self._labels_fleches = self._genere_fleches_page0(2)
         self.reducteur.setStyleSheet(PAGE_0['styleSheet'])
         self._add_element_block_gauche()
@@ -516,15 +525,11 @@ class Page_0():
             setattr(self.__class__, prop_name, property(_getter(key)))
         
 
-    def _genere_variable_unitee(self):
-        widgets = {}
-        variables = {}
+    def _genere_widgets_unitee(self):
+        widgets,variables = self._fenetre._genere_variables_unitees(PAGE_0['labels_unitee'])
         for key in (PAGE_0['labels_unitee']):
-            param = PAGE_0['labels_unitee'][key]
-            widgets[key],variables[key] = fenetre._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
             variables[key].setFixedWidth(60)
-            variables[key].setValidator(qtg.QIntValidator(0, 100))
-            widgets[key].setContentsMargins(*param['margin'])
+            widgets[key].setContentsMargins(*PAGE_0['labels_unitee'][key]['margin'])
         return widgets,variables
 
 
@@ -597,7 +602,7 @@ class Page_1():
         liste_deroulante = result['comboboxes']['liste_deroulante']
         liste_deroulante.addItems(texte_ligne_deroutante)
 
-        widgets_unitee,self._variables = self._genere_variable_unitee()
+        widgets_unitee,self._variables = fenetre._genere_variables_unitees(PAGE_1['labels_unitee'])
         self.widgets.update(widgets_unitee)
         self.nbr_train.setValidator(qtg.QDoubleValidator())
         self.nbr_train.setFixedWidth(80)
