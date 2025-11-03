@@ -316,12 +316,29 @@ class Fenetre(qtw.QWidget):
     
 
     def creer_getters_variables_lineedits(self, objet, variables):
-        for key in variables:
+        if isinstance(variables, dict):
+            prop_name = "variables" 
+            def _getter(objet):
+                text = {}
+                for key in variables:
+                    text[key] = variables[key].text()
+                return text
+            setattr(objet.__class__, prop_name, property(_getter))
+        else:
+            for key in variables:
                 prop_name = key.lower()
-                def _getter(k):
-                    return lambda objet: variables[k].text()
-                setattr(objet.__class__, prop_name, property(_getter(key)))
+                def _getter(objet, k=key):
+                    return variables[k].text()
+                setattr(objet.__class__, prop_name, property(_getter))
 
+
+    
+    @property
+    def variables(self):
+        text = {}
+        for key in self._variables:
+            text[key] = self._variables[key].text()
+        return text
 
 class FenetreMenu(Fenetre):
     '''
@@ -455,9 +472,14 @@ class FenetreCreationProjet(Fenetre):
         self.ajoute(self.layouts['main'],liste)
         self.setLayout(self.layouts['main'])
 
-    # --- Création page 0 ---
 
-
+    def precedente_page(self) -> None:
+        '''
+        permet de passer a la page precedente
+        '''
+        i = self.stack['stack'].currentIndex()
+        if i > 0:
+            self.stack['stack'].setCurrentIndex(i - 1)
 
 
     def next_page(self) -> None:
@@ -469,41 +491,35 @@ class FenetreCreationProjet(Fenetre):
             self.stack['stack'].setCurrentIndex(i + 1)
         else:
             # ouvre fenetre attente
-            fenetre_attente = FenetreAttenteCreation(ATTENTE_CREATION)
-            fenetre_attente.show()
+            self.fenetre_attente = FenetreAttenteCreation(ATTENTE_CREATION)
+            self.fenetre_attente.show()
             self.close()
             # prendre les dernieres valeurs
-            description_global = {}
-            description_global['vitesse_entree'] = int(self._page[0].vitesse)
-            description_global['puissance_entree'] = int(self._page[0].puissance)
-            description_global['couple_sortie'] = int(self._page[0].couple)
-            description_train = {}
-            entraxe = int(self._page[1].entraxe)
-            σ_max = int(self._page[1].σ_max)
-            train = Simulation_train(description_global['vitesse_entree'],
-                                     description_global['puissance_entree'],
-                                     description_global['couple_sortie'],
-                                     entraxe,
-                                     σ_max
-                                     )
-            param_projet = [xlsx.Global(),xlsx.Train(1)]
-            param_projet[0].description = description_global
-            param_projet[1].description = train.description
-            projet_file = xlsx.ProjetXlsx(param_projet[0])
-            projet_file.ecrire_description(param_projet[1],1)
-            projet_file.save()
-            self.fenetre_projet = FenetreProjet(PROJET,param_projet,projet_file,train)
-            self.fenetre_projet.show()
-            fenetre_attente.close()
+            self.genere_projet()
+            self.genere_xlsx()
+            self.genere_fenetre_projet()
 
 
-    def precedente_page(self) -> None:
-        '''
-        permet de passer a la page precedente
-        '''
-        i = self.stack['stack'].currentIndex()
-        if i > 0:
-            self.stack['stack'].setCurrentIndex(i - 1)
+    def genere_projet(self):
+        self._description_global = self._page[0].variables
+        self._description_train = self._page[1].variables
+        self._train = Simulation_train(*self._description_global.values(), *self._description_train.values())
+        
+
+    def genere_xlsx(self):
+        self._param_projet = [xlsx.Global(),xlsx.Train(1)]
+        self._param_projet[0].description = self._description_global
+        self._param_projet[1].description = self._train.description
+        self._projet_file = xlsx.ProjetXlsx(self._param_projet[0])
+        self._projet_file.ecrire_description(self._param_projet[1],1)
+        self._projet_file.save()
+
+
+    def genere_fenetre_projet(self):
+        self.fenetre_projet = FenetreProjet(PROJET,self._param_projet,self._projet_file,self._train)
+        self.fenetre_projet.show()
+        self.fenetre_attente.close()
+
 
 
 class Page_0():
@@ -526,7 +542,7 @@ class Page_0():
         self._add_element_block_gauche()
         self._add_element_block_centre()
         self._add_element_block_droit()
-        fenetre.creer_getters_variables_lineedits(self, self._variables)
+        fenetre.creer_getters_variables_lineedits(self,self._variables)
         
 
     def _genere_widgets_unitee(self):
