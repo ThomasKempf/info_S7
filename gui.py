@@ -244,6 +244,12 @@ class Fenetre(qtw.QWidget):
                     valeur_result[name] = constructors[key](arg)
         return result
 
+    def _genere_lable_image(self,name):
+        pixmap = qtg.QPixmap(name)
+        label = qtw.QLabel()
+        label.setPixmap(pixmap)
+        return label
+
 
     def ajoute_widgets(self,layout,list):
         for i in range(len(list)):
@@ -372,8 +378,12 @@ class FenetreCreationProjet(Fenetre):
         '''
         pages = []
         for i in range(nbr_page):
-            page_method = getattr(self, f"create_page{i}")
-            page_instance = page_method()
+            if i == 0:
+                page_0 = Page_0(self)
+                page_instance = page_0.genere_page()
+            else:
+                page_method = getattr(self, f"create_page{i}")
+                page_instance = page_method()
             self.stack['stack'].addWidget(page_instance)
             pages.append(page_instance)
 
@@ -393,88 +403,6 @@ class FenetreCreationProjet(Fenetre):
         self.setLayout(self.layouts['main'])
 
     # --- Création page 0 ---
-
-    def create_page0(self) -> qtw.QWidget:
-        '''
-        generation de la page 0 qui contient le choix des parametre général du reducteur
-        retourne la variable de la page
-        '''
-        special_style = """
-                QWidget {
-                    background: #fff;           /* Couleur de fond blanche */
-                    border: 1px solid #222;     /* Bordure */
-                    border-radius: 6px;         /* Coins arrondis */
-                    padding: 60px;              /* Rembourrage interne */
-                    font-size: 18px;             /* Taille de la police */
-                    font-weight: bold;           /* Gras */
-                }
-        """
-        elements = {
-            'layouts':{'main_0':'h','block_gauche_0':'v','block_centre_0':'v','block_droit_0':'h'},
-            'labels':['reducteur'],
-        }
-        result =self.genere_elements(elements,{'labels':self._param['page']['entree_sortie']['labels']})
-        self.layouts_0 = result['layouts']
-        self.labels_0 = result['labels']
-        
-
-
-         # creer les widget specifique a la page 0
-
-        self._widgets,self._variables = self.genere_widgets_page0()
-        self._labels_fleches = self.genere_fleches_page0(2)
-        self.labels_0['reducteur'].setStyleSheet(special_style)
-        self._layout_enfant = self.genere_layoute_page0() 
-        return self.genere_layout_principale_page0()
-
-
-    def genere_widgets_page0(self):
-        label_param = {
-            'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','margin':[122,0,0,0]},
-            'Puissance':{'unitee':'kW','valeur_defaut':'1500','margin':[100,0,0,0]},
-            'Couple':{'unitee':'Nm','valeur_defaut':'380','margin':[0,0,100,0]}
-        }
-        widgets = {}
-        variables = {}
-        for key in (label_param):
-            param = label_param[key]
-            widgets[key],variables[key] = self._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
-            variables[key].setFixedWidth(60)
-            variables[key].setValidator(qtg.QIntValidator(0, 100))
-            widgets[key].setContentsMargins(*param['margin'])
-        return widgets,variables
-
-
-    def genere_fleches_page0(self,nbr_fleche):
-        pixmap = qtg.QPixmap("./fleche.png")  # ton fichier
-        label = [0]*nbr_fleche
-        for i in range(nbr_fleche):
-            label[i] = qtw.QLabel()
-            label[i].setPixmap(pixmap)
-        return label
-
-    def genere_layoute_page0(self):
-        self.layouts_0['block_gauche_0'].addStretch()
-        self.layouts_0['block_gauche_0'].addWidget(self._widgets['Vitesse'])
-        self.layouts_0['block_gauche_0'].addWidget(self._widgets['Puissance'])
-        self.layouts_0['block_gauche_0'].addStretch()
-        self.layouts_0['block_centre_0'].addStretch()
-        self.layouts_0['block_centre_0'].addWidget(self.labels_0['reducteur'])
-        self.layouts_0['block_centre_0'].addStretch()
-        self.layouts_0['block_droit_0'].addStretch()
-        self.layouts_0['block_droit_0'].addWidget(self._widgets['Couple'])
-        return [self.layouts_0['block_gauche_0'],self.layouts_0['block_centre_0'],self.layouts_0['block_droit_0']]
-
-
-    def genere_layout_principale_page0(self):
-        self.layouts_0['main_0'].addLayout(self._layout_enfant[0])
-        self.layouts_0['main_0'].addWidget(self._labels_fleches[0])
-        self.layouts_0['main_0'].addLayout(self._layout_enfant[1])
-        self.layouts_0['main_0'].addWidget(self._labels_fleches[1])
-        self.layouts_0['main_0'].addLayout(self._layout_enfant[2])
-        page = qtw.QWidget()
-        page.setLayout(self.layouts_0['main_0'])
-        return page
 
 
     def create_page1(self) -> qtw.QWidget:
@@ -586,9 +514,79 @@ class FenetreCreationProjet(Fenetre):
 
 class Page_0():
     def __init__(self, fenetre: Fenetre) -> None:
-        pass
+        self._fenetre = fenetre
+        '''
+        generation de la page 0 qui contient le choix des parametre général du reducteur
+        retourne la variable de la page
+        '''
+        special_style = """
+                QWidget {
+                    background: #fff;           /* Couleur de fond blanche */
+                    border: 1px solid #222;     /* Bordure */
+                    border-radius: 6px;         /* Coins arrondis */
+                    padding: 60px;              /* Rembourrage interne */
+                    font-size: 18px;             /* Taille de la police */
+                    font-weight: bold;           /* Gras */
+                }
+        """
+        elements = {
+            'layouts':{'main_0':'h','block_gauche_0':'v','block_centre_0':'v','block_droit_0':'h'},
+            'labels':['reducteur'],
+        }
+        result = fenetre.genere_elements(elements,{'labels':fenetre._param['page']['entree_sortie']['labels']})
+        self.layouts = result['layouts']
+        self.labels = result['labels']
+        self._widgets,self._variables = self._genere_widgets_page0()
+        self._labels_fleches = self._genere_fleches_page0(2)
+        self.labels['reducteur'].setStyleSheet(special_style)
+        self._layout_enfant = self._genere_layoute_page0() 
 
 
+    def _genere_widgets_page0(self):
+        label_param = {
+            'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','margin':[122,0,0,0]},
+            'Puissance':{'unitee':'kW','valeur_defaut':'1500','margin':[100,0,0,0]},
+            'Couple':{'unitee':'Nm','valeur_defaut':'380','margin':[0,0,100,0]}
+        }
+        widgets = {}
+        variables = {}
+        for key in (label_param):
+            param = label_param[key]
+            widgets[key],variables[key] = fenetre._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
+            variables[key].setFixedWidth(60)
+            variables[key].setValidator(qtg.QIntValidator(0, 100))
+            widgets[key].setContentsMargins(*param['margin'])
+        return widgets,variables
+
+
+    def _genere_fleches_page0(self,nbr_fleche):
+        label = [0]*nbr_fleche
+        for i in range(nbr_fleche):
+            label[i] = self._fenetre._genere_lable_image('./fleche.png')
+        return label
+
+    def _genere_layoute_page0(self):
+        self.layouts['block_gauche_0'].addStretch()
+        self.layouts['block_gauche_0'].addWidget(self._widgets['Vitesse'])
+        self.layouts['block_gauche_0'].addWidget(self._widgets['Puissance'])
+        self.layouts['block_gauche_0'].addStretch()
+        self.layouts['block_centre_0'].addStretch()
+        self.layouts['block_centre_0'].addWidget(self.labels['reducteur'])
+        self.layouts['block_centre_0'].addStretch()
+        self.layouts['block_droit_0'].addStretch()
+        self.layouts['block_droit_0'].addWidget(self._widgets['Couple'])
+        return [self.layouts['block_gauche_0'],self.layouts['block_centre_0'],self.layouts['block_droit_0']]
+
+
+    def genere_page(self):
+        self.layouts['main_0'].addLayout(self._layout_enfant[0])
+        self.layouts['main_0'].addWidget(self._labels_fleches[0])
+        self.layouts['main_0'].addLayout(self._layout_enfant[1])
+        self.layouts['main_0'].addWidget(self._labels_fleches[1])
+        self.layouts['main_0'].addLayout(self._layout_enfant[2])
+        page = qtw.QWidget()
+        page.setLayout(self.layouts['main_0'])
+        return page
 
 
 class FenetreAttenteCreation(Fenetre):
