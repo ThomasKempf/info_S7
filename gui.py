@@ -96,7 +96,7 @@ CREATION_PROJET = {
 ATTENTE_CREATION = {
     'geometrie': [200, 60],
     'titre': 'Creation Projet',
-    'label':['creation projet','.','..','...',' '],
+    'labels':['creation projet','.','..','...',' '],
     'styleSheet':"""
             QWidget {
                 background: #fff; /* Couleur de fond blanche */
@@ -591,22 +591,24 @@ class Page_0():
 
 class FenetreAttenteCreation(Fenetre):
     def __init__(self, param: dict) -> None:
-        super().__init__(param)
+        elements = {
+            'layouts':{'main':'h'},
+            'labels':['texte','points'],
+        }
+        super().__init__(param,elements)
+        main = self.layouts['main']
         self._param = param
 
         # --- Création du layout principal ---
-        layout_main = qtw.QHBoxLayout()
         self.setStyleSheet(param['styleSheet'])
 
         # Label principal
-        label_texte = qtw.QLabel(param['label'][0])
-        layout_main.addWidget(label_texte)
+        main.addWidget(self.labels['texte'])
         # Label des points qui clignote
-        self.label_points = qtw.QLabel("")
-        layout_main.addWidget(self.label_points)
-        self.setLayout(layout_main)
+        main.addWidget(self.labels['points'])
+        self.setLayout(main)
         # --- Animation des points ---
-        self._points = param['label'][1:]  # ['.', '..', '...',' ']
+        self._points = param['labels'][1:]  # ['.', '..', '...',' ']
         self._index = 0
         # Timer pour l’animation
         self.timer = qtc.QTimer()
@@ -615,7 +617,7 @@ class FenetreAttenteCreation(Fenetre):
 
     def clignoter(self):
         """Fait alterner le texte du label pour simuler un clignotement."""
-        self.label_points.setText(self._points[self._index])
+        self.labels['points'].setText(self._points[self._index])
         self._index = (self._index + 1) % len(self._points)
 
 
