@@ -112,6 +112,24 @@ PAGE_0 = {
 }
 
 
+PAGE_1 = {
+    'labels_unitee':{
+                'entraxe':{'unitee':'mm','valeur_defaut':'400'},
+                'σ_max':{'unitee':'Mpa','valeur_defaut':'1500'},
+            },
+    'label':['nombre d’étage :','1'],
+    'liste_deroulante':['engrenage droit', 'engrenage hélicoïdal', 'conique'],
+    'styleSheet': """
+                QWidget {
+                    background: #fff; /* Couleur de fond blanche */
+                    border: 1px solid #222;
+                    border-radius: 6px;
+                    padding: 8px;
+                }
+            """
+}
+
+
 ATTENTE_CREATION = {
     'geometrie': [200, 60],
     'titre': 'Creation Projet',
@@ -443,12 +461,12 @@ class FenetreCreationProjet(Fenetre):
             description_global['couple_sortie'] = int(self._page_0.couple)
             description_train = {}
             entraxe = int(self._lineedits['entraxe'].text())
-            contrainte_max = int(self._lineedits['contrainte_max'].text())
+            σ_max = int(self._lineedits['σ_max'].text())
             train = Simulation_train(description_global['vitesse_entree'],
                                      description_global['puissance_entree'],
                                      description_global['couple_sortie'],
                                      entraxe,
-                                     contrainte_max
+                                     σ_max
                                      )
             param_projet = [xlsx.Global(),xlsx.Train(1)]
             param_projet[0].description = description_global
@@ -567,34 +585,31 @@ class Page_1():
         elements = {
             'layouts':{'page':'v','ligne':'h','bloc_gauche':'h','bloc_droit':'h'},
             'widgets':['page','bloc_gauche','bloc_droit'],
-            'labels':['nbr_etage','1','entraxe','mm','σ_max','mpa'],
-            'lineedits':['nbr_train','entraxe','contrainte_max'],
+            'labels':['nbr_etage','1'],
+            'lineedits':['nbr_train'],
             'comboboxes':['liste_deroulante']
         }
-        result =fenetre.genere_elements(elements,{'labels':param_page['label']})
+        result =fenetre.genere_elements(elements,{'labels':PAGE_1['label']})
         layouts = result['layouts']
         self.widgets = result['widgets']
         labels = result['labels']
-        self._lineedits = result['lineedits']
+        self.nbr_train = result['lineedits']['nbr_train']
         liste_deroulante = result['comboboxes']['liste_deroulante']
         liste_deroulante.addItems(texte_ligne_deroutante)
 
-
-        
-        text = ['1','20','210000']
-        for i, key in enumerate(self._lineedits):
-            self._lineedits[key].setValidator(qtg.QDoubleValidator())
-            self._lineedits[key].setFixedWidth(80)
-            self._lineedits[key].setText(text[i])
+        widgets_unitee,self._variables = self._genere_variable_unitee()
+        self.widgets.update(widgets_unitee)
+        self.nbr_train.setValidator(qtg.QDoubleValidator())
+        self.nbr_train.setFixedWidth(80)
+        self.nbr_train.setText('1')
         # bloc gauche
         layouts['bloc_gauche'].addWidget(labels['nbr_etage'])
         self.widgets['bloc_gauche'].setLayout(layouts['bloc_gauche'])
         self.widgets['bloc_gauche'].setStyleSheet(special_style)
-        layouts['bloc_gauche'].addWidget(self._lineedits['nbr_train'])
+        layouts['bloc_gauche'].addWidget(self.nbr_train)
         # bloc droit
         self.widgets['bloc_droit'].setStyleSheet(special_style)
-        liste_widgets = [labels['1'],liste_deroulante,labels['entraxe'],self._lineedits['entraxe'],labels['mm'],
-                         labels['σ_max'],self._lineedits['contrainte_max'],labels['mpa']]
+        liste_widgets = [labels['1'],liste_deroulante,self.widgets['entraxe'],self.widgets['σ_max']]
         fenetre.ajoute_widgets(layouts['bloc_droit'],liste_widgets)
         self.widgets['bloc_droit'].setLayout(layouts['bloc_droit'])
         # page
@@ -605,6 +620,15 @@ class Page_1():
         layouts['page'].addLayout(layouts['ligne'])
         layouts['page'].addStretch()
         self.widgets['page'].setLayout(layouts['page'])
+
+    def _genere_variable_unitee(self):
+        widgets = {}
+        variables = {}
+        for key in (PAGE_1['labels_unitee']):
+            param = PAGE_1['labels_unitee'][key]
+            widgets[key],variables[key] = fenetre._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
+            variables[key].setValidator(qtg.QIntValidator(0, 100))
+        return widgets,variables
 
     def genere_page(self):
         return self.widgets['page']
