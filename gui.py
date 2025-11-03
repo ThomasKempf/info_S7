@@ -379,8 +379,8 @@ class FenetreCreationProjet(Fenetre):
         pages = []
         for i in range(nbr_page):
             if i == 0:
-                page_0 = Page_0(self)
-                page_instance = page_0.genere_page()
+                self._page_0 = Page_0(self)
+                page_instance = self._page_0.genere_page()
             else:
                 page_method = getattr(self, f"create_page{i}")
                 page_instance = page_method()
@@ -479,9 +479,9 @@ class FenetreCreationProjet(Fenetre):
             self.close()
             # prendre les dernieres valeurs
             description_global = {}
-            description_global['vitesse_entree'] = int(self._variables['Vitesse'].text())
-            description_global['puissance_entree'] = int(self._variables['Puissance'].text())
-            description_global['couple_sortie'] = int(self._variables['Couple'].text())
+            description_global['vitesse_entree'] = int(self._page_0.vitesse)
+            description_global['puissance_entree'] = int(self._page_0.puissance)
+            description_global['couple_sortie'] = int(self._page_0.couple)
             description_train = {}
             entraxe = int(self._lineedits['entraxe'].text())
             contrainte_max = int(self._lineedits['contrainte_max'].text())
@@ -542,6 +542,17 @@ class Page_0():
         self._layout_enfant = self._genere_layoute_page0() 
 
 
+    @property
+    def vitesse(self):
+        return self._variables['Vitesse'].text()
+    @property
+    def couple(self):
+        return self._variables['Couple'].text()
+    @property
+    def puissance(self):
+        return self._variables['Puissance'].text()
+        
+
     def _genere_widgets_page0(self):
         label_param = {
             'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','margin':[122,0,0,0]},
@@ -601,7 +612,6 @@ class FenetreAttenteCreation(Fenetre):
 
         # --- Création du layout principal ---
         self.setStyleSheet(param['styleSheet'])
-
         # Label principal
         main.addWidget(self.labels['texte'])
         # Label des points qui clignote
