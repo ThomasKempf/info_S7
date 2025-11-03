@@ -92,6 +92,25 @@ CREATION_PROJET = {
     '''
 }
 
+PAGE_0 = {
+    'labels_unitee':{
+                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','margin':[122,0,0,0]},
+                'Puissance':{'unitee':'kW','valeur_defaut':'1500','margin':[100,0,0,0]},
+                'Couple':{'unitee':'Nm','valeur_defaut':'380','margin':[0,0,100,0]}
+            },
+    'labels':['Reducteur'],
+    'styleSheet': """
+                QWidget {
+                    background: #fff;           /* Couleur de fond blanche */
+                    border: 1px solid #222;     /* Bordure */
+                    border-radius: 6px;         /* Coins arrondis */
+                    padding: 60px;              /* Rembourrage interne */
+                    font-size: 18px;             /* Taille de la police */
+                    font-weight: bold;           /* Gras */
+                }
+        """
+}
+
 
 ATTENTE_CREATION = {
     'geometrie': [200, 60],
@@ -514,55 +533,36 @@ class FenetreCreationProjet(Fenetre):
 
 class Page_0():
     def __init__(self, fenetre: Fenetre) -> None:
-        self._fenetre = fenetre
         '''
         generation de la page 0 qui contient le choix des parametre général du reducteur
         retourne la variable de la page
         '''
-        special_style = """
-                QWidget {
-                    background: #fff;           /* Couleur de fond blanche */
-                    border: 1px solid #222;     /* Bordure */
-                    border-radius: 6px;         /* Coins arrondis */
-                    padding: 60px;              /* Rembourrage interne */
-                    font-size: 18px;             /* Taille de la police */
-                    font-weight: bold;           /* Gras */
-                }
-        """
+        self._fenetre = fenetre
         elements = {
             'layouts':{'main_0':'h','block_gauche_0':'v','block_centre_0':'v','block_droit_0':'h'},
             'labels':['reducteur'],
         }
-        result = fenetre.genere_elements(elements,{'labels':fenetre._param['page']['entree_sortie']['labels']})
+        result = fenetre.genere_elements(elements,{'labels':PAGE_0['labels']})
         self.layouts = result['layouts']
-        self.labels = result['labels']
-        self._widgets,self._variables = self._genere_widgets_page0()
+        self.reducteur = result['labels']['reducteur']
+        self._widgets,self._variables = self._genere_variable_unitee()
         self._labels_fleches = self._genere_fleches_page0(2)
-        self.labels['reducteur'].setStyleSheet(special_style)
-        self._layout_enfant = self._genere_layoute_page0() 
-
-
-    @property
-    def vitesse(self):
-        return self._variables['Vitesse'].text()
-    @property
-    def couple(self):
-        return self._variables['Couple'].text()
-    @property
-    def puissance(self):
-        return self._variables['Puissance'].text()
+        self.reducteur.setStyleSheet(PAGE_0['styleSheet'])
+        self._add_element_block_gauche()
+        self._add_element_block_centre()
+        self._add_element_block_droit()
+        for key in self._variables:
+            prop_name = key.lower()
+            def _getter(k):
+                return lambda self: self._variables[k].text()
+            setattr(self.__class__, prop_name, property(_getter(key)))
         
 
-    def _genere_widgets_page0(self):
-        label_param = {
-            'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','margin':[122,0,0,0]},
-            'Puissance':{'unitee':'kW','valeur_defaut':'1500','margin':[100,0,0,0]},
-            'Couple':{'unitee':'Nm','valeur_defaut':'380','margin':[0,0,100,0]}
-        }
+    def _genere_variable_unitee(self):
         widgets = {}
         variables = {}
-        for key in (label_param):
-            param = label_param[key]
+        for key in (PAGE_0['labels_unitee']):
+            param = PAGE_0['labels_unitee'][key]
             widgets[key],variables[key] = fenetre._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
             variables[key].setFixedWidth(60)
             variables[key].setValidator(qtg.QIntValidator(0, 100))
@@ -576,25 +576,31 @@ class Page_0():
             label[i] = self._fenetre._genere_lable_image('./fleche.png')
         return label
 
-    def _genere_layoute_page0(self):
+
+    def _add_element_block_gauche(self):
         self.layouts['block_gauche_0'].addStretch()
         self.layouts['block_gauche_0'].addWidget(self._widgets['Vitesse'])
         self.layouts['block_gauche_0'].addWidget(self._widgets['Puissance'])
         self.layouts['block_gauche_0'].addStretch()
+
+
+    def _add_element_block_centre(self):
         self.layouts['block_centre_0'].addStretch()
-        self.layouts['block_centre_0'].addWidget(self.labels['reducteur'])
+        self.layouts['block_centre_0'].addWidget(self.reducteur)
         self.layouts['block_centre_0'].addStretch()
+
+
+    def _add_element_block_droit(self):
         self.layouts['block_droit_0'].addStretch()
         self.layouts['block_droit_0'].addWidget(self._widgets['Couple'])
-        return [self.layouts['block_gauche_0'],self.layouts['block_centre_0'],self.layouts['block_droit_0']]
 
 
     def genere_page(self):
-        self.layouts['main_0'].addLayout(self._layout_enfant[0])
+        self.layouts['main_0'].addLayout(self.layouts['block_gauche_0'])
         self.layouts['main_0'].addWidget(self._labels_fleches[0])
-        self.layouts['main_0'].addLayout(self._layout_enfant[1])
+        self.layouts['main_0'].addLayout(self.layouts['block_centre_0'])
         self.layouts['main_0'].addWidget(self._labels_fleches[1])
-        self.layouts['main_0'].addLayout(self._layout_enfant[2])
+        self.layouts['main_0'].addLayout(self.layouts['block_droit_0'])
         page = qtw.QWidget()
         page.setLayout(self.layouts['main_0'])
         return page
