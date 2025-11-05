@@ -38,7 +38,7 @@ PAGE_0 = {
                 'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':qtg.QIntValidator(0, 10000),'margin':[0,0,100,0]}
             },
     'labels':['Reducteur'],
-    'styleSheet': """
+    'styleSheet': '''
                 QWidget {
                     background: #fff;           /* Couleur de fond blanche */
                     border: 1px solid #222;     /* Bordure */
@@ -47,7 +47,7 @@ PAGE_0 = {
                     font-size: 18px;             /* Taille de la police */
                     font-weight: bold;           /* Gras */
                 }
-        """
+        '''
 }
 
 
@@ -58,14 +58,14 @@ PAGE_1 = {
             },
     'labels':['nombre d’étage :','1'],
     'comboboxes':{'liste_deroulante':['engrenage droit', 'engrenage hélicoïdal', 'conique']},
-    'styleSheet': """
+    'styleSheet': '''
                 QWidget {
                     background: #fff; /* Couleur de fond blanche */
                     border: 1px solid #222;
                     border-radius: 6px;
                     padding: 8px;
                 }
-            """
+            '''
 }
 
 
@@ -73,14 +73,14 @@ ATTENTE_CREATION = {
     'geometrie': [200, 60],
     'titre': 'Creation Projet',
     'labels':['creation projet','.','..','...',' '],
-    'styleSheet':"""
+    'styleSheet':'''
             QWidget {
                 background: #fff; /* Couleur de fond blanche */
                 font-size: 12px; /* Taille de police */
                 font-weight: bold; /* Poids de police */
                 padding: 10px 0; /* Rembourrage */
                 margin-bottom: 12px; /* Espace entre les boutons */
-        """
+        '''
 }
 
 class FenetreCreationProjet(Fenetre):
@@ -109,7 +109,7 @@ class FenetreCreationProjet(Fenetre):
         page = []
         self._page = [0]*nbr_page
         for i in range(nbr_page):
-            self._page[i] = globals()[f"Page_{i}"](self)
+            self._page[i] = globals()[f'Page_{i}'](self)
             page_instance = self._page[i].genere_page()
             self.stack['stack'].addWidget(page_instance)
             page.append(page_instance)
@@ -149,7 +149,7 @@ class FenetreCreationProjet(Fenetre):
             self.stack['stack'].setCurrentIndex(i + 1)
         else:
             # ouvre fenetre attente
-            fenetre_attente = FenetreAttenteCreation(ATTENTE_CREATION)
+            fenetre_attente = FenetreAttenteCreation()
             fenetre_attente.show()
             self.showMinimized()
             # prendre les dernieres valeurs
@@ -168,12 +168,12 @@ class FenetreCreationProjet(Fenetre):
     
         
     def genere_xlsx(self):
-        self._param_xlsx = [xlsx.Global(),xlsx.Train(1)]
-        self._param_xlsx[0].description = self._description_global
-        self._param_xlsx[1].description = self._train.description
-        self._projet_file = xlsx.ProjetXlsx(self._param_xlsx[0])
-        self._projet_file.ecrire_description(self._param_xlsx[1],1)
-        self._projet_file.save()
+        self.xlsx_param = [xlsx.Global(),xlsx.Train(1)]
+        self.xlsx_param[0].description = self._description_global
+        self.xlsx_param[1].description = self._train.description
+        self.xlsx_file = xlsx.ProjetXlsx(self.xlsx_param[0])
+        self.xlsx_file.ecrire_description(self.xlsx_param[1],1)
+        self.xlsx_file.save()
 
 
 class Page_0():
@@ -246,16 +246,7 @@ class Page_1():
     def __init__(self, fenetre: Fenetre) -> None:
         '''
         generation de la page 1 qui contient le choix du nombre de train, de leurs type et de leur materiaux
-        retourne la variable de la page
         '''
-        PAGE_1['styleSheet'] = """
-            QWidget {
-                background: #fff; /* Couleur de fond blanche */
-                border: 1px solid #222;
-                border-radius: 6px;
-                padding: 8px;
-            }
-        """
         self._fenetre = fenetre
         self._genere_variable_elements_variables()
         self._add_element_block_gauche()
@@ -264,7 +255,16 @@ class Page_1():
         fenetre.creer_getters_variables_lineedits(self, self._variables)
         
 
-    def _genere_variable_elements_variables(self):
+    def _genere_variable_elements_variables(self) -> None:
+        '''
+        genere tout les elements utiliser dans la fenetre tout en les adaptant
+        pour ensuite les lier à des instances courante
+
+        **Préconditions :**
+        - les self.labels, layouts et widgets doivent etre valide
+        - ``self._fenetre et PAGE_1`` doit etre valide
+        '''
+        # genere les elements principale de la fenetre
         elements = {
             'layouts':{'page':'v','ligne':'h','bloc_gauche':'h','bloc_droit':'h'},
             'widgets':['bloc_gauche','bloc_droit'],
@@ -273,41 +273,69 @@ class Page_1():
             'comboboxes':['liste_deroulante']
         }
         result = self._fenetre.genere_elements(elements,PAGE_1)
+        # assoicie les elements avec des instance courante
         self.layouts = result['layouts']
         self.widgets = result['widgets']
         self.labels = result['labels']
         self.nbr_train = result['lineedits']['nbr_train']
         self.liste_deroulante = result['comboboxes']['liste_deroulante']
+        # genere leselements restant
         widgets,self._variables = self._fenetre._genere_variables_unitees(PAGE_1['labels_unitee'])
         self.widgets.update(widgets)
-        # config nbr_train
         self.nbr_train.setValidator(qtg.QDoubleValidator())
         self.nbr_train.setFixedWidth(80)
         self.nbr_train.setText('1')
+        self.widgets['bloc_gauche'].setStyleSheet(PAGE_1['styleSheet'])
+        self.widgets['bloc_droit'].setStyleSheet(PAGE_1['styleSheet'])
         
 
     def _add_element_block_gauche(self):
+        '''
+        ajoute les elements du block gauche constituee du choix des nombres de train
+
+        **Préconditions :**
+        - les self.labels, layouts et widgets doivent etre valide
+        '''
         liste = [self.labels['nbr_etage'],self.nbr_train]
         self._fenetre.ajoute(self.layouts['bloc_gauche'],liste)
         self.widgets['bloc_gauche'].setLayout(self.layouts['bloc_gauche'])
-        self.widgets['bloc_gauche'].setStyleSheet(PAGE_1['styleSheet'])
 
 
-    def _add_element_block_droite(self):
+    def _add_element_block_droite(self) -> None:
+        '''
+        ajoute les elements du block droit constituee des parametres d'un train
+
+        **Préconditions :**
+        - les self.labels , layoute liste_deroulante et widgets doivent etre valide
+        '''
         liste_widgets = [self.labels['1'],self.liste_deroulante,self.widgets['entraxe'],self.widgets['σ_max']]
         self._fenetre.ajoute(self.layouts['bloc_droit'],liste_widgets)
-        self.widgets['bloc_droit'].setStyleSheet(PAGE_1['styleSheet'])
         self.widgets['bloc_droit'].setLayout(self.layouts['bloc_droit'])
 
 
-    def _add_element_block_ligne(self):
+    def _add_element_block_ligne(self) -> None:
+        '''
+        ajoute les elements du block ligne constituer du block gauche avec le nbr de train 
+        et le block droit avec les differents parametre de train
+
+        **Préconditions :**
+        - ``self.layouts['ligne'], self.widgets['bloc_gauche'], self.widgets['bloc_droit'] `` doivent etre valide
+        '''
         self.layouts['ligne'].addWidget(self.widgets['bloc_gauche'])
         self.layouts['ligne'].addSpacing(100)  # Espace fixe entre les deux blocs
         self.layouts['ligne'].addWidget(self.widgets['bloc_droit'])
         self.layouts['ligne'].addStretch()
 
 
-    def genere_page(self):
+    def genere_page(self) -> qtw.QWidget:
+        '''
+        ajoute au les composants au layoute de la page pour ensuite l'integrer au widget de la page
+
+        :return: widget de la page
+
+        **Préconditions :**
+        - ``self.layouts['page'], self.layouts['ligne'] `` doivent etre valide
+        '''
         self.layouts['page'].addLayout(self.layouts['ligne'])
         self.layouts['page'].addStretch()
         page = qtw.QWidget()
@@ -316,17 +344,31 @@ class Page_1():
 
 
 class FenetreAttenteCreation(Fenetre):
-    def __init__(self, param: dict) -> None:
+    def __init__(self) -> None:
+        '''
+        genere une fenetre avec un label texte 'creation projet' et un label dynamique avec des ...
+
+        **Préconditions :**
+        - ``ATTENTE_CREATION`` doit exister et avoir la bonne structure 
+        '''
         elements = {
             'layouts':{'main':'h'},
             'labels':['texte','points'],
         }
-        super().__init__(param,elements)
+        super().__init__(ATTENTE_CREATION,elements)
         self.genere_fenetre()
         self.genere_changement_dynamique()
 
 
-    def genere_fenetre(self):
+    def genere_fenetre(self) -> None:
+        '''
+        adapte le style du laout main et y ajoute le label texte et celui des points dynamoique
+        pour ensuite ajouter le main à la fenetre
+
+        **Préconditions :**
+        - ``self.layouts['main'], self._param['styleSheet'], self.labels['points']`` 
+            doivent être valide 
+        '''
         main = self.layouts['main']
         self.setStyleSheet(self._param['styleSheet'])
         liste = [self.labels['texte'],self.labels['points']]
@@ -334,7 +376,13 @@ class FenetreAttenteCreation(Fenetre):
         self.setLayout(main)
 
 
-    def genere_changement_dynamique(self):
+    def genere_changement_dynamique(self) -> None:
+        '''
+        creer un timer pour appeler de maniere cyclique self.clignoter
+
+        **Préconditions :**
+        - ``self._param['labels']`` doit être contenir un liste de str
+        '''
         self._points = self._param['labels'][1:]  # ['.', '..', '...',' ']
         self._index = 0
         # Timer pour l’animation
@@ -343,7 +391,16 @@ class FenetreAttenteCreation(Fenetre):
         self.timer.start(400)  # toutes les 400 ms
 
 
-    def clignoter(self):
-        """Fait alterner le texte du label pour simuler un clignotement."""
+    def clignoter(self) -> None:
+        '''
+        Permet le chamgement du text tu label a chaque appel
+
+        **Préconditions :**
+        - ``self.labels['points']`` doit être valide 
+        - ``self._points`` doit contenir une liste de str
+        - ``self._index`` ne doit etre initialiser à 0
+        '''
+        # ecriture du prochain text
         self.labels['points'].setText(self._points[self._index])
+        # incremente l'indexe et le remet à zero si la taille de la liste est dépassée
         self._index = (self._index + 1) % len(self._points)
