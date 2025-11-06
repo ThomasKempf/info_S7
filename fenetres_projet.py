@@ -139,7 +139,7 @@ class FenetreProjet(Fenetre):
         # met a jour l'objet train
         setattr(self._train, value_name, nouvelle_valeur)
         # met a jour le xlsx
-        self._xlsx_param[1].description = self._train.description
+        self._xlsx_param[1].description = self._train.afficher_description()
         self._xlsx_file.ecrire_description(self._xlsx_param[1],1)
         self._xlsx_file.save()
         # met a jour la fenetre
