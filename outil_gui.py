@@ -192,18 +192,32 @@ class Fenetre(qtw.QWidget):
 
 
 class CloseWatcher(qtc.QObject):
-    def __init__(self, handler):
-        super().__init__()
-        # handler = fonction à appeler quand on détecte la fermeture
-        self._handler = handler
+    def __init__(self, methode_a_appeler):
+        '''
+        la classe permet de mettre en place un tracker pour controler prevenir quand une fenetre ce ferme 
+        et recuperer des instances de la fenetre avant qu'elle soit detruite
 
-    def eventFilter(self, obj, event):
-        # qtc.QEvent.Close est émis juste avant la fermeture (avant destruction)
-        if event.type() == qtc.QEvent.Close:
+        :param methode_a_appeler: methode qui seras appeler lors de la detection de l'evenement
+        '''
+        super().__init__()
+        self._methode_a_appeler = methode_a_appeler
+
+    def eventFilter(self, objet: qtc.QObject, event: qtc.QEvent) -> bool:
+        '''
+        rattache l'evenement de fermer la fenetre à event pour traquer cette evenement
+        et execute la fonction definit precedement dans le cas ou l'evenement ce passe
+
+        :param objet: objet sur le quelle est traquer l'envenement
+        :param event: instance de la classe QEvent qui décrit ce qui s’est passé
+        :return: True si l'événement est consommé (intercepté et non transmis à l'objet),
+                False pour laisser Qt continuer le traitement normal de l'événement. 
+
+        **Préconditions :**
+        - ``self._fonction_a_appeler`` doit etre valide
+        '''
+        if event.type() == qtc.QEvent.Close: # ratache la fonction à l'evenement .close
             try:
-                # Appelle la fonction de traitement en lui passant l'objet fenêtre
-                self._handler(obj)
+                self._methode_a_appeler(objet)
             except Exception as e:
                 print("Erreur dans le handler de fermeture :", e)
-        # on laisse l'événement continuer (ne pas bloquer la fermeture)
-        return super().eventFilter(obj, event)
+        return super().eventFilter(objet, event) # permet de finir le traitement et de reprendre le comportement normal
