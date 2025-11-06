@@ -1,0 +1,148 @@
+"""
+:author: Thomas Krempf-Driesbach
+:date: 2025-11-05
+:description:
+
+    Ce scrypte contient la classe permetant de creer et de gerer la fenetre projet
+
+    C'est une sous classe de Fenetre qui doit en premier etre initialiser avec PROJET 
+    pour ensuite créer un par un les layouts de chaque train
+
+    Quand un parametre change le train est remis à jours à l'aide de son objet pour ensuite rafraichir la page et le xlsx
+"""
+
+
+from outil_gui import Fenetre
+import xlsx_reducteur as xlsx
+from PySide6 import (
+    QtWidgets as qtw,
+    QtGui as qtg
+)
+
+
+# param global de la fentre generer lors du super init
+PROJET = {
+    'titre': 'Projet',
+    'labels':['Train_1'],
+    'styleSheet':"""
+            QWidget {
+                background: #fff; /* Couleur de fond blanche */
+                font-size: 12px; /* Taille de police */
+                font-weight: bold; /* Poids de police */
+                padding: 10px 0; /* Rembourrage */
+                margin-bottom: 12px; /* Espace entre les boutons */
+        """
+}
+
+
+class FenetreProjet(Fenetre):
+    def __init__(self, xlsx_param:list[xlsx.Global,xlsx.Train], xlsx_file:xlsx.ProjetXlsx, train) -> None:
+        """
+        créer une fenetre Projet tout en construisant les layoutes des trains
+
+        :param xlsx_param: liste d'ogjet de parametre utiliser par le xlsx, le premier sont les parmetres global, ensuite vienne les trains
+        :param xlsx_file: ogjet utiliser pour le xlsx du projet, c'est dans celui si qu'on écris les param precedents
+        :param train: objet de la classe Simulation_train qui permet de calculer les param du train
+        """
+        elements = {
+            'layouts':{'main':'h','train1':'v'},
+        }
+        super().__init__(PROJET,elements)
+        self._train = train
+        self._xlsx_param = xlsx_param
+        self._xlsx_file = xlsx_file
+        self.setStyleSheet(self._param['styleSheet'])
+        layout = self.genere_train()
+        self.layouts['main'].addLayout(layout)
+        self.setLayout(self.layouts['main'])
+
+
+    def genere_train(self) -> qtw.QVBoxLayout:
+        """
+        genere le layout train contenant un titre et les parametre du train
+
+        :return: layout du train
+        """
+        titre = self.genere_titre_train()
+        self._zone_text_train = self.genere_widget_train()
+        return self.genere_layout_train(titre)
+
+
+    def genere_titre_train(self) -> qtw.QLabel:
+        """
+        genere le label titre et le met en forme
+
+        :return: label du titre
+
+        **Préconditions :**
+        - ``self._param['labels']`` doit être valide
+        """
+        titre = qtw.QLabel(*self._param['labels'])
+        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop) # Alignement à gauche et en haut
+        titre.setFont(qtg.QFont('Arial',20, qtg.QFont.Weight.Bold)) 
+        titre.setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px') # Style du titre
+        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
+        return titre
+    
+
+    def genere_widget_train(self) -> dict[qtw.QWidget,qtw.QLineEdit]:
+        """
+        genere un widget et une variable associée à la valeur pour chaque paramatre du train 
+        en ce basant sur les key du xlsx
+
+        :return: dict avec le widget et la variable liée a chaque parametre
+
+        **Préconditions :**
+        - ``self._xlsx_param`` doit être valide
+        """
+        train = {'widget':{},'variable':{}}
+        for i, (key, value) in enumerate(self._xlsx_param[1].description.items()):
+            unitee  = self._xlsx_param[1].unitee[i]
+            train['widget'][key],train['variable'][key] = self._ajout_nom_zone_texte_unitee(key,unitee,str(value))
+            train['variable'][key].setFixedWidth(60)
+            train['variable'][key].setValidator(qtg.QIntValidator())
+            train['variable'][key].editingFinished.connect(lambda k=key: self.modifie_parametre(int(self._zone_text_train['variable'][k].text()), k))  
+        return train
+    
+
+    def genere_layout_train(self, titre:qtw.QLabel) -> qtw.QVBoxLayout:
+        """
+        genere le layout vertical principal du train en y ajoutant les labels et widgets
+
+        :param titre: label titre incérer dans le layout
+        :return: layoute du train est retournée
+
+        **Préconditions :**
+        - ``self._zone_text_train`` doit être valide et contenir la key widget
+        """
+        layout = qtw.QVBoxLayout()
+        layout.addStretch()
+        layout.addWidget(titre) 
+        layout.addStretch()
+        self.ajoute(layout, list(self._zone_text_train['widget'].values()))
+        return layout
+    
+
+    def modifie_parametre(self, nouvelle_valeur:int, value_name:str) -> None:
+        """
+        Met à jour un paramètre de l'objet train, puis synchronise les modifications
+        dans le fichier Excel et l'interface graphique.
+
+        :param nouvelle_valeur: Nouvelle valeur à assigner à l'attribut spécifié.
+        :param value_name: Nom de l'attribut du train à modifier.
+
+        **Préconditions :**
+        - L'attribut ``self._train`` doit être initialisé avant l'appel.
+        - ``self._xlsx_param``, ``_xlsx_file`` et ``self._zone_text_train`` 
+          doivent être valides et contenir les clés attendues.
+        """
+        # met a jour l'objet train
+        setattr(self._train, value_name, nouvelle_valeur)
+        # met a jour le xlsx
+        self._xlsx_param[1].description = self._train.description
+        self._xlsx_file.ecrire_description(self._xlsx_param[1],1)
+        self._xlsx_file.save()
+        # met a jour la fenetre
+        for key in self._zone_text_train['variable']:
+            if key != value_name:
+                self._zone_text_train['variable'][key].setText(str(self._xlsx_param[1].description[key]))
