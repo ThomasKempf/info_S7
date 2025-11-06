@@ -68,7 +68,7 @@ class Engrenage:
         self.module = module 
 
 # Classe Train 
-class Calclule_train:
+class Calcule_train:
     """Classe de base pour les trains d'engrenages."""
     def __init__(self):
         # Initialisation par défaut, nécessaire pour la sous-classe
@@ -85,7 +85,7 @@ class Calclule_train:
 
 # --- Classe TrainSimple (Cinématique P/C/V) ---
 
-class Calcule_train_simple(Calclule_train):
+class Calcule_train_simple(Calcule_train):
     
     # Représente un train d'engrenages droits.
     
@@ -242,7 +242,10 @@ class Calcule_train_simple(Calclule_train):
                 print(f"{cle.replace('_', ' ').capitalize():<30}: {valeur:.2f}")
             else:
                 print(f"{cle.replace('_', ' ').capitalize():<30}: {valeur}")
+        return self.description
         print("-------------------------------------------------")
+
+    
 
 
 
