@@ -49,99 +49,105 @@ MENU = {
     '''
 }
 
+def next_fenetre(fenetre_depart: qtw.QWidget, fenetre_suivante: qtw.QWidget) -> None:
+    """
+    Ferme la fenêtre de départ et affiche la fenêtre suivante.
+    """
+    fenetre_depart.close()
+    fenetre_suivante.show()
+
+
+def detecte_fermeture_fenetre(fenetre: qtw.QWidget) -> None:
+    """
+    Cette fonction sera appelée *avant* que la fenêtre soit détruite.
+    Tente de récupérer des attributs spécifiques de la fenêtre et
+    ouvre la FenetreProjet si possible.
+    """
+    try:
+        xlsx_param = getattr(fenetre, "xlsx_param")
+        xlsx_file = getattr(fenetre, "xlsx_file")
+        train = getattr(fenetre, "_train")
+        fenetre_projet = FenetreProjet(xlsx_param, xlsx_file, train)
+        fenetre_projet.show()
+    except Exception as e:
+        print("Impossible de récupérer les attributs :", e)
+
 
 class FenetreMenu(Fenetre):
-    '''
-    Classe pour genere uniquement la fenêtre de menu.
-    parametre : dictionnaire contenant les parametres de la fenetre, propre a chaque fenetre
-    '''
+    """
+    Classe pour générer uniquement la fenêtre de menu.
+    param : dictionnaire contenant les paramètres de la fenêtre, propre à chaque fenêtre
+    """
+
     def __init__(self, param: dict) -> None:
-        elements = {
-            'layouts':{'main':'h','left':'v','right':'v'},
-            'widgets':['engrenages'],
-            'labels':['titre'],
-            'buttons':['creer_projet','ouvrir_projet','exit']
-        }
-        super().__init__(param,elements)
+        super().__init__(param, {
+            'layouts': {'main': 'h', 'left': 'v', 'right': 'v'},
+            'widgets': ['engrenages'],
+            'labels': ['titre'],
+            'buttons': ['creer_projet', 'ouvrir_projet', 'exit']
+        })
         self.adapt_composant()
         self.add_left()
         self.add_right()
         self.add_main()
 
-    def adapt_composant(self):
-        # creer different composant
+    def adapt_composant(self) -> None:
+        """
+        Crée et adapte les composants de la fenêtre (titres, boutons, widgets).
+        """
         self.adapter_titre()
-        # bouton_creer_projet
-        # bouton exit
-        self.buttons['exit'].setFixedSize(210,50)
+        self.buttons['exit'].setFixedSize(210, 50)
         self.buttons['exit'].clicked.connect(self.close)
-        # engrenage
         self.widget_engrenage = self._generer_icone_engrenage(self.widgets['engrenages'])
 
+    def add_left(self) -> None:
+        """
+        Ajoute les widgets du panneau gauche au layout gauche.
+        """
+        liste = [self.labels['titre'], self.buttons['creer_projet'], self.buttons['ouvrir_projet']]
+        self.ajoute(self.layouts['left'], liste)
+        self.layouts['left'].addStretch()
 
-    def add_left(self):
-        liste = [self.labels['titre'],self.buttons['creer_projet'],self.buttons['ouvrir_projet']]
-        self.ajoute(self.layouts['left'],liste)
-        self.layouts['left'].addStretch() # Pour pousser les éléments vers le haut
-
-
-    def add_right(self):
+    def add_right(self) -> None:
+        """
+        Ajoute les widgets du panneau droit au layout droit.
+        """
         self.layouts['right'].addWidget(self.widget_engrenage, alignment=qtg.Qt.AlignmentFlag.AlignTop)
         self.layouts['right'].addStretch()
         self.layouts['right'].addWidget(self.buttons['exit'])
 
-    
-    def add_main(self):
-        liste = [self.layouts['left'],self.layouts['right']]
-        self.ajoute(self.layouts['main'],liste)
-        self.setLayout(self.layouts['main']) # Définir le layout principal pour la fenêtre
+    def add_main(self) -> None:
+        """
+        Compose le layout principal à partir des sous-layouts gauche et droit.
+        """
+        liste = [self.layouts['left'], self.layouts['right']]
+        self.ajoute(self.layouts['main'], liste)
+        self.setLayout(self.layouts['main'])
 
-    
-
-    def _generer_icone_engrenage(self,widget) -> None:
-        '''
-        Fonction pour générer l'icône d'engrenage dans le layout spécifié
-        uniquement dans la classe FenetreMenu parce que l'affichage est spécifique au menu.
-        layout : Layout dans lequel ajouter les icône d'engrenage
-        '''
+    def _generer_icone_engrenage(self, widget: qtw.QWidget) -> qtw.QWidget:
+        """
+        Génère l'icône d'engrenage dans le widget fourni et retourne ce widget.
+        """
         param = self._param['widget_engrenage']
-        widget.setFixedSize(*param['taille'])  # Taille du conteneur
+        widget.setFixedSize(*param['taille'])
         for pos in param['placement_engrenages']:
-            gear = qtw.QLabel('\u2699', widget)  # Unicode pour l'icône d'engrenage
-            gear.setStyleSheet(param['styleSheet'])  # Style de l'icône
-            gear.adjustSize()   # Ajuster la taille du QLabel à son contenu
+            gear = qtw.QLabel('\u2699', widget)
+            gear.setStyleSheet(param['styleSheet'])
+            gear.adjustSize()
             x = pos[0] - gear.width() // 2
             y = pos[1] - gear.height() // 2
-            gear.move(x, y)  # Positionner l'icône
-        # Ajouter le widget contenant les engrenages dans ton layout principal
+            gear.move(x, y)
         return widget
 
+    def adapter_titre(self) -> None:
+        """
+        Configure le style et l'alignement du titre.
+        """
+        self.labels['titre'].setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop)
+        self.labels['titre'].setFont(qtg.QFont('Arial', 20, qtg.QFont.Weight.Bold))
+        self.labels['titre'].setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px')
+        self.labels['titre'].setAlignment(qtg.Qt.AlignmentFlag.AlignCenter)
 
-    def adapter_titre(self):
-        self.labels['titre'].setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop) # Alignement à gauche et en haut
-        self.labels['titre'].setFont(qtg.QFont('Arial',20, qtg.QFont.Weight.Bold)) 
-        self.labels['titre'].setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px') # Style du titre
-        self.labels['titre'].setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
-
-
-def next_fenetre(fenetre_depart,fenetre_suivante):
-    fenetre_depart.close()
-    fenetre_suivante.show()
-
-
-def detecte_fermeture_fenetre(fenetre):
-    """
-    Cette fonction sera appelée *avant* que la fenêtre soit détruite.
-    Tu peux y accéder aux attributs de fenetre_creation en toute sécurité.
-    """
-    try:
-        param_xlsx = getattr(fenetre, "_param_xlsx")
-        projet_file = getattr(fenetre, "_projet_file")
-        train = getattr(fenetre, "_train")
-        fenetre_projet = FenetreProjet(param_xlsx,projet_file,train)
-        fenetre_projet.show()
-    except Exception as e:
-        print("Impossible de récupérer les attributs :", e)
 
 if __name__ == '__main__':
     # Variable globale pour stocker l'instance de la fenêtre
