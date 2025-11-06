@@ -30,17 +30,33 @@ class Train(Global):
         super().__init__()
         self.titre = f'train_{num}'
         self.description = {
-            'vitesse_entree': 0,
-            'puissance_entree': 0,
-            'couple_sortie': 0,
-            'entraxe': 0,
-            'resistance_elastique': 0,
-            'alpha': 0,
-            'beta':0,
-		    'vitesse_sortie_calculee': 0,
-		    'couple_entree_calcule': 0,
-            'force_tangentielle_calculee': 0,
-		    'module_calcule': 0,
+            "global": {
+                'vitesse_entree': [0,'RPM'],
+                'puissance_entree': [0,'W'],
+                'couple_sortie': [0,'N.m'],
+                'entraxe': [0,'m'],
+                'vitesse_sortie_calculee': [0,'RPM'],
+                'couple_entree_calcule': [0,'N.m'],
+                'force_tangentielle_calculee': [0,'N'],
+            },
+            "roue": {
+                'nbr_dents': [0,''],
+                'rayon_primitif': [0,'mm'],
+                'alpha': [0,'°'],
+                'beta': [0,'°'],
+                'module': [0,''],
+                'resistance_elastique': [0,'Mpa']
+
+            },
+            "Pignon": {
+                'nbr_dents': [0,' '],
+                'rayon_primitif': [0,'mm'],
+                'alpha': [0,'°'],
+                'beta': [0,'°'],
+                'module': [0,''],
+                'resistance_elastique': [0,'Mpa']
+                }
+            
         }
         self.unitee = [
             'RPM',
@@ -73,6 +89,7 @@ class Calcule_train:
     def __init__(self):
         # Initialisation par défaut, nécessaire pour la sous-classe
         self._rapport_reduction: float = 0.0 
+        self.error = 0
 
     def calculer_rapport(self):
         """La méthode 'calculer_rapport' doit être implémentée par la sous-classe."""
@@ -242,8 +259,8 @@ class Calcule_train_simple(Calcule_train):
                 print(f"{cle.replace('_', ' ').capitalize():<30}: {valeur:.2f}")
             else:
                 print(f"{cle.replace('_', ' ').capitalize():<30}: {valeur}")
-        return self.description
         print("-------------------------------------------------")
+        return self.description,self.error
 
     
 
