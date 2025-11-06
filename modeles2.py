@@ -7,9 +7,9 @@ import math
 class Global():
     def __init__(self) -> None:
         self.titre = 'parametre globale'
-        self.description = {'vitesse_entree': 0,
-                            'puissance_entree': 0,
-                            'couple_sortie': 0
+        self.description = {'vitesse_entree': [0,'RPM'],
+                            'puissance_entree': [0,'W'],
+                            'couple_sortie': [0, 'N.m']
                     }
         self.unitee = ['RPM','W','Nm']
 
