@@ -1,3 +1,18 @@
+"""
+:author: Thomas Krempf-Driesbach
+:date: 2025-11-06
+:description:
+
+    Ce scrypte contient la classe permetant creer une fenetre de creation de projet
+
+    Cette fenetre ce décompose par des boutons next et precedent permetant de passer de page en page
+    et une fenetre d'attente de creation de page
+
+    C'est dans la classe FenetreCreationProjet dans next_page() que va etre créer le projet
+    le fichier xlsx et les parametres correspondant
+"""
+
+
 from outil_gui import (Fenetre,Simulation_train)
 import xlsx_reducteur as xlsx
 from PySide6 import (
@@ -83,11 +98,16 @@ ATTENTE_CREATION = {
         '''
 }
 
+
 class FenetreCreationProjet(Fenetre):
     def __init__(self) -> None:
         '''
-        Initialise la fenetre en plus des bouton de base et de toute la structure
-        param = parametre de la page situee au dessus
+        creer la fenetre de creation de page avec les boutons next et suivant
+        et un stack permetant de defiler les differentes pages 
+        l'objectif est de donner les parametre primaire permetant la creation d'un projet reducteur
+        
+        **Préconditions :**
+        - ``CREATION_PROJET`` contient les parametres pincipale de la page, doit etre sous la bonne forme
         '''
         elements = {
             'layouts':{'main':'v','button':'h'},
@@ -96,15 +116,17 @@ class FenetreCreationProjet(Fenetre):
         }
         super().__init__(CREATION_PROJET,elements)
         self.generer_widget_page(nbr_page=2)
-        # Layout vertical pour le stack + boutons
         self.layouts['button'].insertStretch(0, 1)
         self.generer_bouton_next_precedent(self.layouts['button'])
         self.ajoute_composants()
 
 
-    def generer_widget_page(self,nbr_page) -> None:
+    def generer_widget_page(self, nbr_page:int) -> None:
         '''
-        Fonction pour générer les pages du QStackedWidget.
+        creer un objet pour chaque page avec la bonne classe et ajoute le au stack permetant le defilement
+        
+        **Préconditions :**
+        - ``Page_i`` les classe de page doivent exister
         '''
         page = []
         self._page = [0]*nbr_page
@@ -116,16 +138,29 @@ class FenetreCreationProjet(Fenetre):
 
 
 
-    def generer_bouton_next_precedent(self,layout):
-        taille = [210,50]
-        fonction = ['precedente_page','next_page']
+    def generer_bouton_next_precedent(self, layout:qtw.QHBoxLayout) -> None:
+        '''
+        adapte les boutons et les lie au fonction a appeler
+        
+        **Préconditions :**
+        - ``self.buttons`` doit etre valide avec les bonnes key
+        - les fonction decrite dans ``fonction`` doivent exister
+        '''
+        taille = [210,50] # taille des boutons
+        fonction = ['precedente_page','next_page'] # nom des fonction a appeler pour chaque bouton
         for i, key in enumerate(self.buttons):
             self.buttons[key].setFixedSize(*taille)
             self.buttons[key].clicked.connect(getattr(self, fonction[i]))
             layout.addWidget(self.buttons[key])
 
 
-    def ajoute_composants(self):
+    def ajoute_composants(self) -> None:
+        '''
+        ajoute les composants de la page constituer des boutons et du stack permetant le changement de page
+        
+        **Préconditions :**
+        - ``self.stack['stack']``,``self.layouts['button']`` et ``self.layouts['main']`` doit etre valide
+        '''
         liste = [self.stack['stack'],self.layouts['button']]
         self.ajoute(self.layouts['main'],liste)
         self.setLayout(self.layouts['main'])
@@ -134,6 +169,9 @@ class FenetreCreationProjet(Fenetre):
     def precedente_page(self) -> None:
         '''
         permet de passer a la page precedente
+        
+        **Préconditions :**
+        - ``self.stack['stack']`` doit etre valide
         '''
         i = self.stack['stack'].currentIndex()
         if i > 0:
@@ -142,7 +180,11 @@ class FenetreCreationProjet(Fenetre):
 
     def next_page(self) -> None:
         '''
-        permet de passer a la page suivante
+        a chaque appel, passe à la page suivante, si on est à la derniere page:
+            creer une fenetre d'attente pour ensuite creer le projet (objet train et fichier xlsx)
+
+        **Préconditions :**
+        - ``self.stack['stack']`` doit etre valide
         '''
         i = self.stack['stack'].currentIndex()
         if i < self.stack['stack'].count() - 1:
@@ -159,7 +201,14 @@ class FenetreCreationProjet(Fenetre):
             self.close()
 
 
-    def genere_projet(self):
+    def genere_projet(self) -> None:
+        '''
+        extrait les données des pages pour ensuite les mettre en arguments et creer un objet train
+
+        **Préconditions :**
+        - il est important de les laisser en instance courante pour pouvoir les lire juste avant la fermeture de la page
+        - ``self._page[0].variables`` doit etre valide de 0 a 1
+        '''
         self._description_global =  self._page[0].variables
         self._description_train = self._page[1].variables
         values_global = [int(val) for val in self._description_global.values()]
@@ -167,10 +216,23 @@ class FenetreCreationProjet(Fenetre):
         self._train = Simulation_train(*values_global, *values_train)
     
         
-    def genere_xlsx(self):
+    def genere_xlsx(self) -> None:
+        '''
+        genere les differents instance utilisant la classe xlsx.
+        xlsx_param est une liste contenant tout les parametres du projet
+        en utilisant des classe tamplate pour etre sur d'avoir la bonne structure
+        xlsx_file contient toute les metodes lier au ficher xlsx, permetant de le modifier et le sauvegrader
+
+        **Préconditions :**
+        - il est important de les laisser en instance courante pour pouvoir les lire juste avant la fermeture de la page
+        - ``self._description_global`` doit etre valide et contenir la description global (vitesse,puissance,couple)
+        - ``self._description_global`` doit etre un objet train
+        '''
+        # creation des parametres
         self.xlsx_param = [xlsx.Global(),xlsx.Train(1)]
         self.xlsx_param[0].description = self._description_global
         self.xlsx_param[1].description = self._train.description
+        # creation du fichier
         self.xlsx_file = xlsx.ProjetXlsx(self.xlsx_param[0])
         self.xlsx_file.ecrire_description(self.xlsx_param[1],1)
         self.xlsx_file.save()
@@ -179,60 +241,112 @@ class FenetreCreationProjet(Fenetre):
 class Page_0():
     def __init__(self, fenetre: Fenetre) -> None:
         '''
-        generation de la page 0 qui contient le choix des parametre général du reducteur
-        retourne la variable de la page
+        genere la page 0 qui contient le choix des parametres globales: puissance vitesse couple...
+
+        :param fenetre: objet de classe fenetre permetant d'atteindre les methode outils de celle ci
         '''
         self._fenetre = fenetre
+        # genere les elements
         elements = {
             'layouts':{'main':'h','block_gauche':'v','block_centre':'v','block_droit':'h'},
             'labels':['reducteur'],
         }
         result = fenetre.genere_elements(elements,PAGE_0)
+        # lie les elements a des instances courantes
         self.layouts = result['layouts']
         self.reducteur = result['labels']['reducteur']
         self._widgets,self._variables = self._genere_widgets_unitee()
         self._labels_fleches = self._genere_fleches_page0(2)
         self.reducteur.setStyleSheet(PAGE_0['styleSheet'])
+        # ajoute les elements
         self._add_element_block_gauche()
         self._add_element_block_centre()
         self._add_element_block_droit()
         fenetre.creer_getters_variables_lineedits(self,self._variables)
         
 
-    def _genere_widgets_unitee(self):
+    def _genere_widgets_unitee(self) -> tuple[dict[qtw.QWidget], dict[qtw.QLineEdit]]:
+        '''
+        genere les widgets des parametre a unitee, 
+        chaque widget contien le nom, un QLineEdit et une unitee
+
+        :return: un dict contenant les widget de chaque parametre
+        :return: un dict contenant les QLineEdit pour lire ou modifier sa valeur
+
+        **Préconditions :**
+        - ``(PAGE_0['labels_unitee']`` doit exister et avoir la bonne structure
+        - ``self._fenetre`` doit etre un objet de la classe Fenetre
+        '''
         widgets,variables = self._fenetre._genere_variables_unitees(PAGE_0['labels_unitee'])
         for key in (PAGE_0['labels_unitee']):
             variables[key].setFixedWidth(60)
             widgets[key].setContentsMargins(*PAGE_0['labels_unitee'][key]['margin'])
         return widgets,variables
+    
 
+    def _genere_fleches_page0(self, nbr_fleche:int) -> list[qtw.QLabel]:
+        '''
+        genere une liste contenant les labels des flèches
 
-    def _genere_fleches_page0(self,nbr_fleche):
+        :param nbr_fleche: definit le nombre de label generer
+        :return: liste de labels contenant la flèche
+
+        **Préconditions :**
+        - ``./fleche.png`` doit exister
+        - ``fenetre`` doit etre un objet de la classe Fenetre
+        '''
         label = [0]*nbr_fleche
         for i in range(nbr_fleche):
             label[i] = self._fenetre._genere_lable_image('./fleche.png')
         return label
 
 
-    def _add_element_block_gauche(self):
+    def _add_element_block_gauche(self) -> None:
+        '''
+        ajoute les elements du block gauche constituee de la vitesse et de la puissance
+
+        **Préconditions :**
+        - ``self.layouts`` et ``self._widgets`` doivent etre valide et contenir les bonne key
+        '''
         self.layouts['block_gauche'].addStretch()
         liste = [self._widgets['Vitesse'],self._widgets['Puissance']]
         self._fenetre.ajoute(self.layouts['block_gauche'],liste)
         self.layouts['block_gauche'].addStretch()
 
 
-    def _add_element_block_centre(self):
+    def _add_element_block_centre(self) -> None:
+        '''
+        ajoute les elements du block centre constituee du label reducteur
+
+        **Préconditions :**
+        - ``self.layouts`` et ``self.reducteur`` doivent etre valide
+        '''
         self.layouts['block_centre'].addStretch()
         self.layouts['block_centre'].addWidget(self.reducteur)
         self.layouts['block_centre'].addStretch()
 
 
-    def _add_element_block_droit(self):
+    def _add_element_block_droit(self) -> None:
+        '''
+        ajoute les elements du block droit constituee seulement du couple en le positionant
+
+        **Préconditions :**
+        - ``self.layouts`` et ``self._widgets`` doivent etre valide et contenir les bonnes clef
+        '''
         self.layouts['block_droit'].addStretch()
         self.layouts['block_droit'].addWidget(self._widgets['Couple'])
 
 
-    def genere_page(self):
+    def genere_page(self) -> qtw.QWidget:
+        '''
+        ajoute les composants au layoute de la page pour ensuite l'integrer au widget de la page
+
+        :return: widget de la page
+
+        **Préconditions :**
+        - ``self.layouts`` doivent etre valide et contenir les bonnes clef
+        - ``fenetre`` doit etre un objet de la classe Fenetre
+        '''
         liste = [self.layouts['block_gauche'],self._labels_fleches[0],
                  self.layouts['block_centre'],self._labels_fleches[1],self.layouts['block_droit']]
         self._fenetre.ajoute(self.layouts['main'],liste)
@@ -257,14 +371,14 @@ class Page_1():
 
     def _genere_variable_elements_variables(self) -> None:
         '''
-        genere tout les elements utiliser dans la fenetre tout en les adaptant
+        genere tout les elements utiliser dans la page tout en les adaptant
         pour ensuite les lier à des instances courante
 
         **Préconditions :**
         - les self.labels, layouts et widgets doivent etre valide
         - ``self._fenetre et PAGE_1`` doit etre valide
         '''
-        # genere les elements principale de la fenetre
+        # genere les elements principale de la page
         elements = {
             'layouts':{'page':'v','ligne':'h','bloc_gauche':'h','bloc_droit':'h'},
             'widgets':['bloc_gauche','bloc_droit'],
@@ -329,7 +443,7 @@ class Page_1():
 
     def genere_page(self) -> qtw.QWidget:
         '''
-        ajoute au les composants au layoute de la page pour ensuite l'integrer au widget de la page
+        ajoute les composants au layoute de la page pour ensuite l'integrer au widget de la page
 
         :return: widget de la page
 
