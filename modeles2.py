@@ -148,31 +148,7 @@ class TrainSimple(Train):
     # Calcul des diamètres primitifs, il estr nécessaire de demander à l'utilisateur de donner 
     # un des diamètres dans la classe engrenage et aussi un nb de dents pour pouvoir le calculer
 
-def calculer_diametres(self, Z1: int):
-    """
-    calcule Z2 et les diamètres primitifs du pignon et de la roue
-    en fonction du module déjà calculé et du rapport de réduction
-    """
-    # Z2 = i * Z1
-    Z2 = int(round(self.rapport_reduction * Z1))
-
-    # diamètres primitifs
-    d1 = self.module * Z1          # pignon
-    d2 = self.module * Z2          # roue
-
-    # construire les objets engrenages
-    self.pignon = Engrenage(Z1, d1/2, module=self.module)
-    self.roue   = Engrenage(Z2, d2/2, module=self.module)
-
-    # enregistrer dans le dict
-    self.description["Z_pignon"] = Z1
-    self.description["Z_roue"]   = Z2
-    self.description["diam_pignon_mm"] = d1
-    self.description["diam_roue_mm"]   = d2
-
-    return d1, d2
-
-######################################################################################################################################
+    ######################################################################################################################################
 
     # Implémentation requise de la classe Train
     def calculer_rapport(self) -> float:

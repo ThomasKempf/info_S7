@@ -54,7 +54,7 @@ elif nb_etages == 2:
 elif nb_etages == 3:
     print("\n--- Définition des rapports pour 3 étages ---")
     
-    # 1. Saisie de i1
+    # 1. Saisie de i1u
     while True:
         try:
             i1 = float(input(f"Entrez le rapport i1 pour l'étage 1 : "))
