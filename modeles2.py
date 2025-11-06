@@ -3,6 +3,60 @@ import math
 
 # --- Définition des classes de base ---
 
+
+class Global():
+    def __init__(self) -> None:
+        self.titre = 'parametre globale'
+        self.description = {'vitesse_entree': 0,
+                            'puissance_entree': 0,
+                            'couple_sortie': 0
+                    }
+        self.unitee = ['RPM','W','Nm']
+
+
+    def _make_property(attr_name):   
+        def getter(self):
+            return getattr(self, f"_{attr_name}") # Retourne la valeur
+        def setter(self, value):
+            setattr(self, f"_{attr_name}", value) # Modifie la valeur
+        return property(getter, setter)
+    titre = _make_property("titre") 
+    description = _make_property("description") 
+    unitee = _make_property("unitee")
+
+
+class Train(Global):
+    def __init__(self,num:int) -> None:
+        super().__init__()
+        self.titre = f'train_{num}'
+        self.description = {
+            'vitesse_entree': 0,
+            'puissance_entree': 0,
+            'couple_sortie': 0,
+            'entraxe': 0,
+            'resistance_elastique': 0,
+            'alpha': 0,
+            'beta':0,
+		    'vitesse_sortie_calculee': 0,
+		    'couple_entree_calcule': 0,
+            'force_tangentielle_calculee': 0,
+		    'module_calcule': 0,
+        }
+        self.unitee = [
+            'RPM',
+            'W',
+            'Nm',
+            'mm',
+            'Mpa',
+            '°',
+            '°',
+            'RPM',
+            'Nm',
+            'N',
+            ' '
+            ]
+
+
 # Classe Engrenage (ajoutée à partir de votre exemple)
 class Engrenage:
     """Représente un engrenage avec ses paramètres géométriques."""
@@ -14,7 +68,7 @@ class Engrenage:
         self.module = module 
 
 # Classe Train 
-class Train:
+class Calclule_train:
     """Classe de base pour les trains d'engrenages."""
     def __init__(self):
         # Initialisation par défaut, nécessaire pour la sous-classe
@@ -31,7 +85,7 @@ class Train:
 
 # --- Classe TrainSimple (Cinématique P/C/V) ---
 
-class TrainSimple(Train):
+class Calcule_train_simple(Calclule_train):
     
     # Représente un train d'engrenages droits.
     

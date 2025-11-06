@@ -75,7 +75,7 @@ class Train(Global):
         }
         self.unitee = [
             'RPM',
-            'kW',
+            'W',
             'Nm',
             '%',
             'mm',

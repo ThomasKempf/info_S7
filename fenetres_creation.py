@@ -12,7 +12,7 @@
     le fichier xlsx et les parametres correspondant
 """
 
-from modeles2 import TrainSimple
+import modeles2 as mod
 from outil_gui import (Fenetre,Simulation_train)
 import xlsx_reducteur as xlsx
 from PySide6 import (
@@ -213,7 +213,7 @@ class FenetreCreationProjet(Fenetre):
         self._description_train = self._page[1].variables
         values_global = [int(val) for val in self._description_global.values()]
         values_train = [int(val) for val in self._description_train.values()]
-        self._train = TrainSimple(*values_global, *values_train)
+        self._train = mod.Calcule_train_simple(*values_global, *values_train)
     
         
     def genere_xlsx(self) -> None:
@@ -229,7 +229,7 @@ class FenetreCreationProjet(Fenetre):
         - ``self._description_global`` doit etre un objet train
         '''
         # creation des parametres
-        self.xlsx_param = [xlsx.Global(),xlsx.Train(1)]
+        self.xlsx_param = [mod.Global(),mod.Train(1)]
         self.xlsx_param[0].description = self._description_global
         self.xlsx_param[1].description = self._train.description
         # creation du fichier

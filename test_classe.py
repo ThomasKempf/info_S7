@@ -1,9 +1,9 @@
 # test_vitesse_sortie.py
 
-from modeles2 import TrainSimple
+from modeles2 import Calcule_train_simple
 
 # 🔹 Création d'un train d'engrenages avec des valeurs simples
-train = TrainSimple(
+train = Calcule_train_simple(
     vitesse_entree=1500,      # tr/min
     puissance_entree=4000,    # W
     couple_sortie=380,        # Nm
