@@ -209,9 +209,12 @@ class FenetreCreationProjet(Fenetre):
         - il est important de les laisser en instance courante pour pouvoir les lire juste avant la fermeture de la page
         - ``self._page[0].variables`` doit etre valide de 0 a 1
         '''
-        self._description_global =  self._page[0].variables
+        
+        description_global =  self._page[0].variables
+        self._description_global = mod.Global()
+        self._description_global.description =  description_global
         self._description_train = self._page[1].variables
-        values_global = [int(val) for val in self._description_global.values()]
+        values_global = [int(val) for val in description_global.values()]
         values_train = [int(val) for val in self._description_train.values()]
         self._train = mod.Calcule_train_simple(*values_global, *values_train)
     
@@ -228,13 +231,9 @@ class FenetreCreationProjet(Fenetre):
         - ``self._description_global`` doit etre valide et contenir la description global (vitesse,puissance,couple)
         - ``self._description_global`` doit etre un objet train
         '''
-        # creation des parametres
-        self.xlsx_param = [mod.Global(),mod.Train(1)]
-        self.xlsx_param[0].description = self._description_global
-        self.xlsx_param[1].description = self._train.description
         # creation du fichier
-        self.xlsx_file = xlsx.ProjetXlsx(self.xlsx_param[0])
-        self.xlsx_file.ecrire_description(self.xlsx_param[1],1)
+        self.xlsx_file = xlsx.ProjetXlsx(self._description_global)
+        self.xlsx_file.ecrire_description(self._train.train_1,1)
         self.xlsx_file.save()
 
 

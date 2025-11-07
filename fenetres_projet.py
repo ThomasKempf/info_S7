@@ -36,7 +36,7 @@ PROJET = {
 
 
 class FenetreProjet(Fenetre):
-    def __init__(self, xlsx_param:list[xlsx.Global,xlsx.Train], xlsx_file:xlsx.ProjetXlsx, train) -> None:
+    def __init__(self, xlsx_file:xlsx.ProjetXlsx, train) -> None:
         """
         créer une fenetre Projet tout en construisant les layoutes des trains
 
@@ -48,13 +48,17 @@ class FenetreProjet(Fenetre):
             'layouts':{'main':'h','train1':'v'},
         }
         super().__init__(PROJET,elements)
-        self._train = train
-        self._xlsx_param = xlsx_param
+        self._methode_train = train
+        self._train = train.train_1
         self._xlsx_file = xlsx_file
         self.setStyleSheet(self._param['styleSheet'])
         layout = self.genere_train()
+        print('hello')
         self.layouts['main'].addLayout(layout)
+        print('hello 1',self.layouts)
+        print(self.layouts)
         self.setLayout(self.layouts['main'])
+        print('hello 2')
 
 
     def genere_train(self) -> qtw.QVBoxLayout:
@@ -95,15 +99,20 @@ class FenetreProjet(Fenetre):
         **Préconditions :**
         - ``self._xlsx_param`` doit être valide
         """
-        train = {'widget':{},'variable':{}}
-        for i, (key, value) in enumerate(self._xlsx_param[1].description.items()):
-            unitee  = self._xlsx_param[1].unitee[i]
-            train['widget'][key],train['variable'][key] = self._ajout_nom_zone_texte_unitee(key,unitee,str(value))
-            train['variable'][key].setFixedWidth(60)
-            train['variable'][key].setValidator(qtg.QIntValidator())
-            train['variable'][key].editingFinished.connect(lambda k=key: self.modifie_parametre(int(self._zone_text_train['variable'][k].text()), k))  
-        return train
-    
+        train_gui = {}
+        description_train = self._train.description
+        for global_key in description_train:
+            sous_obj = {'widget':{},'variable':{}}
+            sous_obj['objet'] = description_train[global_key]
+            for i, (key, value) in enumerate(sous_obj['objet'].description.items()):
+                unitee  = sous_obj['objet'].unitee[i]
+                sous_obj['widget'][key],sous_obj['variable'][key] = self._ajout_nom_zone_texte_unitee(key,unitee,str(value))
+                sous_obj['variable'][key].setFixedWidth(60)
+                sous_obj['variable'][key].setValidator(qtg.QIntValidator())
+                sous_obj['variable'][key].editingFinished.connect(lambda k=key: self.modifie_parametre(int(self._zone_text_train[global_key]['variable'][k].text()), k,sous_obj)) # self._zone_text_train n'existe pas encore
+                train_gui[global_key] = sous_obj
+        return train_gui
+
 
     def genere_layout_train(self, titre:qtw.QLabel) -> qtw.QVBoxLayout:
         """
@@ -119,11 +128,12 @@ class FenetreProjet(Fenetre):
         layout.addStretch()
         layout.addWidget(titre) 
         layout.addStretch()
-        self.ajoute(layout, list(self._zone_text_train['widget'].values()))
+        for key in self._zone_text_train:
+            self.ajoute(layout, list(self._zone_text_train[key]['widget'].values()))
         return layout
     
 
-    def modifie_parametre(self, nouvelle_valeur:int, value_name:str) -> None:
+    def modifie_parametre(self, nouvelle_valeur:int, value_name:str, sous_obj) -> None:
         """
         Met à jour un paramètre de l'objet train, puis synchronise les modifications
         dans le fichier Excel et l'interface graphique.
@@ -137,10 +147,10 @@ class FenetreProjet(Fenetre):
           doivent être valides et contenir les clés attendues.
         """
         # met a jour l'objet train
-        setattr(self._train, value_name, nouvelle_valeur)
+        setattr(sous_obj, value_name, nouvelle_valeur)
+        self._methode_train.calculer_parametres()
         # met a jour le xlsx
-        self._xlsx_param[1].description = self._train.afficher_description()
-        self._xlsx_file.ecrire_description(self._xlsx_param[1],1)
+        self._xlsx_file.ecrire_description(self._train.description,1)
         self._xlsx_file.save()
         # met a jour la fenetre
         for key in self._zone_text_train['variable']:

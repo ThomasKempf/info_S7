@@ -2,6 +2,7 @@ import os
 import copy
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
+from modeles2 import Global
 
 NAME = 'reducteur'
 PATH = '.\\'
@@ -100,28 +101,34 @@ class ProjetXlsx(Xlsx_file):
     
 
     def ecrire_description(self,param,num):
+        description = param.description
         colonne_unitee = colonne_DEPART + num*(NBR_colonne_SEPRARATION + NBR_colonne_TRAIN)
         colonne_valeur = colonne_unitee + 1
         if num == len(self._param): # si num est égal à la longueur c'est que le train n'est pas incorporé
-            self._param.append(copy.deepcopy(param))
-            self._ecrire_valeur(self._param[num],colonne_unitee)
+            decalage = 0
+            for key in description:
+                self._param.append(copy.deepcopy(description[key]))
+                self._ecrire_valeur(self._param[num],colonne_unitee,decalage)
+                decalage = len(description[key].unitee) + 1
+            self._ws.cell(row=LIGNE_TITRE, column=colonne_unitee+2, value=param.titre)
         elif num < len(self._param):
-            for i, key in enumerate(param.description, start=1):
-                if param.description[key] != self._param[num].description[key]:
-                    ligne = LIGNE_TITRE + i
-                    self._ws.cell(row=ligne, column=colonne_valeur, value=param.description[key])
-                    self._param[num].description[key] = param.description[key]
+            for j, global_key in enumerate(description, start=0):
+                for i, key in enumerate(description[global_key].description, start=1):
+                    if description.description[key] != self._param[num].description[key]:
+                        ligne = LIGNE_TITRE + i + j
+                        self._ws.cell(row=ligne, column=colonne_valeur, value=description.description[key])
+                        self._param[num].description[key] = description.description[key]
                       
 
 
-    def _ecrire_valeur(self,param:dict[int],colonne_description:int):
+    def _ecrire_valeur(self,param:dict[int],colonne_description:int,decalage_ligne:int=0):
+        ligne = LIGNE_TITRE + decalage_ligne
         liste_valeur = list(param.description.values())
         liste_description = list(param.description.keys())
         liste_globale = [param.titre] + liste_description
-        self._ecrire_liste_colonne(liste_globale,LIGNE_TITRE,colonne_description) # ecrit titre + description
-        self._fusionner_cells(LIGNE_TITRE,colonne_description,colonne_description+2)
-        self._ecrire_liste_colonne(liste_valeur,LIGNE_TITRE+1,colonne_description+1)
-        self._ecrire_liste_colonne(param.unitee,LIGNE_TITRE+1,colonne_description+2)
+        self._ecrire_liste_colonne(liste_globale,ligne,colonne_description) # ecrit titre + description
+        self._ecrire_liste_colonne(liste_valeur,ligne+1,colonne_description+1)
+        self._ecrire_liste_colonne(param.unitee,ligne+1,colonne_description+2)
 
 if __name__ == '__main__':
 

@@ -7,75 +7,74 @@ import math
 class Global():
     def __init__(self) -> None:
         self.titre = 'parametre globale'
-        self.description = {'vitesse_entree': [0,'RPM'],
-                            'puissance_entree': [0,'W'],
-                            'couple_sortie': [0, 'N.m']
+        self.description = {'vitesse_entree': 0,
+                            'puissance_entree': 0,
+                            'couple_sortie': 0
                     }
         self.unitee = ['RPM','W','Nm']
+        self.error = 0
 
 
-    def _make_property(attr_name):   
-        def getter(self):
-            return getattr(self, f"_{attr_name}") # Retourne la valeur
-        def setter(self, value):
-            setattr(self, f"_{attr_name}", value) # Modifie la valeur
-        return property(getter, setter)
-    titre = _make_property("titre") 
-    description = _make_property("description") 
-    unitee = _make_property("unitee")
+class Engrenage(Global):
+    def __init__(self,num:int) -> None:
+        super().__init__()
+        self.titre = f'engrenage {num}'
+        super().__init__()
+        self.description = {
+            'resistance_elastique': 0
+        }
+        self.unitee = [
+            'Mpa'
+            ]
+
+
+class Train_global(Global):
+    def __init__(self) -> None:
+        super().__init__()
+        self.titre = 'train global'
+        self.description = {
+            'vitesse_entree': 0,
+            'puissance_entree': 0,
+            'couple_sortie': 0,
+            'couple_entree': 0,
+            'entraxe': 0,
+		    'vitesse_sortie_calculee': 0,
+            'force_tangentielle_calculee': 0,
+            'rapport_reduction':0,
+		    'module': 0,
+            'alpha': 20,
+            'beta':0,
+        }
+        self.unitee = [
+            'RPM',
+            'W',
+            'Nm',
+            'Nm',
+            'm',
+            'RPM',
+            'N',
+            ' ',
+            ' ',
+            '°',
+            '°'
+            ]
 
 
 class Train(Global):
     def __init__(self,num:int) -> None:
         super().__init__()
         self.titre = f'train_{num}'
-        self.description = {
-            "global": {
-                'vitesse_entree': [0,'RPM'],
-                'puissance_entree': [0,'W'],
-                'couple_sortie': [0,'N.m'],
-                'entraxe': [0,'m'],
-                'vitesse_sortie_calculee': [0,'RPM'],
-                'couple_entree_calcule': [0,'N.m'],
-                'force_tangentielle_calculee': [0,'N'],
-            },
-            "roue": {
-                'nbr_dents': [0,''],
-                'rayon_primitif': [0,'mm'],
-                'alpha': [0,'°'],
-                'beta': [0,'°'],
-                'module': [0,''],
-                'resistance_elastique': [0,'Mpa']
-
-            },
-            "Pignon": {
-                'nbr_dents': [0,' '],
-                'rayon_primitif': [0,'mm'],
-                'alpha': [0,'°'],
-                'beta': [0,'°'],
-                'module': [0,''],
-                'resistance_elastique': [0,'Mpa']
-                }
-            
+        self.description =  {
+            'global': Train_global(),
+            'pignon': Engrenage(0),
+            'roue': Engrenage(1)
         }
-        self.unitee = [
-            'RPM',
-            'W',
-            'Nm',
-            'mm',
-            'Mpa',
-            '°',
-            '°',
-            'RPM',
-            'Nm',
-            'N',
-            ' '
-            ]
+        self.unitee = None
 
 
 # Classe Engrenage (ajoutée à partir de votre exemple)
-class Engrenage:
-    """Représente un engrenage avec ses paramètres géométriques."""
+class Calcule_Engrenage:
+    """Représente un Calcule_Engrenage avec ses paramètres géométriques."""
     def __init__(self, nbr_dents: int, rayon_prim: float = 0.0, alpha: float = 0.0, beta: float = 0.0, module: float = 0.0):
         self.nbr_dents = nbr_dents
         self.rayon_prim = rayon_prim
@@ -85,7 +84,7 @@ class Engrenage:
 
 # Classe Train 
 class Calcule_train:
-    """Classe de base pour les trains d'engrenages."""
+    """Classe de base pour les trains d'Calcule_Engrenages."""
     def __init__(self):
         # Initialisation par défaut, nécessaire pour la sous-classe
         self._rapport_reduction: float = 0.0 
@@ -104,7 +103,7 @@ class Calcule_train:
 
 class Calcule_train_simple(Calcule_train):
     
-    # Représente un train d'engrenages droits.
+    # Représente un train d'Calcule_Engrenages droits.
     
     def __init__(self, 
                  vitesse_entree: float, 
@@ -113,39 +112,38 @@ class Calcule_train_simple(Calcule_train):
                  entraxe: float, 
                  res_elastique: float):
         """
-        Initialise le train d'engrenages simple avec ses paramètres d'entrée/sortie.
+        Initialise le train d'Calcule_Engrenages simple avec ses paramètres d'entrée/sortie.
         """
         super().__init__() # Appel de l'initialisation de la classe parente
-        
-        self.vitesse_entree = vitesse_entree
-        self.puissance_entree = puissance_entree
-        self.couple_sortie = couple_sortie
-        self.entraxe = entraxe
-        self.res_elastique = res_elastique
-        self.alpha = 20.0  # angle de pression
-        
-        # Initialisation du dictionnaire
-        self.description = {}
-
-        # Remplissage du dictionnaire avec les données d'entrée
-        self.description['vitesse_entree'] = vitesse_entree
-        self.description['puissance_entree'] = puissance_entree 
-        self.description['couple_sortie'] = couple_sortie
-        self.description['entraxe'] = entraxe
-        self.description['res_elastique'] = res_elastique
-        self.description['alpha'] = 20.0 # anglede pression
-        self.description['beta'] = 0.0   # angle de spirale
+        # initialisation de l'objet
+        # Initialisation l'objet train
+        self.train_1 = Train(1)
+        self._param_global = self.train_1.description['global'].description
+        self._param_pignon = self.train_1.description['pignon'].description
+        self._param_roue = self.train_1.description['roue'].description
+        # implemente variable liee a Train_global
+        self._param_global['vitesse_entree'] = vitesse_entree
+        self._param_global['puissance_entree'] = puissance_entree
+        self._param_global['couple_sortie'] = couple_sortie
+        self._param_global['entraxe'] = entraxe
+        # implemente variable liee au engrenages
+        self._param_pignon['resistance_elastique'] = res_elastique
+        self._param_roue['resistance_elastique'] = res_elastique
 
        # self._vitesse_sortie = None 
 
         # Le calcul est basé sur P, C et la conversion de rad/s en tr/min
         # ne pas oublier d'ajouter "self.methode" ici dès qu'on ajoute une nouvelle méthode
+        self.calculer_parametres()
+
+##############################################################################################################################
+
+    def calculer_parametres(self):
         self.calculer_vitesse_sortie()
         self.calculer_couple_entree()
         self.calculer_force_tangentielle()
         self.calculer_module()
 
-##############################################################################################################################
 
     def calculer_vitesse_sortie(self):
         """
@@ -153,52 +151,46 @@ class Calcule_train_simple(Calcule_train):
         Formule utilisée : V_out [tr/min] = (P / Cs) * (60 / 2*pi).
         Cette formule suppose un rendement de 1 (idéal) et que P est en Watts, Cs en Nm.
         """
-        P_entree = self.puissance_entree
-        Couple_sortie = self.couple_sortie
+        P_entree = self._param_global['vitesse_entree']
+        Couple_sortie = self._param_global['couple_sortie']
 
         if Couple_sortie <= 0:
             print("Erreur : Le couple de sortie doit être positif.")
-            self._vitesse_sortie = 0.0
+            self.train_1.error = 1 # exemple comment utiliser error
+            vitesse_sortie = 0.0
         else: 
             # Calcul : (P_entree / Couple_sortie) donne la vitesse en rad/s (omega)
             #           ... * (60 / 2*pi) convertit de rad/s à tr/min
-            self._vitesse_sortie = (P_entree / Couple_sortie) * (60 / (2 * math.pi))
+            vitesse_sortie = (P_entree / Couple_sortie) * (60 / (2 * math.pi))
             
         # Mise à jour du dictionnaire 'description'
-        self.description['vitesse_sortie_calculee'] = self._vitesse_sortie
-        
-        return self._vitesse_sortie
+        self._param_global['vitesse_sortie_calculee'] = vitesse_sortie
 
         
 ######################################################################################################################################
 
     def calculer_couple_entree(self):
             # Calcule le couple d'entrée à partir de la puissance et de la vitesse d'entrée
-            P_entree = self.puissance_entree
-            V_entree = self.vitesse_entree
+            P_entree = self._param_global['puissance_entree']
+            V_entree = self._param_global['vitesse_entree']
 
-            self._couple_entree = P_entree / (V_entree * (2 * math.pi / 60))  # Convertir tr/min en rad/s
-            # Mise à jour du dictionnaire 'description'
-            self.description['couple_entree_calcule'] = self._couple_entree
-            return self._couple_entree
+            self._param_global['couple_entree'] = P_entree / (V_entree * (2 * math.pi / 60))  # Convertir tr/min en rad/s
     
 ######################################################################################################################################
 
     def calculer_force_tangentielle(self):
         # Calcule la force tangentielle à partir du couple de sortie et de l'entraxe
-        Ce = self._couple_entree
-        r = self.entraxe  # En mètres
-        a = self.alpha
+        Ce = self._param_global['couple_entree']
+        r = self._param_global['entraxe']  # En mètres
+        a = self._param_global['alpha']
 
         if r <= 0:
             print("Erreur : L'entraxe doit être positif.")
-            self._force_tangentielle = 0.0
+            force_tangentielle = 0.0
         else:
-            self._force_tangentielle = Ce / (r *math.cos(a)) 
+            force_tangentielle = Ce / (r *math.cos(a)) 
 
-        # Mise à jour du dictionnaire 'description'
-        self.description['force_tangentielle_calculee'] = self._force_tangentielle
-        return self._force_tangentielle
+        self._param_global['force_tangentielle_calculee'] = force_tangentielle
 
 ######################################################################################################################################
 
@@ -206,18 +198,16 @@ class Calcule_train_simple(Calcule_train):
 
     def calculer_module(self):
 
-        FT = self._force_tangentielle
-        RES = self.res_elastique
+        FT = self._param_global['force_tangentielle_calculee']
+        RES = self._param_pignon['resistance_elastique'] # il n'est pas le meme pour les deux engrenages?
 
-        self.module = 2.34 * math.sqrt(FT / (RES*10))
-        self.description['module_calcule'] = self.module
-        return self.module
+        self._param_global['module'] = 2.34 * math.sqrt(FT / (RES*10))
     
 
 ######################################################################################################################################
 
     # Calcul des diamètres primitifs, il estr nécessaire de demander à l'utilisateur de donner 
-    # un des diamètres dans la classe engrenage et aussi un nb de dents pour pouvoir le calculer
+    # un des diamètres dans la classe Calcule_Engrenage et aussi un nb de dents pour pouvoir le calculer
 
     ######################################################################################################################################
 
@@ -227,21 +217,20 @@ class Calcule_train_simple(Calcule_train):
         Calcule le rapport de réduction i = V_entree / V_sortie.
         Nécessite que V_entree et V_sortie soient dans les MÊMES unités (ici tr/min).
         """
-        if self._vitesse_sortie is None:
+        vitesse_sortie = self._param_global['vitesse_sortie']
+        if vitesse_sortie is None:
             # S'assurer que la vitesse de sortie est calculée
             self.calculer_vitesse_sortie()
             
-        if self._vitesse_sortie == 0:
+        if vitesse_sortie == 0:
             print("Erreur : La vitesse de sortie calculée est nulle.")
-            self._rapport_reduction = 0.0
+            rapport_reduction = 0.0
         else:
             # i = V_entree / V_sortie
-            self._rapport_reduction = self.vitesse_entree / self._vitesse_sortie
+            vitesse_entree = self._param_global['vitesse_entree']
+            rapport_reduction = vitesse_entree / vitesse_sortie
         
-        # Mise à jour du dictionnaire 'description'
-        self.description['rapport_reduction_par_vitesses'] = self._rapport_reduction
-        
-        return self._rapport_reduction
+        self._param_global['rapport_reduction'] = rapport_reduction
 
     ###########################################################################################
 
@@ -260,7 +249,6 @@ class Calcule_train_simple(Calcule_train):
             else:
                 print(f"{cle.replace('_', ' ').capitalize():<30}: {valeur}")
         print("-------------------------------------------------")
-        return self.description,self.error
 
     
 

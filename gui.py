@@ -64,10 +64,9 @@ def detecte_fermeture_fenetre(fenetre: qtw.QWidget) -> None:
     ouvre la FenetreProjet si possible.
     """
     try:
-        xlsx_param = getattr(fenetre, "xlsx_param")
         xlsx_file = getattr(fenetre, "xlsx_file")
         train = getattr(fenetre, "_train")
-        fenetre_projet = FenetreProjet(xlsx_param, xlsx_file, train)
+        fenetre_projet = FenetreProjet(xlsx_file, train)
         fenetre_projet.show()
     except Exception as e:
         print("Impossible de récupérer les attributs :", e)

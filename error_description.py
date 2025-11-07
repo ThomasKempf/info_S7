@@ -2,5 +2,5 @@
 
 error = {
     '0': 'RAS',
-    '1': 'vitesse <= 0'
+    '1': 'Le couple de sortie doit être positif'
 }
