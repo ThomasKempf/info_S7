@@ -69,6 +69,8 @@ class Train(Global):
             'pignon': Engrenage(0),
             'roue': Engrenage(1)
         }
+        self.description['pignon'].titre = 'pignon'
+        self.description['roue'].titre = 'roue'
         self.unitee = None
 
 

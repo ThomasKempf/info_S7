@@ -233,7 +233,7 @@ class FenetreCreationProjet(Fenetre):
         '''
         # creation du fichier
         self.xlsx_file = xlsx.ProjetXlsx(self._description_global)
-        self.xlsx_file.ecrire_description(self._train.train_1,1)
+        self.xlsx_file.ecrire_description_ogjet_multiple(self._train.train_1,1)
         self.xlsx_file.save()
 
 

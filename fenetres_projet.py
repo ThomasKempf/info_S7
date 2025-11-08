@@ -53,12 +53,8 @@ class FenetreProjet(Fenetre):
         self._xlsx_file = xlsx_file
         self.setStyleSheet(self._param['styleSheet'])
         layout = self.genere_train()
-        print('hello')
         self.layouts['main'].addLayout(layout)
-        print('hello 1',self.layouts)
-        print(self.layouts)
         self.setLayout(self.layouts['main'])
-        print('hello 2')
 
 
     def genere_train(self) -> qtw.QVBoxLayout:
@@ -150,7 +146,7 @@ class FenetreProjet(Fenetre):
         setattr(sous_obj, value_name, nouvelle_valeur)
         self._methode_train.calculer_parametres()
         # met a jour le xlsx
-        self._xlsx_file.ecrire_description(self._train.description,1)
+        self._xlsx_file.ecrire_description_ogjet_multiple(self._train.description,1)
         self._xlsx_file.save()
         # met a jour la fenetre
         for key in self._zone_text_train['variable']:
