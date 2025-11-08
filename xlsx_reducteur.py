@@ -117,23 +117,26 @@ class ProjetXlsx(Xlsx_file):
     def ecrire_description_ogjet_multiple(self,param,num):  
         colonne_unitee = colonne_DEPART + num*(NBR_colonne_SEPRARATION + NBR_colonne_TRAIN)
         colonne_valeur = colonne_unitee + 1                   
+        decalage = 0    
         if num == len(self._param): # si num est égal à la longueur c'est que le train n'est pas incorporé     
-            decalage = 0    
             self._param.append(copy.deepcopy(param.description))
-            print(self._param[num])
             for key in self._param[num]:
-                print(key)
-                print(decalage)
                 self._ecrire_valeur(self._param[num][key],colonne_unitee,decalage)
                 decalage = decalage + len(self._param[num][key].unitee) + 1
             self._ws.cell(row=LIGNE_TITRE, column=colonne_unitee, value=param.titre)
         elif num < len(self._param):
-            for global_key in self._param:
-                for i, key in enumerate(param[global_key].description, start=1):
-                    if param[global_key].description[key] != self._param[num][global_key].description[key]:
-                        ligne = LIGNE_TITRE + i
-                        self._ws.cell(row=ligne, column=colonne_valeur, value=param[global_key].description[key])
-                        self._param[num].description[key] = param[global_key].description[key]
+            param_des = param.description
+            for global_key in self._param[num]:
+                print('selfparam:',self._param[num][global_key].description)  
+                print('param',param.description[global_key].description)
+                for i, key in enumerate(param_des[global_key].description, start=1):
+                    print(global_key,key)
+                    if param_des[global_key].description[key] != self._param[num][global_key].description[key]:
+                        print('hello')
+                        ligne = LIGNE_TITRE + decalage +i
+                        self._ws.cell(row=ligne, column=colonne_valeur, value=param_des[global_key].description[key])
+                        self._param[num][global_key].description[key] = param_des[global_key].description[key]
+                decalage = decalage + len(self._param[num][global_key].unitee) + 1
 
 
     def _ecrire_valeur(self,param:dict[int],colonne_description:int,decalage_ligne:int=0):

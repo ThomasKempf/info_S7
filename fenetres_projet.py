@@ -102,10 +102,11 @@ class FenetreProjet(Fenetre):
             sous_obj['objet'] = description_train[global_key]
             for i, (key, value) in enumerate(sous_obj['objet'].description.items()):
                 unitee  = sous_obj['objet'].unitee[i]
-                sous_obj['widget'][key],sous_obj['variable'][key] = self._ajout_nom_zone_texte_unitee(key,unitee,str(value))
+                sous_obj['widget'][key],sous_obj['variable'][key] = self._ajout_nom_zone_texte_unitee(key,unitee,str(round(value,4)))
                 sous_obj['variable'][key].setFixedWidth(60)
                 sous_obj['variable'][key].setValidator(qtg.QIntValidator())
-                sous_obj['variable'][key].editingFinished.connect(lambda k=key: self.modifie_parametre(int(self._zone_text_train[global_key]['variable'][k].text()), k,sous_obj)) # self._zone_text_train n'existe pas encore
+                sous_obj['variable'][key].editingFinished.connect(lambda k=key, variable=sous_obj['variable'][key], obj=sous_obj['objet']:
+                    self.modifie_parametre(int(variable.text()), k,obj)) # self._zone_text_train n'existe pas encore
                 train_gui[global_key] = sous_obj
         return train_gui
 
@@ -143,12 +144,15 @@ class FenetreProjet(Fenetre):
           doivent être valides et contenir les clés attendues.
         """
         # met a jour l'objet train
-        setattr(sous_obj, value_name, nouvelle_valeur)
+        print('avant: ',self._train.description['roue'].description)
+        sous_obj.description[value_name] = nouvelle_valeur
+        print('apres: ',self._train.description['roue'].description)
         self._methode_train.calculer_parametres()
         # met a jour le xlsx
-        self._xlsx_file.ecrire_description_ogjet_multiple(self._train.description,1)
+        self._xlsx_file.ecrire_description_ogjet_multiple(self._train,1)
         self._xlsx_file.save()
         # met a jour la fenetre
-        for key in self._zone_text_train['variable']:
-            if key != value_name:
-                self._zone_text_train['variable'][key].setText(str(self._xlsx_param[1].description[key]))
+        for global_key in  self._zone_text_train:
+            for key in self._zone_text_train[global_key]['variable']:
+                if key != value_name:
+                    self._zone_text_train[global_key]['variable'][key].setText(str(round(self._train.description[global_key].description[key],4)))
