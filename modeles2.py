@@ -173,6 +173,7 @@ class Calcule_train_simple(Calcule_train):
             
         # Mise à jour du dictionnaire 'description'
         self._param_global['vitesse_sortie_calculee'] = vitesse_sortie
+        #commm test
 
         
 ######################################################################################################################################
