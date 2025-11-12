@@ -21,11 +21,14 @@ class Engrenage(Global):
         self.titre = f'engrenage {num}'
         super().__init__()
         self.description = {
-            'resistance_elastique': 0
+            'resistance_elastique': 0,
+            'Diametre' : 0
         }
         self.unitee = [
-            'Mpa'
+            'Mpa',
+            'm'
             ]
+        
 
 
 class Train_global(Global):
@@ -145,6 +148,9 @@ class Calcule_train_simple(Calcule_train):
         self.calculer_couple_entree()
         self.calculer_force_tangentielle()
         self.calculer_module()
+        self.calculer_rapport()
+        self.calculer_diametres_primitifs()
+
 
 
     def calculer_vitesse_sortie(self):
@@ -153,7 +159,7 @@ class Calcule_train_simple(Calcule_train):
         Formule utilisée : V_out [tr/min] = (P / Cs) * (60 / 2*pi).
         Cette formule suppose un rendement de 1 (idéal) et que P est en Watts, Cs en Nm.
         """
-        P_entree = self._param_global['vitesse_entree']
+        P_entree = self._param_global['puissance_entree']
         Couple_sortie = self._param_global['couple_sortie']
 
         if Couple_sortie <= 0:
@@ -211,6 +217,23 @@ class Calcule_train_simple(Calcule_train):
     # Calcul des diamètres primitifs, il estr nécessaire de demander à l'utilisateur de donner 
     # un des diamètres dans la classe Calcule_Engrenage et aussi un nb de dents pour pouvoir le calculer
 
+        # Calcul des diamètres primitifs, il est nécessaire de demander à l'utilisateur de donner 
+    # un des diamètres dans la classe Calcule_Engrenage et aussi un nb de dents pour pouvoir le calculer
+    def calculer_diametres_primitifs(self):
+        e = self._param_global['entraxe']
+        r = self._param_global['rapport_reduction']
+        D1 = (2 * e) / (1 + r)
+        D2 = r * D1         
+
+        self._param_pignon['Diametre'] = D1
+        self._param_roue['Diametre'] = D2
+        
+        
+        print("affichage e",e)
+        print("affichage r",r)
+        print(f"Diametre primitif pignon : {D1:.4f} m")
+        print(f"Diametre primitif roue   : {D2:.4f} m")
+
     ######################################################################################################################################
 
     # Implémentation requise de la classe Train
@@ -219,7 +242,7 @@ class Calcule_train_simple(Calcule_train):
         Calcule le rapport de réduction i = V_entree / V_sortie.
         Nécessite que V_entree et V_sortie soient dans les MÊMES unités (ici tr/min).
         """
-        vitesse_sortie = self._param_global['vitesse_sortie']
+        vitesse_sortie = self._param_global['vitesse_sortie_calculee']
         if vitesse_sortie is None:
             # S'assurer que la vitesse de sortie est calculée
             self.calculer_vitesse_sortie()
