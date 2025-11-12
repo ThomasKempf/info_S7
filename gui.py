@@ -3,9 +3,12 @@
 .. date:: 2025-10-12
 .. description::
 
-    Ce code permet de créer une interface graphique du projet info S7.
+    Ce code permet de créer une interface graphique du projet info S7. le main permet de lancer le projet
 
     Il utilise la bibliothèque PySide6 pour créer des fenêtres, des boutons et des titres personnalisés.
+    La creation de la premiere fenetre est dans ce scripte, les autres fenetres sont repartie dans d'autres fichier
+
+    Les outils utiliser pour generer la fenetres sont dans la classe Fenetre
 
 """
 import sys
@@ -52,6 +55,9 @@ MENU = {
 def next_fenetre(fenetre_depart: qtw.QWidget, fenetre_suivante: qtw.QWidget) -> None:
     """
     Ferme la fenêtre de départ et affiche la fenêtre suivante.
+
+    :param fenetre_depart: fenetre anterieur a fermer
+    :param fenetre_suivante: nouvelle fenetre à mettre en avant
     """
     fenetre_depart.close()
     fenetre_suivante.show()
@@ -62,6 +68,8 @@ def detecte_fermeture_fenetre(fenetre: qtw.QWidget) -> None:
     Cette fonction sera appelée *avant* que la fenêtre soit détruite.
     Tente de récupérer des attributs spécifiques de la fenêtre et
     ouvre la FenetreProjet si possible.
+
+    :param fenetre: contient l'objet de la fenetre, qui est de pres ou de loin un widget
     """
     try:
         xlsx_file = getattr(fenetre, "xlsx_file")
@@ -73,12 +81,12 @@ def detecte_fermeture_fenetre(fenetre: qtw.QWidget) -> None:
 
 
 class FenetreMenu(Fenetre):
-    """
-    Classe pour générer uniquement la fenêtre de menu.
-    param : dictionnaire contenant les paramètres de la fenêtre, propre à chaque fenêtre
-    """
-
     def __init__(self, param: dict) -> None:
+        """
+        Classe pour générer uniquement la fenêtre de menu.
+
+        :param param: dictionnaire contenant les paramètres de la fenêtre, propre à chaque fenêtre
+        """
         super().__init__(param, {
             'layouts': {'main': 'h', 'left': 'v', 'right': 'v'},
             'widgets': ['engrenages'],
@@ -90,6 +98,7 @@ class FenetreMenu(Fenetre):
         self.add_right()
         self.add_main()
 
+
     def adapt_composant(self) -> None:
         """
         Crée et adapte les composants de la fenêtre (titres, boutons, widgets).
@@ -97,23 +106,26 @@ class FenetreMenu(Fenetre):
         self.adapter_titre()
         self.buttons['exit'].setFixedSize(210, 50)
         self.buttons['exit'].clicked.connect(self.close)
-        self.widget_engrenage = self._generer_icone_engrenage(self.widgets['engrenages'])
+        self._generer_icone_engrenage(self.widgets['engrenages'])
+
 
     def add_left(self) -> None:
         """
-        Ajoute les widgets du panneau gauche au layout gauche.
+        Ajoute les elements du layout de gauche contenant les boutons creer projet et ouvrir projet
         """
         liste = [self.labels['titre'], self.buttons['creer_projet'], self.buttons['ouvrir_projet']]
         self.ajoute(self.layouts['left'], liste)
         self.layouts['left'].addStretch()
 
+
     def add_right(self) -> None:
         """
-        Ajoute les widgets du panneau droit au layout droit.
+        Ajoute les element du layoute de droite contenant les engrenages et le bouton exite
         """
-        self.layouts['right'].addWidget(self.widget_engrenage, alignment=qtg.Qt.AlignmentFlag.AlignTop)
+        self.layouts['right'].addWidget(self.widgets['engrenages'], alignment=qtg.Qt.AlignmentFlag.AlignTop)
         self.layouts['right'].addStretch()
         self.layouts['right'].addWidget(self.buttons['exit'])
+
 
     def add_main(self) -> None:
         """
@@ -123,9 +135,12 @@ class FenetreMenu(Fenetre):
         self.ajoute(self.layouts['main'], liste)
         self.setLayout(self.layouts['main'])
 
-    def _generer_icone_engrenage(self, widget: qtw.QWidget) -> qtw.QWidget:
+
+    def _generer_icone_engrenage(self, widget: qtw.QWidget) -> None:
         """
         Génère l'icône d'engrenage dans le widget fourni et retourne ce widget.
+
+        :param widget: widegt dans la quelle sont ajouter les label d'engrenages
         """
         param = self._param['widget_engrenage']
         widget.setFixedSize(*param['taille'])
@@ -136,7 +151,6 @@ class FenetreMenu(Fenetre):
             x = pos[0] - gear.width() // 2
             y = pos[1] - gear.height() // 2
             gear.move(x, y)
-        return widget
 
     def adapter_titre(self) -> None:
         """
@@ -151,15 +165,14 @@ class FenetreMenu(Fenetre):
 if __name__ == '__main__':
     # Variable globale pour stocker l'instance de la fenêtre
     app = qtw.QApplication(sys.argv)
-    
-    # Créer et afficher la fenêtre menu
+    # Créer les fenetres
     fenetre_menu = FenetreMenu(MENU)
     fenetre_creation = FenetreCreationProjet()
-
+    # Surveille la femerture de la fenetre_creation
     watcher = CloseWatcher(detecte_fermeture_fenetre)
     fenetre_creation.installEventFilter(watcher)
-
+    # lie le bouton créer projet à la mise en avant de fenetre_creation
     fenetre_menu.buttons['creer_projet'].clicked.connect(lambda checked=False: next_fenetre(fenetre_menu, fenetre_creation))
-    fenetre_menu.show()
     
+    fenetre_menu.show()
     sys.exit(app.exec())
