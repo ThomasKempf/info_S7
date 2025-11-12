@@ -127,12 +127,8 @@ class ProjetXlsx(Xlsx_file):
         elif num < len(self._param):
             param_des = param.description
             for global_key in self._param[num]:
-                print('selfparam:',self._param[num][global_key].description)  
-                print('param',param.description[global_key].description)
                 for i, key in enumerate(param_des[global_key].description, start=1):
-                    print(global_key,key)
                     if param_des[global_key].description[key] != self._param[num][global_key].description[key]:
-                        print('hello')
                         ligne = LIGNE_TITRE + decalage +i
                         self._ws.cell(row=ligne, column=colonne_valeur, value=param_des[global_key].description[key])
                         self._param[num][global_key].description[key] = param_des[global_key].description[key]
@@ -140,6 +136,15 @@ class ProjetXlsx(Xlsx_file):
 
 
     def _ecrire_valeur(self,param:dict[int],colonne_description:int,decalage_ligne:int=0):
+        """
+        genere un widget et une variable associée à la valeur pour chaque paramatre du train 
+        en ce basant sur les key du xlsx
+
+        :return: dict avec le widget et la variable liée a chaque parametre de chaque sous obj
+
+        **Préconditions :**
+        - ``self._xlsx_param`` doit être valide
+        """
         ligne = LIGNE_TITRE + decalage_ligne
         liste_valeur = list(param.description.values())
         liste_description = list(param.description.keys())

@@ -13,6 +13,7 @@
 
 
 from outil_gui import Fenetre
+import modeles2 as md
 import xlsx_reducteur as xlsx
 from PySide6 import (
     QtWidgets as qtw,
@@ -36,20 +37,20 @@ PROJET = {
 
 
 class FenetreProjet(Fenetre):
-    def __init__(self, xlsx_file:xlsx.ProjetXlsx, train) -> None:
+    def __init__(self, xlsx_file:xlsx.ProjetXlsx, train:md.Calcule_train) -> None:
         """
         créer une fenetre Projet tout en construisant les layoutes des trains
 
         :param xlsx_param: liste d'ogjet de parametre utiliser par le xlsx, le premier sont les parmetres global, ensuite vienne les trains
         :param xlsx_file: ogjet utiliser pour le xlsx du projet, c'est dans celui si qu'on écris les param precedents
-        :param train: objet de la classe Simulation_train qui permet de calculer les param du train
+        :param train: objet de la classe Simulation_train contenant les methode de calcule et la descritption du Train
         """
         elements = {
             'layouts':{'main':'h','train1':'v'},
         }
         super().__init__(PROJET,elements)
         self._methode_train = train
-        self._train = train.train_1
+        self._train = train.train_1 # obj contenant toute la descritption, obj de type Train
         self._xlsx_file = xlsx_file
         self.setStyleSheet(self._param['styleSheet'])
         layout = self.genere_train()
@@ -90,7 +91,7 @@ class FenetreProjet(Fenetre):
         genere un widget et une variable associée à la valeur pour chaque paramatre du train 
         en ce basant sur les key du xlsx
 
-        :return: dict avec le widget et la variable liée a chaque parametre
+        :return: dict avec le widget et la variable liée a chaque parametre de chaque sous obj
 
         **Préconditions :**
         - ``self._xlsx_param`` doit être valide
@@ -130,23 +131,22 @@ class FenetreProjet(Fenetre):
         return layout
     
 
-    def modifie_parametre(self, nouvelle_valeur:int, value_name:str, sous_obj) -> None:
+    def modifie_parametre(self, nouvelle_valeur:int, value_name:str, sous_obj:md.Global) -> None:
         """
         Met à jour un paramètre de l'objet train, puis synchronise les modifications
         dans le fichier Excel et l'interface graphique.
 
         :param nouvelle_valeur: Nouvelle valeur à assigner à l'attribut spécifié.
         :param value_name: Nom de l'attribut du train à modifier.
+        :param sous_obj: sous objet contenant le paramaetre modifier dans sa descritpion, ex: roue type Engrenage du Train
 
         **Préconditions :**
-        - L'attribut ``self._train`` doit être initialisé avant l'appel.
-        - ``self._xlsx_param``, ``_xlsx_file`` et ``self._zone_text_train`` 
+        - L'attribut ``self._train`` doit contenir la descrpition de l'objet de Type Train.
+        - ``_xlsx_file`` et ``self._zone_text_train`` 
           doivent être valides et contenir les clés attendues.
         """
         # met a jour l'objet train
-        print('avant: ',self._train.description['roue'].description)
         sous_obj.description[value_name] = nouvelle_valeur
-        print('apres: ',self._train.description['roue'].description)
         self._methode_train.calculer_parametres()
         # met a jour le xlsx
         self._xlsx_file.ecrire_description_ogjet_multiple(self._train,1)

@@ -227,12 +227,6 @@ class Calcule_train_simple(Calcule_train):
 
         self._param_pignon['Diametre'] = D1
         self._param_roue['Diametre'] = D2
-        
-        
-        print("affichage e",e)
-        print("affichage r",r)
-        print(f"Diametre primitif pignon : {D1:.4f} m")
-        print(f"Diametre primitif roue   : {D2:.4f} m")
 
     ######################################################################################################################################
 
@@ -258,22 +252,6 @@ class Calcule_train_simple(Calcule_train):
         self._param_global['rapport_reduction'] = rapport_reduction
 
     ###########################################################################################
-
-        
-    # NOUVELLE COMMANDE : Méthode pour afficher le dictionnaire
-    def afficher_description(self):
-        """
-        Affiche le contenu du dictionnaire 'description' dans le terminal.
-        """
-        print("\n--- Description Détaillée du Train d'Engrenages ---")
-        for cle, valeur in self.description.items():
-            # Formatage pour une meilleure lisibilité dans le terminal
-            # Si c'est un flottant, on le formate à deux décimales, sinon on imprime la valeur brute
-            if isinstance(valeur, float):
-                print(f"{cle.replace('_', ' ').capitalize():<30}: {valeur:.2f}")
-            else:
-                print(f"{cle.replace('_', ' ').capitalize():<30}: {valeur}")
-        print("-------------------------------------------------")
 
     
 
