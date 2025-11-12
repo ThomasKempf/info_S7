@@ -1,3 +1,13 @@
+"""
+:author: Thomas Krempf-Driesbach
+:date: 2025-11-12
+:description:
+
+    Ce scrypte contient la classe permetant creer une fenetre a l'aide de PySide6
+
+    Elle permet aussi de faire des fonctionalitee de base pour structurer sa fenetre 
+    a l'aide de ces methodes qui permette de simplifier les teches repetitive et recurente dans la plupart des fenetres
+"""
 
 from PySide6 import (
     QtWidgets as qtw,
@@ -5,77 +15,17 @@ from PySide6 import (
     QtCore as qtc
 )
 
-class Simulation_train:
-    def __init__(self,
-                 vitesse_entree: int = 10,
-                 puissance_entree: int = 20,
-                 couple_sortie: int = 30,
-                 entraxe: int = 7,
-                 resistance_elastique: int = 9):
-        # dictionnaire initial
-        self._description = {
-            'vitesse_entree': vitesse_entree,
-            'puissance_entree': puissance_entree,
-            'couple_sortie': couple_sortie,
-            'rendement': 5,
-            'entraxe': entraxe,
-            'resistance_elastique': resistance_elastique,
-            'k': 0,
-            'effort_tangenciel': 10,
-            'module': 5,
-            'engrenage1_rayon_p': 9,
-            'engrenage1_nbr_dents': 4,
-            'engrenage2_rayon_p': 98,
-            'engrenage2_nbr_dents': 42,
-        }
-
-        # créer dynamiquement une propriété pour chaque clé du dict
-        for key in list(self._description.keys()):
-            self._make_property_for_key(key)
-
-    @property
-    def description(self):
-        """Renvoie le dict (toujours à jour)."""
-        return self._description
-
-    def _make_property_for_key(self, key):
-        """Crée et attache une propriété nommée comme 'key' sur la classe."""
-        def getter(self):
-            return self._description[key]
-
-        def setter(self, value):
-            # mettre à jour la clé demandée
-            self._description[key] = value
-            # incrémenter toutes les autres clés (selon la demande)
-            for other in self._description:
-                if other != key:
-                    try:
-                        # si la valeur est numérique, on incrémente
-                        self._description[other] += 1
-                    except TypeError:
-                        # si ce n'est pas numérique, on l'ignore
-                        pass
-            # Note : un setter ne peut pas "retourner" une valeur ; après affectation,
-            # l'utilisateur doit lire `obj.description` pour obtenir le dict mis à jour.
-
-        # attacher la propriété à la classe (pas à l'instance)
-        setattr(self.__class__, key, property(getter, setter))
-
-    def set_and_get(self, key, value):
-        """Méthode utilitaire : modifie la clé et retourne immédiatement le dict."""
-        if key not in self._description:
-            raise KeyError(f"Clé inconnue: {key}")
-        setattr(self, key, value)  # utilisera le setter défini plus haut
-        return self.description
-
 
 class Fenetre(qtw.QWidget):
-    '''
-    classe de base pour les fenetres
-    parametre : dictionnaire contenant les parametres de la fenetre, propre a chaque fenetre
-    '''
     def __init__(self, param: dict,elements:dict) -> None:
+        '''
+        genere une fenetre vide et contient des methode de base pour la parametrer
+        
+        :param param: contient les parametre de base de la fenetre avec le titre le style la geometrie...
+        :param elements: contient un dict avce les elements de base a generer, voir structure dans genere_elements(self)
+        '''
         super().__init__()
+        # met en place les parametres de base de la fenetre
         self._param = param
         self.setWindowTitle(param['titre'])
         self.setStyleSheet(param['styleSheet'])
@@ -83,12 +33,46 @@ class Fenetre(qtw.QWidget):
             self.setFixedSize(*param['geometrie'])
         else:
             self.showMaximized()
+        # genere elements de base de la fenetre
         result =self.genere_elements(elements,param)
         for key in result:
             setattr(self, key, result[key])
 
 
-    def genere_elements(self,elements:dict,textes):
+    def genere_elements(self,elements:dict,textes:list) -> dict:
+        """
+        Génère les éléments de base constituant la fenêtre à partir de la description donnée.
+
+        Cette méthode crée les layouts, boutons, labels, zones de saisie et autres composants
+        décrits dans le dictionnaire `elements`. Les textes et listes déroulantes sont définis
+        dans le dictionnaire `textes`.
+
+        Parameters
+        ----------
+        elements : dict
+            Contient la description de tous les éléments à créer et leurs caractéristiques.
+            Exemple :
+            {
+                "layouts": {"main": "v", "button": "h"},
+                "buttons": ["next", "precedent"],
+                "stack": ["stack"]
+            }
+        textes : dict
+            Contient les noms des labels et des listes déroulantes.
+            Exemple :
+            {
+                "labels": ["nombre d’étage :", "1"],
+                "comboboxes": {
+                    "liste_deroulante": ["engrenage droit", "engrenage hélicoïdal", "conique"]
+                }
+            }
+
+        Returns
+        -------
+        dict
+            Un dictionnaire contenant les mêmes clés que `elements`, mais associées
+            aux objets graphiques créés (QWidgets, boutons, layouts, etc.).
+        """
         constructors = {
         'layouts': lambda spec: qtw.QVBoxLayout() if spec == 'v' else qtw.QHBoxLayout(),
         'widgets': lambda _: qtw.QWidget(),
@@ -132,67 +116,117 @@ class Fenetre(qtw.QWidget):
                         arg = None
                     valeur_result[name] = constructors[key](arg)
         return result
+    
 
-
-    def _genere_lable_image(self,name):
-        pixmap = qtg.QPixmap(name)
+    def _genere_lable_image(self,name_and_path:str) -> qtw.QLabel:
+        '''
+        genere un label contenant une image
+        
+        :param name_and_path: nom et chemain de l'image
+        :return: retourne le label contenant l'image
+        '''
+        pixmap = qtg.QPixmap(name_and_path)
         label = qtw.QLabel()
         label.setPixmap(pixmap)
         return label
 
 
-    def ajoute(self,layout,list):
-        for i in range(len(list)):
-            if isinstance(list[i], qtw.QLayout):
-                layout.addLayout(list[i])
+    def ajoute(self,layout:qtw.QLayout,list_element:list) -> None:
+        '''
+        ajoute une liste d'elements au layout en parametre tout en verifiant si les elements sont les layouts ou non
+        si ce ne sont pas des layouts ils sont considérer comme des widget
+        
+        :param layout: layout dans le quelle seront ajouter les elements
+        :param list_elements: liste d'element a ajouter dans le layout
+        '''
+        for i in range(len(list_element)):
+            if isinstance(list_element[i], qtw.QLayout):
+                layout.addLayout(list_element[i])
             else:
-                layout.addWidget(list[i])
+                layout.addWidget(list_element[i])
 
 
-    def _ajout_nom_zone_texte_unitee(self,nom:str,unitee:str,text_defaut):
+    def _ajout_nom_zone_texte_unitee(self,nom:str,unitee:str,text_defaut:str) -> tuple[qtw.QWidget, qtw.QLineEdit]:
+        '''
+        genere un widget avec deux label et un qtw.QLineEdit, un pour le nom un pour l'unitee et une zone de texte,
+        
+        :param nom: nom de la variable
+        :param unitee: unitee associée au parametre
+        :param test_defaut: texte par defaut ecris dans la zone de texte
+        :return: retourne un widgets contenant la structure et une variable contenant l'objet  qtw.QLineEdit
+        '''
         layout = qtw.QHBoxLayout()
+        # ajoute le label du nom
         lbl_nom = qtw.QLabel(nom)
         layout.addWidget(lbl_nom)
+        # ajoute la zone de texte
         variable = qtw.QLineEdit()
         variable.setText(text_defaut)
         layout.addWidget(variable)
+        # ajoute le label de l'unitee
         lbl_unitee = qtw.QLabel(unitee)
         layout.addWidget(lbl_unitee)
         layout.addStretch()
+        # ajoute le layout principale au widget principale
         widget = qtw.QWidget()
         widget.setLayout(layout)
         return widget,variable
     
 
-    def _genere_variables_unitees(self,param_labels_unitee):
+    def _genere_variables_unitees(self,param_labels_unitee:dict) -> tuple[dict[qtw.QWidget], dict[qtw.QLineEdit]]:
+        '''
+        genere un dict de widget avec deux label et un qtw.QLineEdit, un pour le nom un pour l'unitee et une zone de texte,
+        ceci pour chaque key
+        
+        :param param_labels_unitee: contient les parametre de chaque variable que eu meme doivent contenir les clef suivante
+            'unitee' 'valeur_defaut' et 'validator'
+        :return: retourne un dict widgets avec les widgets de chaque parametres 
+            et un dict variables avec les objet qtw.QLineEdit de chaque parametre
+        '''
+        # creer variable temporaire
         widgets = {}
         variables = {}
         for key in (param_labels_unitee):
             param = param_labels_unitee[key]
+            # genere les variables contenant les linedit et les widget associee
             widgets[key],variables[key] = self._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
+            # ajoute un validator qui permet de restraindre les possiblitee d'ecriture dans la zone de texte
             variables[key].setValidator(param['validator'])
         return widgets,variables
     
 
-    def creer_getters_variables_lineedits(self, objet, variables):
+    def creer_getters_variables_lineedits(self, objet, variables:dict[qtw.QLineEdit]) -> None:
+        '''
+        creer un getters pour un dict constituer d'objet de type qtw.QLineEdit
+        un getter est créer a la fois pour le dict entier et pour chaque key
+
+        :param objet: objet dans le quelle le dict de qtw.QLineEdit ce situe
+        :param variables: dict contenant les objet de type qtw.QLineEdit a retourner
+        '''
         if isinstance(variables, dict):
+            # cas ou l'ont appel le dict entier de ariable
             prop_name = "variables" 
-            def _getter(objet):
+            def _getter(objet) -> dict[str]:
+                # incorpore les texte dans une variable temporaire pour la retourner par la suite
                 text = {}
                 for key in variables:
                     text[key] = variables[key].text()
                 return text
+            # genere le getter pour le dict entier
             setattr(objet.__class__, prop_name, property(_getter))
         else:
+            # cas ou l'ont appel une key en particulier
             for key in variables:
                 prop_name = key.lower()
-                def _getter(objet, k=key):
+                def _getter(objet, k=key) -> str:
+                    # return directement la valeur de la key de variable
                     return variables[k].text()
+                # genere pour chaque key un getter
                 setattr(objet.__class__, prop_name, property(_getter))
 
 
 class CloseWatcher(qtc.QObject):
-    def __init__(self, methode_a_appeler):
+    def __init__(self, methode_a_appeler) -> None:
         '''
         la classe permet de mettre en place un tracker pour controler prevenir quand une fenetre ce ferme 
         et recuperer des instances de la fenetre avant qu'elle soit detruite

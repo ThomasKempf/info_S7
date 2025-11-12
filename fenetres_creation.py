@@ -13,7 +13,7 @@
 """
 
 import modeles2 as mod
-from outil_gui import (Fenetre,Simulation_train)
+from outil_gui import Fenetre
 import xlsx_reducteur as xlsx
 from PySide6 import (
     QtWidgets as qtw,
