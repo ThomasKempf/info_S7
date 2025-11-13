@@ -48,15 +48,15 @@ CREATION_PROJET = {
 
 PAGE_0 = {
     'labels_unitee':{
-                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','validator':qtg.QIntValidator(0, 10000)},
-                'Puissance':{'unitee':'kW','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000)},
-                'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':qtg.QIntValidator(0, 10000)}
+                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','validator':qtg.QIntValidator(0, 10000),'parent':'block_gauche'},
+                'Puissance':{'unitee':'kW','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000),'parent':'block_gauche'},
+                'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':qtg.QIntValidator(0, 10000),'parent':'block_droit'}
             },
     'labels':['Reducteur'],
     'styleSheet': '''
                 QWidget {
                     background: #fff;           /* Couleur de fond blanche */
-                    border: 1px solid #222;     /* Bordure */
+                    border: 2px solid #222;     /* Bordure */
                     border-radius: 6px;         /* Coins arrondis */
                     padding: 60px;              /* Rembourrage interne */
                     font-size: 18px;             /* Taille de la police */
@@ -249,19 +249,42 @@ class Page_0():
         elements = {
             'layouts':{'main':'h','block_gauche':'v','block_centre':'v','block_droit':'h'},
             'labels':['reducteur'],
+            'frames':['block_gauche','block_droit']
         }
         result = fenetre.genere_elements(elements,PAGE_0)
         # lie les elements a des instances courantes
         self.layouts = result['layouts']
         self.reducteur = result['labels']['reducteur']
+        self.reducteur.setStyleSheet(PAGE_0['styleSheet'])
+        self.frames = result['frames']
+        self._adapte_frames()
         self._widgets,self._variables = self._genere_widgets_unitee()
         self._labels_fleches = self._genere_fleches_page0(2)
-        self.reducteur.setStyleSheet(PAGE_0['styleSheet'])
         # ajoute les elements
-        self._add_element_block_gauche()
+        self._add_element_block_gauche_et_droite()
         self._add_element_block_centre()
-        self._add_element_block_droit()
         fenetre.creer_getters_variables_lineedits(self,self._variables)
+
+
+    def _adapte_frames(self) -> None:
+        '''
+        definit la taille, le type et le style des frames utiliser dans la page
+
+        **Préconditions :**
+        - ``self.frames`` doit etre un objet de la classe Fenetre
+        '''
+        taille = [[170, 120],[170, 60]]
+        for i, key in enumerate(self.frames):
+            self.frames[key].setObjectName("frame")
+            self.frames[key].setFrameShape(qtw.QFrame.Box)
+            self.frames[key].setStyleSheet("""
+                    QFrame#frame {
+                        background: #fff; /* Couleur de fond blanche */
+                        border: 1px solid #222;     /* Bordure */
+                        border-radius: 6px;         /* Coins arrondis */
+                    }
+            """)
+            self.frames[key].setFixedSize(*taille[i])
         
 
     def _genere_widgets_unitee(self) -> tuple[dict[qtw.QWidget], dict[qtw.QLineEdit]]:
@@ -274,11 +297,16 @@ class Page_0():
 
         **Préconditions :**
         - ``(PAGE_0['labels_unitee']`` doit exister et avoir la bonne structure
-        - ``self._fenetre`` doit etre un objet de la classe Fenetre
+        - ``self._fenetre`` et ``self.frames`` doit etre un objet de la classe Fenetre
+        - _adapte_frames(self) doit etre appeler avant cette methode
         '''
         widgets,variables = self._fenetre._genere_variables_unitees(PAGE_0['labels_unitee'])
         for key in (PAGE_0['labels_unitee']):
+            parent = PAGE_0['labels_unitee'][key]['parent']
+            widgets[key].setParent(self.frames[parent])
+            widgets[key].setStyleSheet('background: #fff')
             variables[key].setFixedWidth(40)
+            widgets[key].adjustSize()
         return widgets,variables
     
 
@@ -297,32 +325,21 @@ class Page_0():
         for i in range(nbr_fleche):
             label[i] = self._fenetre._genere_lable_image('./fleche.png')
         return label
+        
 
-
-    def _add_element_block_gauche(self) -> None:
+    def _add_element_block_gauche_et_droite(self) -> None:
         '''
-        ajoute les elements du block gauche constituee de la vitesse et de la puissance
+        place les elements contenu dans les farmes du block gauche et droit pour ensuite les ajouter à leurs layout
 
         **Préconditions :**
         - ``self.layouts`` et ``self._widgets`` doivent etre valide et contenir les bonne key
         '''
-        frame = qtw.QFrame()
-        frame.setObjectName("frame")
-        frame.setFrameShape(qtw.QFrame.Box)          # Type de cadre : Box, Panel, WinPanel...
-        frame.setStyleSheet("""
-                QFrame#frame {
-                    border: 1px solid #222;     /* Bordure */
-                    border-radius: 6px;         /* Coins arrondis */
-                }
-        """)
-        frame.setFixedSize(170, 120)
-        self._widgets['Vitesse'].setParent(frame)
-        self._widgets['Puissance'].setParent(frame)
-        self._widgets['Vitesse'].adjustSize()    # x=20, y=20 dans le repère du frame
-        self._widgets['Puissance'].adjustSize()
-        self._widgets['Vitesse'].move(21, 10)    # x=20, y=20 dans le repère du frame
-        self._widgets['Puissance'].move(5, 62)
-        self.layouts['block_gauche'].addWidget(frame)
+        widgets_pose = [[21,10],[5,62],[20,10]]
+        for i, key in enumerate(self._widgets):
+            self._widgets[key].move(*widgets_pose[i])
+        key_liste = ['block_gauche','block_droit']
+        for i in range(len(key_liste)):
+            self.layouts[key_liste[i]].addWidget(self.frames[key_liste[i]])
 
 
     def _add_element_block_centre(self) -> None:
@@ -335,17 +352,6 @@ class Page_0():
         self.layouts['block_centre'].addStretch()
         self.layouts['block_centre'].addWidget(self.reducteur)
         self.layouts['block_centre'].addStretch()
-
-
-    def _add_element_block_droit(self) -> None:
-        '''
-        ajoute les elements du block droit constituee seulement du couple en le positionant
-
-        **Préconditions :**
-        - ``self.layouts`` et ``self._widgets`` doivent etre valide et contenir les bonnes clef
-        '''
-        self.layouts['block_droit'].addStretch()
-        self.layouts['block_droit'].addWidget(self._widgets['Couple'])
 
 
     def genere_page(self) -> qtw.QWidget:
