@@ -48,9 +48,9 @@ CREATION_PROJET = {
 
 PAGE_0 = {
     'labels_unitee':{
-                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','validator':qtg.QIntValidator(0, 10000),'margin':[122,0,0,0]},
-                'Puissance':{'unitee':'kW','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000),'margin':[100,0,0,0]},
-                'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':qtg.QIntValidator(0, 10000),'margin':[0,0,100,0]}
+                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','validator':qtg.QIntValidator(0, 10000)},
+                'Puissance':{'unitee':'kW','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000)},
+                'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':qtg.QIntValidator(0, 10000)}
             },
     'labels':['Reducteur'],
     'styleSheet': '''
@@ -278,8 +278,7 @@ class Page_0():
         '''
         widgets,variables = self._fenetre._genere_variables_unitees(PAGE_0['labels_unitee'])
         for key in (PAGE_0['labels_unitee']):
-            variables[key].setFixedWidth(60)
-            widgets[key].setContentsMargins(*PAGE_0['labels_unitee'][key]['margin'])
+            variables[key].setFixedWidth(40)
         return widgets,variables
     
 
@@ -307,10 +306,23 @@ class Page_0():
         **Préconditions :**
         - ``self.layouts`` et ``self._widgets`` doivent etre valide et contenir les bonne key
         '''
-        self.layouts['block_gauche'].addStretch()
-        liste = [self._widgets['Vitesse'],self._widgets['Puissance']]
-        self._fenetre.ajoute(self.layouts['block_gauche'],liste)
-        self.layouts['block_gauche'].addStretch()
+        frame = qtw.QFrame()
+        frame.setObjectName("frame")
+        frame.setFrameShape(qtw.QFrame.Box)          # Type de cadre : Box, Panel, WinPanel...
+        frame.setStyleSheet("""
+                QFrame#frame {
+                    border: 1px solid #222;     /* Bordure */
+                    border-radius: 6px;         /* Coins arrondis */
+                }
+        """)
+        frame.setFixedSize(170, 120)
+        self._widgets['Vitesse'].setParent(frame)
+        self._widgets['Puissance'].setParent(frame)
+        self._widgets['Vitesse'].adjustSize()    # x=20, y=20 dans le repère du frame
+        self._widgets['Puissance'].adjustSize()
+        self._widgets['Vitesse'].move(21, 10)    # x=20, y=20 dans le repère du frame
+        self._widgets['Puissance'].move(5, 62)
+        self.layouts['block_gauche'].addWidget(frame)
 
 
     def _add_element_block_centre(self) -> None:
@@ -346,9 +358,13 @@ class Page_0():
         - ``self.layouts`` doivent etre valide et contenir les bonnes clef
         - ``fenetre`` doit etre un objet de la classe Fenetre
         '''
+
+        self.layouts['main'].addStretch()
         liste = [self.layouts['block_gauche'],self._labels_fleches[0],
                  self.layouts['block_centre'],self._labels_fleches[1],self.layouts['block_droit']]
         self._fenetre.ajoute(self.layouts['main'],liste)
+        self.layouts['main'].addStretch()
+        self.layouts['main'].setSpacing(40)
         page = qtw.QWidget()
         page.setLayout(self.layouts['main'])
         return page

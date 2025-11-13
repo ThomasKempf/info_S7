@@ -142,6 +142,8 @@ class Fenetre(qtw.QWidget):
         for i in range(len(list_element)):
             if isinstance(list_element[i], qtw.QLayout):
                 layout.addLayout(list_element[i])
+            elif isinstance(list_element[i], int):
+                layout.addSpacing(list_element[i])
             else:
                 layout.addWidget(list_element[i])
 
@@ -166,7 +168,6 @@ class Fenetre(qtw.QWidget):
         # ajoute le label de l'unitee
         lbl_unitee = qtw.QLabel(unitee)
         layout.addWidget(lbl_unitee)
-        layout.addStretch()
         # ajoute le layout principale au widget principale
         widget = qtw.QWidget()
         widget.setLayout(layout)
