@@ -119,27 +119,22 @@ class Calcule_train_simple(Calcule_train):
         """
         Initialise le train d'Calcule_Engrenages simple avec ses paramètres d'entrée/sortie.
         """
-        super().__init__() # Appel de l'initialisation de la classe parente
-        # initialisation de l'objet
-        # Initialisation l'objet train
-        self.train_1 = Train(1)
-        self._param_global = self.train_1.description['global'].description
-        self._param_pignon = self.train_1.description['pignon'].description
-        self._param_roue = self.train_1.description['roue'].description
-        # implemente variable liee a Train_global
-        self._param_global['vitesse_entree'] = vitesse_entree
-        self._param_global['puissance_entree'] = puissance_entree
-        self._param_global['couple_sortie'] = couple_sortie
-        self._param_global['entraxe'] = entraxe
+        train = Train(1)
+        train.description['global']['vitesse_entree'] = vitesse_entree
+        train.description['global']['puissance_entree'] = puissance_entree
+        train.description['global']['couple_sortie'] = couple_sortie
+
+        train.description['global']['entraxe'] = entraxe
         # implemente variable liee au engrenages
-        self._param_pignon['resistance_elastique'] = res_elastique
-        self._param_roue['resistance_elastique'] = res_elastique
+        train.description['pignon']['resistance_elastique'] = res_elastique
+        train.description['roue']['resistance_elastique'] = res_elastique
+        super()._init_(train) # Appel de l'initialisation de la classe parente
+        self.calculer_parametres()
 
        # self._vitesse_sortie = None 
 
         # Le calcul est basé sur P, C et la conversion de rad/s en tr/min
         # ne pas oublier d'ajouter "self.methode" ici dès qu'on ajoute une nouvelle méthode
-        self.calculer_parametres()
 
 ##############################################################################################################################
 
@@ -215,11 +210,8 @@ class Calcule_train_simple(Calcule_train):
 
 ######################################################################################################################################
 
-    # Calcul des diamètres primitifs, il estr nécessaire de demander à l'utilisateur de donner 
-    # un des diamètres dans la classe Calcule_Engrenage et aussi un nb de dents pour pouvoir le calculer
+        # Calcul des diamètres primitifs
 
-        # Calcul des diamètres primitifs, il est nécessaire de demander à l'utilisateur de donner 
-    # un des diamètres dans la classe Calcule_Engrenage et aussi un nb de dents pour pouvoir le calculer
     def calculer_diametres_primitifs(self):
         e = self._param_global['entraxe']
         r = self._param_global['rapport_reduction']
@@ -228,7 +220,6 @@ class Calcule_train_simple(Calcule_train):
 
         self._param_pignon['Diametre'] = D1
         self._param_roue['Diametre'] = D2
-        
         
         print("affichage e",e)
         print("affichage r",r)
