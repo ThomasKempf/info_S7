@@ -103,7 +103,7 @@ class FenetreMenu(Fenetre):
         """
         Crée et adapte les composants de la fenêtre (titres, boutons, widgets).
         """
-        self.adapter_titre()
+        self._adapte_titre()
         self.buttons['exit'].setFixedSize(210, 50)
         self.buttons['exit'].clicked.connect(self.close)
         self._generer_icone_engrenage(self.widgets['engrenages'])
@@ -152,13 +152,12 @@ class FenetreMenu(Fenetre):
             y = pos[1] - gear.height() // 2
             gear.move(x, y)
 
-    def adapter_titre(self) -> None:
+    def _adapte_titre(self) -> None:
         """
         Configure le style et l'alignement du titre.
         """
+        self.style_titre(self.labels['titre'])
         self.labels['titre'].setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop)
-        self.labels['titre'].setFont(qtg.QFont('Arial', 20, qtg.QFont.Weight.Bold))
-        self.labels['titre'].setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px')
         self.labels['titre'].setAlignment(qtg.Qt.AlignmentFlag.AlignCenter)
 
 

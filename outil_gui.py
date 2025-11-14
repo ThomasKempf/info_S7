@@ -227,6 +227,25 @@ class Fenetre(qtw.QWidget):
                 setattr(objet.__class__, prop_name, property(_getter))
 
 
+    def style_titre(self,titre:qtw.QLabel) -> None:
+            """
+            Configure le style et du titre.
+            """
+            titre.setFont(qtg.QFont('Arial', 20, qtg.QFont.Weight.Bold))
+            titre.setObjectName("titre")
+            titre.setStyleSheet("""
+                    QLabel#titre {
+                        color: #222;
+                        margin-bottom: 20px;
+                        padding: 8px;
+                        background-color: #f8f8f8; /* Couleur de fond claire */
+                        border: 2px solid #222; /* Bordure sombre */
+                        border-radius: 8px; /* Bords arrondis */
+                    }
+            """)
+            titre.adjustSize()
+
+
 class CloseWatcher(qtc.QObject):
     def __init__(self, methode_a_appeler) -> None:
         '''

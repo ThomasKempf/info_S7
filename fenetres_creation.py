@@ -48,11 +48,11 @@ CREATION_PROJET = {
 
 PAGE_0 = {
     'labels_unitee':{
-                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','validator':qtg.QIntValidator(0, 10000),'parent':'block_gauche'},
-                'Puissance':{'unitee':'kW','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000),'parent':'block_gauche'},
-                'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':qtg.QIntValidator(0, 10000),'parent':'block_droit'}
+                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','validator':qtg.QDoubleValidator(0.0, 10000.0, 6),'parent':'block_gauche'},
+                'Puissance':{'unitee':'W','valeur_defaut':'1500','validator':qtg.QDoubleValidator(0.0, 10000.0, 6),'parent':'block_gauche'},
+                'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':qtg.QDoubleValidator(0.0, 10000.0, 6),'parent':'block_droit'}
             },
-    'labels':['Reducteur'],
+    'labels':['Reducteur','Choix Parametre Global'],
     'styleSheet': '''
                 QWidget {
                     background: #fff;           /* Couleur de fond blanche */
@@ -248,18 +248,19 @@ class Page_0():
         # genere les elements
         elements = {
             'layouts':{'main':'h','block_gauche':'v','block_centre':'v','block_droit':'h'},
-            'labels':['reducteur'],
+            'labels':['reducteur','titre'],
             'frames':['block_gauche','block_droit']
         }
         result = fenetre.genere_elements(elements,PAGE_0)
         # lie les elements a des instances courantes
         self.layouts = result['layouts']
-        self.reducteur = result['labels']['reducteur']
-        self.reducteur.setStyleSheet(PAGE_0['styleSheet'])
+        self.labels = result['labels']
+        self.labels['reducteur'].setStyleSheet(PAGE_0['styleSheet'])
         self.frames = result['frames']
         self._adapte_frames()
         self._widgets,self._variables = self._genere_widgets_unitee()
         self._labels_fleches = self._genere_fleches_page0(2)
+        self._fenetre.style_titre(self.labels['titre'])
         # ajoute les elements
         self._add_element_block_gauche_et_droite()
         self._add_element_block_centre()
@@ -350,7 +351,7 @@ class Page_0():
         - ``self.layouts`` et ``self.reducteur`` doivent etre valide
         '''
         self.layouts['block_centre'].addStretch()
-        self.layouts['block_centre'].addWidget(self.reducteur)
+        self.layouts['block_centre'].addWidget(self.labels['reducteur'])
         self.layouts['block_centre'].addStretch()
 
 
@@ -373,6 +374,8 @@ class Page_0():
         self.layouts['main'].setSpacing(40)
         page = qtw.QWidget()
         page.setLayout(self.layouts['main'])
+        self.labels['titre'].setParent(page)
+        self.labels['titre'].move(60, 10)
         return page
 
 
