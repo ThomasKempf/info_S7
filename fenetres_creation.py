@@ -111,7 +111,7 @@ class FenetreCreationProjet(Fenetre):
         '''
         elements = {
             'layouts':{'main':'v','button':'h'},
-            'buttons':['next','precedent'],
+            'buttons':['precedent','next'],
             'stack':['stack']
         }
         super().__init__(CREATION_PROJET,elements)
@@ -152,6 +152,7 @@ class FenetreCreationProjet(Fenetre):
             self.buttons[key].setFixedSize(*taille)
             self.buttons[key].clicked.connect(getattr(self, fonction[i]))
             layout.addWidget(self.buttons[key])
+        self.buttons['precedent'].hide()
 
 
     def ajoute_composants(self) -> None:
@@ -174,6 +175,9 @@ class FenetreCreationProjet(Fenetre):
         - ``self.stack['stack']`` doit etre valide
         '''
         i = self.stack['stack'].currentIndex()
+        if i == 1:
+            self.buttons['precedent'].hide()
+            self.buttons['next'].setText(CREATION_PROJET['buttons'][1])
         if i > 0:
             self.stack['stack'].setCurrentIndex(i - 1)
 
@@ -187,6 +191,9 @@ class FenetreCreationProjet(Fenetre):
         - ``self.stack['stack']`` doit etre valide
         '''
         i = self.stack['stack'].currentIndex()
+        if i == 0:
+            self.buttons['precedent'].show()
+            self.buttons['next'].setText("Créer Projet")
         if i < self.stack['stack'].count() - 1:
             self.stack['stack'].setCurrentIndex(i + 1)
         else:
