@@ -62,6 +62,10 @@ PAGE_0 = {
                     font-size: 18px;             /* Taille de la police */
                     font-weight: bold;           /* Gras */
                 }
+                QLineEdit {
+                    border: 1px solid #222;
+                    border-radius: 6px;
+                }
         '''
 }
 
@@ -72,13 +76,22 @@ PAGE_1 = {
                 'σ_max':{'unitee':'Mpa','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000)},
             },
     'labels':['nombre d’étage :','1'],
-    'comboboxes':{'liste_deroulante':['engrenage droit', 'engrenage hélicoïdal', 'conique']},
+    'comboboxes':{'liste_deroulante':['  Engrenage droit', '  Engrenage hélicoïdal']},
     'styleSheet': '''
                 QWidget {
                     background: #fff; /* Couleur de fond blanche */
+                }
+                QWidget#sous_block {
                     border: 1px solid #222;
                     border-radius: 6px;
-                    padding: 8px;
+                }
+                QLineEdit {
+                    border: 1px solid #222;
+                    border-radius: 3px;
+                }
+                QComboBox {
+                    border: 1px solid #222;
+                    border-radius: 3px;
                 }
             '''
 }
@@ -264,7 +277,8 @@ class Page_0():
         self.labels = result['labels']
         self.labels['reducteur'].setStyleSheet(PAGE_0['styleSheet'])
         self.frames = result['frames']
-        self._adapte_frames()
+        taille = [[170, 120],[170, 60]]
+        self._fenetre.adapte_frames(self.frames,taille)
         self._widgets,self._variables = self._genere_widgets_unitee()
         self._labels_fleches = self._genere_fleches_page0(2)
         self._fenetre.style_titre(self.labels['titre'])
@@ -272,28 +286,7 @@ class Page_0():
         self._add_element_block_gauche_et_droite()
         self._add_element_block_centre()
         fenetre.creer_getters_variables_lineedits(self,self._variables)
-
-
-    def _adapte_frames(self) -> None:
-        '''
-        definit la taille, le type et le style des frames utiliser dans la page
-
-        **Préconditions :**
-        - ``self.frames`` doit etre un objet de la classe Fenetre
-        '''
-        taille = [[170, 120],[170, 60]]
-        for i, key in enumerate(self.frames):
-            self.frames[key].setObjectName("frame")
-            self.frames[key].setFrameShape(qtw.QFrame.Box)
-            self.frames[key].setStyleSheet("""
-                    QFrame#frame {
-                        background: #fff; /* Couleur de fond blanche */
-                        border: 1px solid #222;     /* Bordure */
-                        border-radius: 6px;         /* Coins arrondis */
-                    }
-            """)
-            self.frames[key].setFixedSize(*taille[i])
-        
+         
 
     def _genere_widgets_unitee(self) -> tuple[dict[qtw.QWidget], dict[qtw.QLineEdit]]:
         '''
@@ -428,7 +421,7 @@ class Page_1():
         widgets,self._variables = self._fenetre._genere_variables_unitees(PAGE_1['labels_unitee'])
         self.widgets.update(widgets)
         self.nbr_train.setValidator(qtg.QDoubleValidator())
-        self.nbr_train.setFixedWidth(80)
+        self.nbr_train.setFixedWidth(30)
         self.nbr_train.setText('1')
         self.widgets['bloc_gauche'].setStyleSheet(PAGE_1['styleSheet'])
         self.widgets['bloc_droit'].setStyleSheet(PAGE_1['styleSheet'])
@@ -444,6 +437,7 @@ class Page_1():
         liste = [self.labels['nbr_etage'],self.nbr_train]
         self._fenetre.ajoute(self.layouts['bloc_gauche'],liste)
         self.widgets['bloc_gauche'].setLayout(self.layouts['bloc_gauche'])
+        self.widgets['bloc_gauche'].setObjectName("sous_block")
 
 
     def _add_element_block_droite(self) -> None:
@@ -456,6 +450,7 @@ class Page_1():
         liste_widgets = [self.labels['1'],self.liste_deroulante,self.widgets['entraxe'],self.widgets['σ_max']]
         self._fenetre.ajoute(self.layouts['bloc_droit'],liste_widgets)
         self.widgets['bloc_droit'].setLayout(self.layouts['bloc_droit'])
+        self.widgets['bloc_droit'].setObjectName("sous_block")
 
 
     def _add_element_block_ligne(self) -> None:

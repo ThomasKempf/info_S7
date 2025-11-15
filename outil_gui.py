@@ -165,6 +165,7 @@ class Fenetre(qtw.QWidget):
         # ajoute la zone de texte
         variable = qtw.QLineEdit()
         variable.setText(text_defaut)
+        variable.setStyleSheet('QLineEdit {border: 1px solid #222; border-radius: 3px;}')
         layout.addWidget(variable)
         # ajoute le label de l'unitee
         lbl_unitee = qtw.QLabel(unitee)
@@ -230,6 +231,8 @@ class Fenetre(qtw.QWidget):
     def style_titre(self,titre:qtw.QLabel) -> None:
             """
             Configure le style et du titre.
+
+            :param titre: label contenant le titre
             """
             titre.setFont(qtg.QFont('Arial', 20, qtg.QFont.Weight.Bold))
             titre.setObjectName("titre")
@@ -244,6 +247,26 @@ class Fenetre(qtw.QWidget):
                     }
             """)
             titre.adjustSize()
+
+    
+    def adapte_frames(self,frames:dict[qtw.QFrame],taille:list[tuple[int]]) -> None:
+        '''
+        definit la taille, le type et le style des frames utiliser
+
+        :param frames: dictionnaire contenant les frames
+        :param taille: list contenant la taille des frames dans le meme ordre que les key du dict
+        '''
+        for i, key in enumerate(frames):
+           frames[key].setObjectName("frame")
+           frames[key].setFrameShape(qtw.QFrame.Box)
+           frames[key].setStyleSheet("""
+                    QFrame#frame {
+                        background: #fff; /* Couleur de fond blanche */
+                        border: 1px solid #222;     /* Bordure */
+                        border-radius: 6px;         /* Coins arrondis */
+                    }
+            """)
+           frames[key].setFixedSize(*taille[i])
 
 
 class CloseWatcher(qtc.QObject):
