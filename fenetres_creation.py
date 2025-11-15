@@ -76,7 +76,8 @@ PAGE_1 = {
                 'σ_max':{'unitee':'Mpa','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000)},
             },
     'labels':['nombre d’étage :','1'],
-    'comboboxes':{'liste_deroulante':['  Engrenage droit', '  Engrenage hélicoïdal']},
+    'comboboxes':{'type_engrenage':['  Engrenage droit', '  Engrenage hélicoïdal'],
+                  'type_train':['  Train Simple', '  Train Epicicloïdale']},
     'styleSheet': '''
                 QWidget {
                     background: #fff; /* Couleur de fond blanche */
@@ -88,10 +89,12 @@ PAGE_1 = {
                 QLineEdit {
                     border: 1px solid #222;
                     border-radius: 3px;
+                    height: 22px;
                 }
                 QComboBox {
                     border: 1px solid #222;
                     border-radius: 3px;
+                    height: 22px;
                 }
             '''
 }
@@ -386,14 +389,14 @@ class Page_1():
         generation de la page 1 qui contient le choix du nombre de train, de leurs type et de leur materiaux
         '''
         self._fenetre = fenetre
-        self._genere_variable_elements_variables()
+        self._genere_elements()
         self._add_element_block_gauche()
         self._add_element_block_droite()
         self._add_element_block_ligne()
         fenetre.creer_getters_variables_lineedits(self, self._variables)
         
 
-    def _genere_variable_elements_variables(self) -> None:
+    def _genere_elements(self) -> None:
         '''
         genere tout les elements utiliser dans la page tout en les adaptant
         pour ensuite les lier à des instances courante
@@ -404,11 +407,11 @@ class Page_1():
         '''
         # genere les elements principale de la page
         elements = {
-            'layouts':{'page':'v','ligne':'h','bloc_gauche':'h','bloc_droit':'h'},
-            'widgets':['bloc_gauche','bloc_droit'],
+            'layouts':{'page':'v','ligne':'h','bloc_gauche':'h','bloc_droit':'h','list':'h'},
+            'widgets':['bloc_gauche','bloc_droit','list'],
             'labels':['nbr_etage','1'],
             'lineedits':['nbr_train'],
-            'comboboxes':['liste_deroulante']
+            'comboboxes':['type_engrenage','type_train']
         }
         result = self._fenetre.genere_elements(elements,PAGE_1)
         # assoicie les elements avec des instance courante
@@ -416,16 +419,23 @@ class Page_1():
         self.widgets = result['widgets']
         self.labels = result['labels']
         self.nbr_train = result['lineedits']['nbr_train']
-        self.liste_deroulante = result['comboboxes']['liste_deroulante']
-        # genere leselements restant
-        widgets,self._variables = self._fenetre._genere_variables_unitees(PAGE_1['labels_unitee'])
-        self.widgets.update(widgets)
+        self.comboboxes = result['comboboxes']
+        # genere les elements restant
+        self._genere_elements_a_unitee()
         self.nbr_train.setValidator(qtg.QDoubleValidator())
         self.nbr_train.setFixedWidth(30)
         self.nbr_train.setText('1')
         self.widgets['bloc_gauche'].setStyleSheet(PAGE_1['styleSheet'])
         self.widgets['bloc_droit'].setStyleSheet(PAGE_1['styleSheet'])
         
+
+    def _genere_elements_a_unitee(self):
+        widgets,self._variables = self._fenetre._genere_variables_unitees(PAGE_1['labels_unitee'])
+        for key in self._variables:
+            widgets[key].setObjectName("sous_block")
+            self._variables[key].setFixedWidth(40)
+        self.widgets.update(widgets)
+
 
     def _add_element_block_gauche(self):
         '''
@@ -447,7 +457,11 @@ class Page_1():
         **Préconditions :**
         - les self.labels , layoute liste_deroulante et widgets doivent etre valide
         '''
-        liste_widgets = [self.labels['1'],self.liste_deroulante,self.widgets['entraxe'],self.widgets['σ_max']]
+        for key in self.comboboxes:
+            self.layouts['list'].addWidget(self.comboboxes[key])
+        self.widgets['list'].setLayout(self.layouts['list'])
+        self.widgets['list'].setObjectName("sous_block")
+        liste_widgets = [self.labels['1'],self.widgets['list'],self.widgets['entraxe'],self.widgets['σ_max']]
         self._fenetre.ajoute(self.layouts['bloc_droit'],liste_widgets)
         self.widgets['bloc_droit'].setLayout(self.layouts['bloc_droit'])
         self.widgets['bloc_droit'].setObjectName("sous_block")

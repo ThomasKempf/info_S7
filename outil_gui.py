@@ -195,6 +195,7 @@ class Fenetre(qtw.QWidget):
             widgets[key],variables[key] = self._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
             # ajoute un validator qui permet de restraindre les possiblitee d'ecriture dans la zone de texte
             variables[key].setValidator(param['validator'])
+            # modifie leurs taille
         return widgets,variables
     
 
