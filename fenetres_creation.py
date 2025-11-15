@@ -71,11 +71,35 @@ PAGE_0 = {
 
 
 PAGE_1 = {
+    'labels':['nombre d’étage :'],
+    'styleSheet': '''
+                QWidget {
+                    background: #fff; /* Couleur de fond blanche */
+                }
+                QWidget#sous_block {
+                    border: 1px solid #222;
+                    border-radius: 6px;
+                }
+                QLineEdit {
+                    border: 1px solid #222;
+                    border-radius: 3px;
+                    height: 22px;
+                }
+                QComboBox {
+                    border: 1px solid #222;
+                    border-radius: 3px;
+                    height: 22px;
+                }
+            '''
+}
+
+
+LIGNE_TRAIN = {
     'labels_unitee':{
                 'entraxe':{'unitee':'mm','valeur_defaut':'400','validator':qtg.QIntValidator(0, 10000)},
                 'σ_max':{'unitee':'Mpa','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000)},
             },
-    'labels':['nombre d’étage :','1'],
+    'labels':['1'],
     'comboboxes':{'type_engrenage':['  Engrenage droit', '  Engrenage hélicoïdal'],
                   'type_train':['  Train Simple', '  Train Epicicloïdal']},
     'styleSheet': '''
@@ -391,7 +415,9 @@ class Page_1():
         self._fenetre = fenetre
         self._genere_elements()
         self._add_element_block_gauche()
-        self._add_element_block_droite()
+        ligne_train_1 = Ligne_train(fenetre)
+        self.widgets['bloc_droit'] = ligne_train_1.widget
+        self._variables = ligne_train_1.variables
         self._add_element_block_ligne()
         fenetre.creer_getters_variables_lineedits(self, self._variables)
         
@@ -407,11 +433,10 @@ class Page_1():
         '''
         # genere les elements principale de la page
         elements = {
-            'layouts':{'page':'v','ligne':'h','bloc_gauche':'h','bloc_droit':'h','list':'h'},
-            'widgets':['bloc_gauche','bloc_droit','list'],
-            'labels':['nbr_etage','1'],
+            'layouts':{'page':'v','ligne':'h','bloc_gauche':'h'},
+            'widgets':['bloc_gauche'],
+            'labels':['nbr_etage'],
             'lineedits':['nbr_train'],
-            'comboboxes':['type_engrenage','type_train']
         }
         result = self._fenetre.genere_elements(elements,PAGE_1)
         # assoicie les elements avec des instance courante
@@ -419,22 +444,11 @@ class Page_1():
         self.widgets = result['widgets']
         self.labels = result['labels']
         self.nbr_train = result['lineedits']['nbr_train']
-        self.comboboxes = result['comboboxes']
         # genere les elements restant
-        self._genere_elements_a_unitee()
         self.nbr_train.setValidator(qtg.QDoubleValidator())
         self.nbr_train.setFixedWidth(30)
         self.nbr_train.setText('1')
         self.widgets['bloc_gauche'].setStyleSheet(PAGE_1['styleSheet'])
-        self.widgets['bloc_droit'].setStyleSheet(PAGE_1['styleSheet'])
-        
-
-    def _genere_elements_a_unitee(self):
-        widgets,self._variables = self._fenetre._genere_variables_unitees(PAGE_1['labels_unitee'])
-        for key in self._variables:
-            widgets[key].setObjectName("sous_block")
-            self._variables[key].setFixedWidth(40)
-        self.widgets.update(widgets)
 
 
     def _add_element_block_gauche(self):
@@ -448,26 +462,6 @@ class Page_1():
         self._fenetre.ajoute(self.layouts['bloc_gauche'],liste)
         self.widgets['bloc_gauche'].setLayout(self.layouts['bloc_gauche'])
         self.widgets['bloc_gauche'].setObjectName("sous_block")
-
-
-    def _add_element_block_droite(self) -> None:
-        '''
-        ajoute les elements du block droit constituee des parametres d'un train
-
-        **Préconditions :**
-        - les self.labels , layoute liste_deroulante et widgets doivent etre valide
-        '''
-        for key in self.comboboxes:
-            self.layouts['list'].addWidget(self.comboboxes[key])
-        self.widgets['list'].setLayout(self.layouts['list'])
-        self.widgets['list'].setObjectName("sous_block")
-        liste_widgets = [3,self.labels['1'],self.widgets['list'],30,self.widgets['entraxe'],self.widgets['σ_max'],3]
-        self._fenetre.ajoute(self.layouts['bloc_droit'],liste_widgets)
-        self.widgets['bloc_droit'].setLayout(self.layouts['bloc_droit'])
-        self.widgets['bloc_droit'].setObjectName("sous_block")
-        self.labels['1'].setObjectName("sous_block")
-        self.labels['1'].setFixedWidth(45)
-        self.labels['1'].setAlignment(qtc.Qt.AlignCenter)
 
 
 
@@ -499,6 +493,87 @@ class Page_1():
         page = qtw.QWidget()
         page.setLayout(self.layouts['page'])
         return page
+
+
+class Ligne_train():
+    def __init__(self,fenetre) -> None:
+        '''
+        genere un widget avec tout les elements necessaire à la partie droite d'un train
+        '''
+        self._fenetre = fenetre
+        self._genere_elements()
+        self._add_element_block_droite()
+
+
+    @property
+    def variables(self):
+        '''
+        acces au dict contenant les variables des linedit du train
+        '''
+        return self._variables
+    
+
+    @property
+    def widget(self):
+        '''
+        acces au widget du module entier
+        '''
+        return self._widgets['main']
+    
+
+    def _genere_elements(self) -> None:
+        '''
+        genere tout les elements utiliser dans la partie droite de la page necessaire pour un train
+
+        **Préconditions :**
+        - ``self._fenetre et PAGE_1`` doit etre valide
+        '''
+        elements = {
+            'layouts':{'main':'h','list':'h'},
+            'widgets':['main','list'],
+            'labels':['1'],
+            'comboboxes':['type_engrenage','type_train']
+        }
+        result = self._fenetre.genere_elements(elements,LIGNE_TRAIN)
+        self.layouts = result['layouts']
+        self._widgets = result['widgets']
+        self.numero_train = result['labels']['1']
+        self.comboboxes = result['comboboxes']
+        # genere les elements restant
+        self._genere_elements_a_unitee()
+        self._widgets['main'].setStyleSheet(LIGNE_TRAIN['styleSheet'])
+
+
+    def _genere_elements_a_unitee(self) -> None:
+        '''
+        genere les elements avec unitée, l'entraxe et la resistance elastique
+        '''
+        widgets,self._variables = self._fenetre._genere_variables_unitees(LIGNE_TRAIN['labels_unitee'])
+        for key in self._variables:
+            widgets[key].setObjectName("sous_block")
+            self._variables[key].setFixedWidth(40)
+        self._widgets.update(widgets)
+
+
+    def _add_element_block_droite(self) -> None:
+        '''
+        ajoute les elements du block droit constituee des parametres d'un train
+
+        **Préconditions :**
+        - les self.labels , layoute liste_deroulante et widgets doivent etre valide
+        '''
+        for key in self.comboboxes:
+            self.layouts['list'].addWidget(self.comboboxes[key])
+        self._widgets['list'].setLayout(self.layouts['list'])
+        self._widgets['list'].setObjectName("sous_block")
+        liste_widgets = [3,self.numero_train,self._widgets['list'],30,self._widgets['entraxe'],self._widgets['σ_max'],3]
+        self._fenetre.ajoute(self.layouts['main'],liste_widgets)
+        self._widgets['main'].setLayout(self.layouts['main'])
+        self._widgets['main'].setObjectName("sous_block")
+        self.numero_train.setObjectName("sous_block")
+        self.numero_train.setFixedWidth(45)
+        self.numero_train.setAlignment(qtc.Qt.AlignCenter)
+
 
 
 class FenetreAttenteCreation(Fenetre):
