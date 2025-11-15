@@ -24,7 +24,7 @@ from PySide6 import (
 
 CREATION_PROJET = {
     'buttons':['Précedent','Next'],
-    'geometrie': [1000, 600],
+    'geometrie': [940, 600],
     'titre': 'Creation Projet',
     'styleSheet': '''
         QWidget {
@@ -77,7 +77,7 @@ PAGE_1 = {
             },
     'labels':['nombre d’étage :','1'],
     'comboboxes':{'type_engrenage':['  Engrenage droit', '  Engrenage hélicoïdal'],
-                  'type_train':['  Train Simple', '  Train Epicicloïdale']},
+                  'type_train':['  Train Simple', '  Train Epicicloïdal']},
     'styleSheet': '''
                 QWidget {
                     background: #fff; /* Couleur de fond blanche */
@@ -461,10 +461,14 @@ class Page_1():
             self.layouts['list'].addWidget(self.comboboxes[key])
         self.widgets['list'].setLayout(self.layouts['list'])
         self.widgets['list'].setObjectName("sous_block")
-        liste_widgets = [self.labels['1'],self.widgets['list'],self.widgets['entraxe'],self.widgets['σ_max']]
+        liste_widgets = [3,self.labels['1'],self.widgets['list'],30,self.widgets['entraxe'],self.widgets['σ_max'],3]
         self._fenetre.ajoute(self.layouts['bloc_droit'],liste_widgets)
         self.widgets['bloc_droit'].setLayout(self.layouts['bloc_droit'])
         self.widgets['bloc_droit'].setObjectName("sous_block")
+        self.labels['1'].setObjectName("sous_block")
+        self.labels['1'].setFixedWidth(45)
+        self.labels['1'].setAlignment(qtc.Qt.AlignCenter)
+
 
 
     def _add_element_block_ligne(self) -> None:
