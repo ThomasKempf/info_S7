@@ -415,9 +415,7 @@ class Page_1():
         self._fenetre = fenetre
         self._genere_elements()
         self._add_element_block_gauche()
-        ligne_train_1 = Ligne_train(fenetre)
-        self.widgets['bloc_droit'] = ligne_train_1.widget
-        self._variables = ligne_train_1.variables
+        self._genere_lignes_droites()
         self._add_element_block_ligne()
         fenetre.creer_getters_variables_lineedits(self, self._variables)
         
@@ -433,7 +431,7 @@ class Page_1():
         '''
         # genere les elements principale de la page
         elements = {
-            'layouts':{'page':'v','ligne':'h','bloc_gauche':'h'},
+            'layouts':{'page':'v','premiere_ligne':'h','bloc_gauche':'h','ligne':'h'},
             'widgets':['bloc_gauche'],
             'labels':['nbr_etage'],
             'lineedits':['nbr_train'],
@@ -449,6 +447,24 @@ class Page_1():
         self.nbr_train.setFixedWidth(30)
         self.nbr_train.setText('1')
         self.widgets['bloc_gauche'].setStyleSheet(PAGE_1['styleSheet'])
+
+
+    def _genere_lignes_droites(self):
+        nbr = 7
+        ligne =[]
+        layout = qtw.QVBoxLayout()
+        ligne.append(Ligne_train(self._fenetre))
+        self.widgets['premiere_ligne'] = ligne[0].widget
+        for i in range(1, nbr):
+            ligne.append(Ligne_train(self._fenetre))
+            widget_temp = ligne[i].widget
+            layout.addWidget(ligne[i].widget)
+        layout.setSpacing(15)
+        widget = qtw.QWidget()
+        widget.setLayout(layout)
+        self.layouts['ligne'].addStretch()
+        self.layouts['ligne'].addWidget(widget)
+        self._variables = ligne[0].variables
 
 
     def _add_element_block_gauche(self):
@@ -471,12 +487,12 @@ class Page_1():
         et le block droit avec les differents parametre de train
 
         **Préconditions :**
-        - ``self.layouts['ligne'], self.widgets['bloc_gauche'], self.widgets['bloc_droit'] `` doivent etre valide
+        - ``self.layouts['premiere_ligne'], self.widgets['bloc_gauche'], self.widgets['bloc_droit'] `` doivent etre valide
         '''
-        self.layouts['ligne'].addWidget(self.widgets['bloc_gauche'])
-        self.layouts['ligne'].addSpacing(100)  # Espace fixe entre les deux blocs
-        self.layouts['ligne'].addWidget(self.widgets['bloc_droit'])
-        self.layouts['ligne'].addStretch()
+        self.layouts['premiere_ligne'].addWidget(self.widgets['bloc_gauche'])
+        self.layouts['premiere_ligne'].addSpacing(93)  # Espace fixe entre les deux blocs
+        self.layouts['premiere_ligne'].addWidget(self.widgets['premiere_ligne'])
+        self.layouts['premiere_ligne'].addStretch()
 
 
     def genere_page(self) -> qtw.QWidget:
@@ -486,8 +502,9 @@ class Page_1():
         :return: widget de la page
 
         **Préconditions :**
-        - ``self.layouts['page'], self.layouts['ligne'] `` doivent etre valide
+        - ``self.layouts['page'], self.layouts['premiere_ligne'] `` doivent etre valide
         '''
+        self.layouts['page'].addLayout(self.layouts['premiere_ligne'])
         self.layouts['page'].addLayout(self.layouts['ligne'])
         self.layouts['page'].addStretch()
         page = qtw.QWidget()
@@ -570,6 +587,7 @@ class Ligne_train():
         self._fenetre.ajoute(self.layouts['main'],liste_widgets)
         self._widgets['main'].setLayout(self.layouts['main'])
         self._widgets['main'].setObjectName("sous_block")
+        self._widgets['main'].setFixedHeight(55)
         self.numero_train.setObjectName("sous_block")
         self.numero_train.setFixedWidth(45)
         self.numero_train.setAlignment(qtc.Qt.AlignCenter)
