@@ -166,6 +166,7 @@ class Fenetre(qtw.QWidget):
         variable = qtw.QLineEdit()
         variable.setText(text_defaut)
         variable.setStyleSheet('QLineEdit {border: 1px solid #222; border-radius: 3px;}')
+        variable.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(variable)
         # ajoute le label de l'unitee
         lbl_unitee = qtw.QLabel(unitee)

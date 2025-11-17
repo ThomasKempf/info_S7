@@ -411,11 +411,14 @@ class Page_1():
     def __init__(self, fenetre: Fenetre) -> None:
         '''
         generation de la page 1 qui contient le choix du nombre de train, de leurs type et de leur materiaux
+
+        :param fenetre: objet de classe fenetre permetant d'atteindre les methode outils de celle ci
         '''
         self._fenetre = fenetre
+        self._nbr_lignes_precedent = 1
         self._genere_elements()
         self._add_element_block_gauche()
-        self._genere_lignes_droites()
+        self._genere_premiere_ligne()
         self._add_element_block_ligne()
         fenetre.creer_getters_variables_lineedits(self, self._variables)
         
@@ -431,7 +434,7 @@ class Page_1():
         '''
         # genere les elements principale de la page
         elements = {
-            'layouts':{'page':'v','premiere_ligne':'h','bloc_gauche':'h','ligne':'h'},
+            'layouts':{'page':'v','premiere_ligne':'h','bloc_gauche':'h','ligne':'h','ligne_vertical':'v'},
             'widgets':['bloc_gauche'],
             'labels':['nbr_etage'],
             'lineedits':['nbr_train'],
@@ -443,28 +446,61 @@ class Page_1():
         self.labels = result['labels']
         self.nbr_train = result['lineedits']['nbr_train']
         # genere les elements restant
-        self.nbr_train.setValidator(qtg.QDoubleValidator())
+        self.nbr_train.setValidator(qtg.QIntValidator(1, 7))
         self.nbr_train.setFixedWidth(30)
         self.nbr_train.setText('1')
+        self.nbr_train.editingFinished.connect(self._refresh_ligne)
+        self.nbr_train.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
         self.widgets['bloc_gauche'].setStyleSheet(PAGE_1['styleSheet'])
 
 
-    def _genere_lignes_droites(self):
-        nbr = 7
-        ligne =[]
-        layout = qtw.QVBoxLayout()
-        ligne.append(Ligne_train(self._fenetre))
-        self.widgets['premiere_ligne'] = ligne[0].widget
-        for i in range(1, nbr):
-            ligne.append(Ligne_train(self._fenetre))
-            widget_temp = ligne[i].widget
-            layout.addWidget(ligne[i].widget)
-        layout.setSpacing(15)
+    def _genere_premiere_ligne(self):
+        self._lignes =[]
+        self._lignes.append(Ligne_train(self._fenetre,1))
+        self.widgets['premiere_ligne'] = self._lignes[0].widget
+        self.layouts['ligne_vertical'].setSpacing(15)
         widget = qtw.QWidget()
-        widget.setLayout(layout)
+        widget.setLayout(self.layouts['ligne_vertical'])
         self.layouts['ligne'].addStretch()
         self.layouts['ligne'].addWidget(widget)
-        self._variables = ligne[0].variables
+        self._variables = self._lignes[0].variables
+
+
+    def _refresh_ligne(self) -> None:
+        '''
+        reactualise le nombre de ligne, relis la variable associée 
+        pour ensuite suprimmer ou ajouter une par une les lignes
+        '''
+        nouveau_nbr_ligne = int(self.nbr_train.text())
+        difference = nouveau_nbr_ligne - self._nbr_lignes_precedent
+        if difference < 0:
+            for i in range(abs(difference)):
+                self._suprime_une_ligne(self._nbr_lignes_precedent - i - 1)
+        elif difference > 0:
+            for i in range(difference):
+                self._ajoute_une_ligne(self._nbr_lignes_precedent + i)
+        self._nbr_lignes_precedent = nouveau_nbr_ligne
+        
+
+    def _ajoute_une_ligne(self,num) -> None:
+        '''
+        ajoute un nouvelle objet de Ligne_train à la liste et au layouts asscociée
+
+        :param num: numero de la nouvelle ligne de train dans la liste
+        '''
+        self._lignes.append(Ligne_train(self._fenetre,num+1))
+        self.layouts['ligne_vertical'].addWidget(self._lignes[num].widget)
+
+    
+    def _suprime_une_ligne(self,num):
+        '''
+        suprimme un objet de Ligne_train à la liste et au layouts asscociée
+
+        :param num: numero de la ligne de train dans la liste
+        '''
+        self.layouts['ligne_vertical'].removeWidget(self._lignes[num].widget)
+        self._lignes[num].widget.deleteLater()
+        self._lignes.pop(num)
 
 
     def _add_element_block_gauche(self):
@@ -513,11 +549,15 @@ class Page_1():
 
 
 class Ligne_train():
-    def __init__(self,fenetre) -> None:
+    def __init__(self,fenetre,numero) -> None:
         '''
         genere un widget avec tout les elements necessaire à la partie droite d'un train
+
+        :param fenetre: objet de classe fenetre permetant d'atteindre les methode outils de celle ci
+        :param numero: numero du train dans l'ordre croissant du reducteur
         '''
         self._fenetre = fenetre
+        self._numero = numero
         self._genere_elements()
         self._add_element_block_droite()
 
@@ -528,7 +568,7 @@ class Ligne_train():
         acces au dict contenant les variables des linedit du train
         '''
         return self._variables
-    
+
 
     @property
     def widget(self):
@@ -555,6 +595,7 @@ class Ligne_train():
         self.layouts = result['layouts']
         self._widgets = result['widgets']
         self.numero_train = result['labels']['1']
+        self.numero_train.setText(str(self._numero))
         self.comboboxes = result['comboboxes']
         # genere les elements restant
         self._genere_elements_a_unitee()
