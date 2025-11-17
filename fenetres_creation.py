@@ -626,6 +626,8 @@ class Ligne_train():
         for key in self._variables:
             widgets[key].setObjectName("sous_block")
             self._variables[key].setFixedWidth(40)
+            par_defaut = LIGNE_TRAIN['labels_unitee'][key]['valeur_defaut']
+            self._variables[key].editingFinished.connect(lambda w=self._variables[key], d=par_defaut: self._fenetre.control_0(w, d))
         self._widgets.update(widgets)
 
 

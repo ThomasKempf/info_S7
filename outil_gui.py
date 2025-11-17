@@ -271,6 +271,18 @@ class Fenetre(qtw.QWidget):
            frames[key].setFixedSize(*taille[i])
 
 
+    def control_0(self,lineedits,nouvelle_valeur):
+        '''
+        controle si la valeur du lineedits n'est pas egal a 0,
+        sinon elle est slignaler et modifier
+
+        :param lineedits: objet lineedits a modifier
+        :param nouvelle_valeur: nouvelle valeur correcte à lui assignée
+        '''
+        if lineedits.text() == '0':
+            self.signaler_lineedits_erreur(lineedits,nouvelle_valeur)
+        
+
     def signaler_lineedits_erreur(self,lineedits:qtw.QLineEdit,nouvelle_valeur:str) -> None:
         '''
         change le fond du lineedits en rouge pour signaler une erreur,
