@@ -271,6 +271,21 @@ class Fenetre(qtw.QWidget):
            frames[key].setFixedSize(*taille[i])
 
 
+    def signaler_lineedits_erreur(self,lineedits:qtw.QLineEdit,nouvelle_valeur:str) -> None:
+        '''
+        change le fond du lineedits en rouge pour signaler une erreur,
+        pour ensuite le basculer a nouveau dans sa couleur initial.
+        
+        :param lineedits: objet lineedits a modifier
+        :param nouvelle_valeur: nouvelle valeur correcte à lui assignée
+        '''
+        TEMPS_MAINTIENT = 500 # ms
+        color = lineedits.palette().color(lineedits.backgroundRole())
+        lineedits.setStyleSheet("color: red; background-color: #ffe6e6;")
+        qtw.QApplication.processEvents()
+        qtc.QTimer.singleShot(TEMPS_MAINTIENT, lambda: lineedits.setStyleSheet(f"background: {color};"))
+        lineedits.setText(nouvelle_valeur)
+
 class CloseWatcher(qtc.QObject):
     def __init__(self, methode_a_appeler) -> None:
         '''

@@ -13,6 +13,7 @@
 """
 
 import modeles2 as mod
+import time
 from outil_gui import Fenetre
 import xlsx_reducteur as xlsx
 from PySide6 import (
@@ -446,7 +447,7 @@ class Page_1():
         self.labels = result['labels']
         self.nbr_train = result['lineedits']['nbr_train']
         # genere les elements restant
-        self.nbr_train.setValidator(qtg.QIntValidator(1, 7))
+        self.nbr_train.setValidator(qtg.QIntValidator(0, 9))
         self.nbr_train.setFixedWidth(30)
         self.nbr_train.setText('1')
         self.nbr_train.editingFinished.connect(self._refresh_ligne)
@@ -455,9 +456,15 @@ class Page_1():
 
 
     def _genere_premiere_ligne(self):
+        '''
+        reactualise le nombre de ligne, relis la variable associée 
+        pour ensuite suprimmer ou ajouter une par une les lignes
+        '''
+        # genere premiere ligne
         self._lignes =[]
         self._lignes.append(Ligne_train(self._fenetre,1))
         self.widgets['premiere_ligne'] = self._lignes[0].widget
+        # adapte et ajoute widget des lignes suivante qui n'existe pas encore
         self.layouts['ligne_vertical'].setSpacing(15)
         widget = qtw.QWidget()
         widget.setLayout(self.layouts['ligne_vertical'])
@@ -471,7 +478,16 @@ class Page_1():
         reactualise le nombre de ligne, relis la variable associée 
         pour ensuite suprimmer ou ajouter une par une les lignes
         '''
+        # verifie la valeur
+        MAX = 7
         nouveau_nbr_ligne = int(self.nbr_train.text())
+        if nouveau_nbr_ligne > MAX or nouveau_nbr_ligne == 0:
+            if nouveau_nbr_ligne > MAX:
+                nouveau_nbr_ligne = MAX
+            else:
+                nouveau_nbr_ligne = 1
+            self._fenetre.signaler_lineedits_erreur(self.nbr_train,str(nouveau_nbr_ligne))
+        # reactualise les lignes
         difference = nouveau_nbr_ligne - self._nbr_lignes_precedent
         if difference < 0:
             for i in range(abs(difference)):
@@ -492,7 +508,7 @@ class Page_1():
         self.layouts['ligne_vertical'].addWidget(self._lignes[num].widget)
 
     
-    def _suprime_une_ligne(self,num):
+    def _suprime_une_ligne(self,num) -> None:
         '''
         suprimme un objet de Ligne_train à la liste et au layouts asscociée
 
@@ -503,7 +519,7 @@ class Page_1():
         self._lignes.pop(num)
 
 
-    def _add_element_block_gauche(self):
+    def _add_element_block_gauche(self) -> None:
         '''
         ajoute les elements du block gauche constituee du choix des nombres de train
 
