@@ -261,9 +261,11 @@ class FenetreCreationProjet(Fenetre):
         description_global =  self._page[0].variables
         self._description_global = mod.Global()
         self._description_global.description =  description_global
-        self._description_train = self._page[1].variables
+        variables_lignes = self._page[1].variables_lignes
         values_global = [int(val) for val in description_global.values()]
-        values_train = [int(val) for val in self._description_train.values()]
+        values_train = [int(val) for val in variables_lignes[0].values()] # ajoute que le premier train
+        print(values_global)
+        print(values_train)
         self._train = mod.Calcule_train_simple(*values_global, *values_train)
     
         
@@ -423,7 +425,18 @@ class Page_1():
         self._add_element_block_gauche()
         self._genere_premiere_ligne()
         self._add_element_block_ligne()
-        fenetre.creer_getters_variables_lineedits(self, self._variables)
+
+
+    @property
+    def variables_lignes(self):
+        '''
+        retourne une liste contenant le dict des variables lineedit de chaque ligne
+        '''
+        liste_variable = []
+        for i in range(len(self._lignes)):
+            print(i)
+            liste_variable.append(self._lignes[i].variables)
+        return liste_variable
         
 
     def _genere_elements(self) -> None:
@@ -578,14 +591,7 @@ class Ligne_train():
         self._numero = numero
         self._genere_elements()
         self._add_element_block_droite()
-
-
-    @property
-    def variables(self):
-        '''
-        acces au dict contenant les variables des linedit du train
-        '''
-        return self._variables
+        self._fenetre.creer_getters_variables_lineedits(self,self._variables)
 
 
     @property
