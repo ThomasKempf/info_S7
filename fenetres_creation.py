@@ -335,6 +335,8 @@ class Page_0():
             widgets[key].setParent(self.frames[parent])
             widgets[key].setStyleSheet('background: #fff')
             variables[key].setFixedWidth(40)
+            par_defaut = PAGE_0['labels_unitee'][key]['valeur_defaut']
+            variables[key].editingFinished.connect(lambda w=variables[key], d=par_defaut: self._fenetre.control_0(w, d))
             widgets[key].adjustSize()
         return widgets,variables
     
@@ -403,7 +405,7 @@ class Page_0():
         page = qtw.QWidget()
         page.setLayout(self.layouts['main'])
         self.labels['titre'].setParent(page)
-        self.labels['titre'].move(60, 10)
+        self.labels['titre'].move(10, 10)
         return page
 
 
