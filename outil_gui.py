@@ -81,7 +81,8 @@ class Fenetre(qtw.QWidget):
         'comboboxes': lambda _: qtw.QComboBox(),
         'buttons': lambda text: qtw.QPushButton(text),
         'stack': lambda _: qtw.QStackedWidget(),
-        'frames': lambda _: qtw.QFrame()
+        'frames': lambda _: qtw.QFrame(),
+        'toolbars': lambda _: qtw.QToolBar()
         }
         result = {}
         for key in constructors:

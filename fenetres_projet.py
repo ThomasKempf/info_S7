@@ -17,7 +17,8 @@ import modeles2 as md
 import xlsx_reducteur as xlsx
 from PySide6 import (
     QtWidgets as qtw,
-    QtGui as qtg
+    QtGui as qtg,
+    QtCore as qtc
 )
 
 
@@ -25,6 +26,7 @@ from PySide6 import (
 PROJET = {
     'titre': 'Projet',
     'labels':['Train_1'],
+    'buttons':['Fichier','Enregistrer','Aide'],
     'styleSheet':"""
             QWidget {
                 background: #fff; /* Couleur de fond blanche */
@@ -46,7 +48,9 @@ class FenetreProjet(Fenetre):
         :param train: objet de la classe Simulation_train contenant les methode de calcule et la descritption du Train
         """
         elements = {
-            'layouts':{'main':'h','train1':'v'},
+            'layouts':{'main':'v','train1':'v'},
+            'buttons':['fichier','enregistrer','aide'],
+            'toolbars':['ligne_haut']
         }
         super().__init__(PROJET,elements)
         self._methode_train = train
@@ -54,8 +58,19 @@ class FenetreProjet(Fenetre):
         self._xlsx_file = xlsx_file
         self.setStyleSheet(self._param['styleSheet'])
         layout = self.genere_train()
+        self.genere_toolbars()
+        self.layouts['main'].addWidget(self.toolbar)
         self.layouts['main'].addLayout(layout)
         self.setLayout(self.layouts['main'])
+
+    
+    def genere_toolbars(self):
+        self.toolbar = self.toolbars['ligne_haut']
+        self.toolbar.setMovable(False)
+        for key in self.buttons:
+            print(key)
+            self.buttons[key].setFlat(True)
+            self.toolbar.addWidget(self.buttons[key])
 
 
     def genere_train(self) -> qtw.QVBoxLayout:

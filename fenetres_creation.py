@@ -264,8 +264,6 @@ class FenetreCreationProjet(Fenetre):
         variables_lignes = self._page[1].variables_lignes
         values_global = [int(val) for val in description_global.values()]
         values_train = [int(val) for val in variables_lignes[0].values()] # ajoute que le premier train
-        print(values_global)
-        print(values_train)
         self._train = mod.Calcule_train_simple(*values_global, *values_train)
     
         
