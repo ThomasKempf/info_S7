@@ -253,6 +253,7 @@ class BackstagePopup(qtw.QWidget):
         créeer une petite liste qui peut etre ratachée à un evenement comme le click d'un bouton
         '''
         super().__init__(parent, qtc.Qt.Window | qtc.Qt.FramelessWindowHint)
+        self.setAttribute(qtc.Qt.WA_TranslucentBackground)
         self.callbacks = callbacks
         self.button = button
         self._setup_ui()
@@ -266,9 +267,8 @@ class BackstagePopup(qtw.QWidget):
         - ``self.callbacks`` doit avoir les memes clef que options
         '''
         # adapte le style
-        self.setObjectName("backstage")
         self.setStyleSheet("""
-        QWidget#backstage {
+        QWidget {
             background: white;
             border: 1px solid #bbb;
             border-radius: 6px;
