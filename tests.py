@@ -5,7 +5,7 @@ import os
 
 
 # -------------------------------------------------------------------------
-#  Backstage (petite fenêtre type "menu fichier" comme Word)
+# Backstage Popup
 # -------------------------------------------------------------------------
 class BackstagePopup(qtw.QWidget):
     def __init__(self, parent=None, callbacks=None):
@@ -37,8 +37,7 @@ class BackstagePopup(qtw.QWidget):
         layout.setContentsMargins(8, 8, 8, 8)
         layout.setSpacing(6)
 
-        title = qtw.QLabel("<b>Fichier</b>")
-        layout.addWidget(title)
+        layout.addWidget(qtw.QLabel("<b>Fichier</b>"))
 
         options = [
             ("Nouveau", "new"),
@@ -62,8 +61,8 @@ class BackstagePopup(qtw.QWidget):
                 self.callbacks[key]()
         return handler
 
-    def show_at_top_left(self, main_window):
-        top_left = main_window.mapToGlobal(main_window.rect().topLeft())
+    def show_at_top_left(self, main_widget):
+        top_left = main_widget.mapToGlobal(main_widget.rect().topLeft())
         x = top_left.x() + 4
         y = top_left.y() + 40
         self.adjustSize()
@@ -72,48 +71,62 @@ class BackstagePopup(qtw.QWidget):
 
 
 # -------------------------------------------------------------------------
-#  Fenêtre principale
+# Fenêtre principale : QWidget
 # -------------------------------------------------------------------------
-class MainWindow(qtw.QMainWindow):
+class MainWidget(qtw.QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Exemple — Bande supérieure + Backstage")
+        self.setWindowTitle("Exemple QWidget — Backstage")
         self.resize(900, 600)
-
         self.current_file = None
-
-        self._create_toolbar()
-        self._create_backstage()
-
-        self.editor = qtw.QTextEdit()
-        self.setCentralWidget(self.editor)
 
         self.installEventFilter(self)
 
-    # ---------------------------------------------------------------------
-    # Toolbar unique (ligne du haut)
-    # ---------------------------------------------------------------------
-    def _create_toolbar(self):
-        toolbar = qtw.QToolBar()
-        toolbar.setMovable(False)
-        self.addToolBar(qtc.Qt.TopToolBarArea, toolbar)
+        self._create_ui()
+        self._create_backstage()
 
-        # Bouton : Fichier
+    # ---------------------------------------------------------------------
+    # UI manuelle avec une "toolbar"
+    # ---------------------------------------------------------------------
+    def _create_ui(self):
+        layout = qtw.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        # --- Barre du haut ---
+        self.toolbar = qtw.QWidget()
+        self.toolbar.setStyleSheet("background: #ddd;")
+        tb_layout = qtw.QHBoxLayout(self.toolbar)
+        tb_layout.setContentsMargins(6, 4, 6, 4)
+        tb_layout.setSpacing(10)
+
+        # Bouton fichier
         fichier_btn = qtw.QPushButton("Fichier")
-        fichier_btn.clicked.connect(self.open_backstage)
         fichier_btn.setFlat(True)
-        toolbar.addWidget(fichier_btn)
+        fichier_btn.clicked.connect(self.open_backstage)
+        tb_layout.addWidget(fichier_btn)
 
-        # Icône enregistrer
+        # Bouton enregistrer
         save_icon = qtg.QIcon.fromTheme("document-save")
-        save_action = toolbar.addAction(save_icon, "Enregistrer", self.save)
+        save_btn = qtw.QPushButton(save_icon, "")
+        save_btn.setFlat(True)
+        save_btn.clicked.connect(self.save)
+        tb_layout.addWidget(save_btn)
 
-        # Bouton : Aide
+        # Aide
         aide_btn = qtw.QPushButton("Aide")
-        aide_btn.clicked.connect(self.about)
         aide_btn.setFlat(True)
-        toolbar.addWidget(aide_btn)
+        aide_btn.clicked.connect(self.about)
+        tb_layout.addWidget(aide_btn)
+
+        tb_layout.addStretch(1)
+
+        layout.addWidget(self.toolbar)
+
+        # --- Zone d’édition ---
+        self.editor = qtw.QTextEdit()
+        layout.addWidget(self.editor)
 
     # ---------------------------------------------------------------------
     # Backstage
@@ -130,7 +143,7 @@ class MainWindow(qtw.QMainWindow):
     def open_backstage(self):
         self.backstage.show_at_top_left(self)
 
-    # Cacher le backstage si clic en dehors
+    # Masquer le backstage si clic hors zone
     def eventFilter(self, obj, event):
         if event.type() == qtc.QEvent.MouseButtonPress:
             if self.backstage.isVisible():
@@ -140,13 +153,13 @@ class MainWindow(qtw.QMainWindow):
         return super().eventFilter(obj, event)
 
     # ---------------------------------------------------------------------
-    # Actions fichier
+    # Fonctions fichier
     # ---------------------------------------------------------------------
     def new_file(self):
         if self.maybe_save():
             self.editor.clear()
             self.current_file = None
-            self.setWindowTitle("Nouveau - Exemple")
+            self.setWindowTitle("Nouveau - Exemple QWidget")
 
     def open_file(self):
         if not self.maybe_save():
@@ -188,31 +201,26 @@ class MainWindow(qtw.QMainWindow):
     def maybe_save(self):
         if not self.editor.document().isModified():
             return True
-
         msg = qtw.QMessageBox.question(
             self, "Enregistrer ?",
             "Le document a été modifié. Voulez-vous enregistrer ?",
             qtw.QMessageBox.Yes | qtw.QMessageBox.No | qtw.QMessageBox.Cancel
         )
-
         if msg == qtw.QMessageBox.Yes:
             return self.save()
         if msg == qtw.QMessageBox.No:
             return True
         return False
 
-    # Impression
     def print_dialog(self):
         printer = QPrinter()
         dlg = QPrintDialog(printer, self)
         if dlg.exec() == qtw.QDialog.Accepted:
             self.editor.print(printer)
 
-    # A propos
     def about(self):
-        qtw.QMessageBox.information(self, "Aide", "Exemple de Backstage PySide6.\nInspiré de Microsoft Office.")
+        qtw.QMessageBox.information(self, "Aide", "Exemple Backstage avec QWidget.\nPas de QMainWindow.")
 
-    # Fermeture propre
     def closeEvent(self, event):
         if self.maybe_save():
             event.accept()
@@ -225,6 +233,6 @@ class MainWindow(qtw.QMainWindow):
 # -------------------------------------------------------------------------
 if __name__ == "__main__":
     app = qtw.QApplication(sys.argv)
-    win = MainWindow()
+    win = MainWidget()
     win.show()
     sys.exit(app.exec())

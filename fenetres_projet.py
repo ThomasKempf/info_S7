@@ -26,7 +26,7 @@ from PySide6 import (
 PROJET = {
     'titre': 'Projet',
     'labels':['Train_1'],
-    'buttons':['Fichier','Enregistrer','Aide'],
+    'buttons':['Fichier','','Aide'],
     'styleSheet':"""
             QWidget {
                 background: #fff; /* Couleur de fond blanche */
@@ -49,8 +49,8 @@ class FenetreProjet(Fenetre):
         """
         elements = {
             'layouts':{'main':'v','train1':'v'},
+            'widgets': ['toolbar'],
             'buttons':['fichier','enregistrer','aide'],
-            'toolbars':['ligne_haut']
         }
         super().__init__(PROJET,elements)
         self._methode_train = train
@@ -59,18 +59,34 @@ class FenetreProjet(Fenetre):
         self.setStyleSheet(self._param['styleSheet'])
         layout = self.genere_train()
         self.genere_toolbars()
-        self.layouts['main'].addWidget(self.toolbar)
+        self.layouts['main'].addWidget(self.widgets['toolbar'])
         self.layouts['main'].addLayout(layout)
         self.setLayout(self.layouts['main'])
 
     
-    def genere_toolbars(self):
-        self.toolbar = self.toolbars['ligne_haut']
-        self.toolbar.setMovable(False)
+    def genere_toolbars(self) -> None:
+        '''
+        genere une bande en haut de la page avec des boutons à droite
+        inspirer par la meme bande que l'ont peut trouver sur word ou exel
+        '''
+        # adapte le main layout a la toolbars
+        self.layouts['main'].setContentsMargins(0, 0, 0, 0)
+        self.layouts['main'].setSpacing(0)
+        # adapte de widget associée et créer un layoute de support
+        self.widgets['toolbar'].setStyleSheet("background: #ddd;")
+        tb_layout = qtw.QHBoxLayout(self.widgets['toolbar'])
+        tb_layout.setContentsMargins(6, 4, 6, 4)
+        tb_layout.setSpacing(10)
+        # ajoute les bouttons
         for key in self.buttons:
-            print(key)
             self.buttons[key].setFlat(True)
-            self.toolbar.addWidget(self.buttons[key])
+            self.buttons[key].clicked.connect(getattr(self,f'_{key}'))
+            tb_layout.addWidget(self.buttons[key])
+        # adapte l'apparence du bouton enregistrer
+        self.buttons['enregistrer'].setIcon(qtg.QIcon.fromTheme("document-save"))
+        tb_layout.addStretch(1)
+        self._create_backstage()
+
 
 
     def genere_train(self) -> qtw.QVBoxLayout:
@@ -171,3 +187,149 @@ class FenetreProjet(Fenetre):
             for key in self._zone_text_train[global_key]['variable']:
                 if key != value_name:
                     self._zone_text_train[global_key]['variable'][key].setText(str(round(self._train.description[global_key].description[key],4)))
+
+
+    def _fichier(self) -> None:
+        '''
+        fonction ratachée au bouton fichier, son nom permet de le lier autotmatique
+        ne pas modifier la structure nie le nom de la methode
+        '''
+        self.backstage.ouvrir_liste()
+
+
+    def _enregistrer(self) -> None:
+        '''
+        fonction ratachée au bouton enregistrer, son nom permet de le lier autotmatique
+        ne pas modifier la structure nie le nom de la methode
+        '''
+        print('enregistrer')
+
+
+    def _aide(self) -> None:
+        '''
+        fonction ratachée au bouton aide, son nom permet de le lier autotmatique
+        ne pas modifier la structure nie le nom de la methode
+        '''
+        print('aide')
+
+
+    def compens(self) -> None:
+        ''' fonction test'''
+        print('hello')
+
+    def compens_2(self) -> None:
+        ''' fonction test'''
+        print('helli')
+
+    def _create_backstage(self) -> None:
+        '''
+        ratache les methode au key des boutons de la liste, pour ensuite la créer à l'aide de la classse appropriee
+        '''
+        callbacks={
+            "new": self.compens,
+            "open": self.compens,
+            "save": self.compens_2,
+            "save_as": self.compens,
+            "print": self.compens,
+        }
+        self.backstage = BackstagePopup(self,callbacks,self.buttons['fichier'])
+
+
+    def resizeEvent(self, event: qtg.QResizeEvent) -> None:
+        '''
+        permet de rattacher l'évenement de modifier la taille de la page, au faite de deplacer la liste
+        la methode est automatiquement appeler a l'aide de son entete predefinit dans la super classe
+        '''
+        super().resizeEvent(event)
+        event.size()
+        if hasattr(self, 'backstage') and self.backstage is not None:
+            self.backstage.positionner_list(self)
+        
+
+
+class BackstagePopup(qtw.QWidget):
+    def __init__(self, parent, callbacks, button) -> None:
+        '''
+        créeer une petite liste qui peut etre ratachée à un evenement comme le click d'un bouton
+        '''
+        super().__init__(parent, qtc.Qt.Window | qtc.Qt.FramelessWindowHint)
+        self.callbacks = callbacks
+        self.button = button
+        self._setup_ui()
+
+
+    def _setup_ui(self) -> None:
+        '''
+        met en forme la liste constituée d'un layoute avec des boutons
+
+        **Préconditions :**
+        - ``self.callbacks`` doit avoir les memes clef que options
+        '''
+        # adapte le style
+        self.setObjectName("backstage")
+        self.setStyleSheet("""
+        QWidget#backstage {
+            background: white;
+            border: 1px solid #bbb;
+            border-radius: 6px;
+        }
+        QPushButton {
+            padding: 8px 12px;
+            text-align: left;
+            font-size: 13px;
+        }
+        QPushButton:hover {
+            background: #e5e5e5;
+        }
+        """)
+        # definit les texte de chaque bouton
+        options = [
+            ("Nouveau", "new"),
+            ("Ouvrir...", "open"),
+            ("Enregistrer", "save"),
+            ("Enregistrer sous...", "save_as"),
+            ("Imprimer...", "print"),
+        ]
+        # creer et ajoute chaque bouton au layoute
+        layout = qtw.QVBoxLayout(self)
+        for text, key in options:
+            btn = qtw.QPushButton(text)
+            btn.clicked.connect(lambda checked=False, k=key: (self.hide(), self.callbacks[k]()))
+            layout.addWidget(btn)
+
+
+    def ouvrir_liste(self) -> None:
+        '''
+        rend la liste visible et connecte la methode permetant de la fermer
+
+        **Préconditions :**
+        - ``self.button`` doit rediriger vers les un bouton
+        '''    
+        self.adjustSize()
+        self.show()
+        self.button.clicked.disconnect()
+        self.button.clicked.connect(self._fermer_liste)
+
+
+    def _fermer_liste(self) -> None:
+        '''
+        ferme cache la liste et connecte la methode permetant de l'ouvrir a nouveau
+
+        **Préconditions :**
+        - ``self.button`` doit rediriger vers les un bouton
+        '''
+        self.button.clicked.disconnect()
+        self.button.clicked.connect(self.ouvrir_liste)
+        self.hide()
+
+
+    def positionner_list(self,main_widget:qtw.QWidget) -> None:
+        '''
+        positionne la list par rapport a la taille de la fenetre
+
+        :param main_widget: widget de la fenetre dans la quelle est ajoutee la liste
+        '''
+        top_left = main_widget.mapToGlobal(main_widget.rect().topLeft())
+        x = top_left.x() + 4
+        y = top_left.y() + 40
+        self.move(x, y)
