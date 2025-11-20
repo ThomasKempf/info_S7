@@ -158,7 +158,13 @@ class FenetreProjet(Fenetre):
 
 
 class Frame_Train(qtw.QFrame):
-    def __init__(self,train,fenetre):
+    def __init__(self,train:md.Train,fenetre:FenetreProjet):
+        '''
+        creer un frame contenant la representation d'un train
+
+        :param train: objet contenant la description du train
+        :param fenetre: fenetre donnant l'accès au methode outil mais aussi au instance de la fenetre
+        '''
         super().__init__()
         self._train = train
         self.fenetre = fenetre
@@ -204,7 +210,7 @@ class Frame_Train(qtw.QFrame):
         :return: dict avec le widget et la variable liée a chaque parametre de chaque sous obj
 
         **Préconditions :**
-        - ``self._xlsx_param`` doit être valide
+        - ``self.fenetre._xlsx_param`` doit être valide
         """
         train_gui = {}
         description_train = self._train.description
@@ -253,7 +259,7 @@ class Frame_Train(qtw.QFrame):
 
         **Préconditions :**
         - L'attribut ``self._train`` doit contenir la descrpition de l'objet de Type Train.
-        - ``_xlsx_file`` et ``self._zone_text_train`` 
+        - ``self.fenetre._xlsx_file`` et ``self._zone_text_train`` 
           doivent être valides et contenir les clés attendues.
         """
         # met a jour l'objet train

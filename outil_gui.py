@@ -310,9 +310,13 @@ class Fenetre(qtw.QWidget):
 
 
 class BackstagePopup(qtw.QWidget):
-    def __init__(self, parent, callbacks, button) -> None:
+    def __init__(self, parent:qtw.QWidget, callbacks:dict, button:qtw.QPushButton) -> None:
         '''
         créeer une petite liste qui peut etre ratachée à un evenement comme le click d'un bouton
+
+        :param parent: fenetre parent dans la quelle ouvrir la liste
+        :param callbacks: dictionnaire contenant les methode a appeler en fonction du bouton de meme nom que les keys
+        :param button: bouton qui permet l'ouverture de la liste
         '''
         super().__init__(parent, qtc.Qt.Window | qtc.Qt.FramelessWindowHint)
         self.setAttribute(qtc.Qt.WA_TranslucentBackground)
