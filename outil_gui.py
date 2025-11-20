@@ -27,6 +27,7 @@ class Fenetre(qtw.QWidget):
         super().__init__()
         # met en place les parametres de base de la fenetre
         self._param = param
+        self.valeur_precedente = {}
         self.setWindowTitle(param['titre'])
         self.setStyleSheet(param['styleSheet'])
         if 'geometrie' in param:
@@ -167,8 +168,10 @@ class Fenetre(qtw.QWidget):
         # ajoute la zone de texte
         variable = qtw.QLineEdit()
         variable.setText(text_defaut)
+        self.valeur_precedente[str(variable)] = text_defaut
         variable.setStyleSheet('QLineEdit {border: 1px solid #222; border-radius: 3px;}')
         variable.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
+        variable.editingFinished.connect(lambda w=variable : self.control_0(w))
         layout.addWidget(variable)
         # ajoute le label de l'unitee
         lbl_unitee = qtw.QLabel(unitee)
@@ -177,6 +180,7 @@ class Fenetre(qtw.QWidget):
         widget = qtw.QWidget()
         widget.setLayout(layout)
         return widget,variable
+    
     
 
     def _genere_variables_unitees(self,param_labels_unitee:dict) -> tuple[dict[qtw.QWidget], dict[qtw.QLineEdit]]:
@@ -273,16 +277,20 @@ class Fenetre(qtw.QWidget):
            frames[key].setFixedSize(*taille[i])
 
 
-    def control_0(self,lineedits,nouvelle_valeur):
+    def control_0(self,lineedits:qtw.QLineEdit,nouvelle_valeur = None) -> None:
         '''
         controle si la valeur du lineedits n'est pas egal a 0,
-        sinon elle est slignaler et modifier
+        sinon elle est slignaler et modifier par soit la valeur donnée, soit la précedente
 
         :param lineedits: objet lineedits a modifier
         :param nouvelle_valeur: nouvelle valeur correcte à lui assignée
         '''
         if lineedits.text() == '0':
+            if nouvelle_valeur == None:
+                nouvelle_valeur = self.valeur_precedente[str(lineedits)]
             self.signaler_lineedits_erreur(lineedits,nouvelle_valeur)
+            return
+        self.valeur_precedente[str(lineedits)] = lineedits.text()
         
 
     def signaler_lineedits_erreur(self,lineedits:qtw.QLineEdit,nouvelle_valeur:str) -> None:

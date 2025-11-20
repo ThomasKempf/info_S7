@@ -336,7 +336,6 @@ class Page_0():
             widgets[key].setStyleSheet('background: #fff')
             variables[key].setFixedWidth(40)
             par_defaut = PAGE_0['labels_unitee'][key]['valeur_defaut']
-            variables[key].editingFinished.connect(lambda w=variables[key], d=par_defaut: self._fenetre.control_0(w, d))
             widgets[key].adjustSize()
         return widgets,variables
     
@@ -432,7 +431,6 @@ class Page_1():
         '''
         liste_variable = []
         for i in range(len(self._lignes)):
-            print(i)
             liste_variable.append(self._lignes[i].variables)
         return liste_variable
         
@@ -633,7 +631,6 @@ class Ligne_train():
             widgets[key].setObjectName("sous_block")
             self._variables[key].setFixedWidth(40)
             par_defaut = LIGNE_TRAIN['labels_unitee'][key]['valeur_defaut']
-            self._variables[key].editingFinished.connect(lambda w=self._variables[key], d=par_defaut: self._fenetre.control_0(w, d))
         self._widgets.update(widgets)
 
 
