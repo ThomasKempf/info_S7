@@ -43,12 +43,14 @@ class FenetreProjet(Fenetre):
         """
         elements = {
             'layouts':{'main':'v','train':'h'},
-            'widgets': ['toolbar'],
+            'widgets': ['toolbar','container'],
             'buttons':['fichier','enregistrer','aide'],
+            'scrolls':['train']
         }
         super().__init__(PROJET,elements)
         
         self._methode_train = train
+        self._xlsx_file = xlsx_file
         self._train = train.train_1 # obj contenant toute la descritption, obj de type Train
         self.setStyleSheet(self._param['styleSheet'])
         self.genere_toolbars()
@@ -57,8 +59,18 @@ class FenetreProjet(Fenetre):
             frame = Frame_Train(self._train,self)
             self.layouts['train'].addWidget(frame)
         self.layouts['train'].addStretch() 
-        self.layouts['main'].addLayout(self.layouts['train'])
-        #self.layouts['main'].addLayout(layout)
+        self.widgets['container'].setLayout(self.layouts['train'])
+        self.scrolls['train'].setWidget(self.widgets['container'])
+
+        self.scrolls['train'].setWidgetResizable(False)
+
+        # politiques de barres (facultatif)
+        self.scrolls['train'].setHorizontalScrollBarPolicy(qtc.Qt.ScrollBarAsNeeded)
+        self.scrolls['train'].setVerticalScrollBarPolicy(qtc.Qt.ScrollBarAsNeeded)
+
+
+        # ajoute la scrollarea au layout principal
+        self.layouts['main'].addWidget(self.scrolls['train'])
         self.setLayout(self.layouts['main'])
 
     
@@ -246,7 +258,7 @@ class Frame_Train(qtw.QFrame):
         """
         # met a jour l'objet train
         sous_obj.description[value_name] = nouvelle_valeur
-        self._methode_train.calculer_parametres()
+        self.fenetre._methode_train.calculer_parametres()
         # met a jour le xlsx
         self.fenetre._xlsx_file.ecrire_description_ogjet_multiple(self._train,1)
         self.fenetre._xlsx_file.save()
