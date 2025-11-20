@@ -299,6 +299,95 @@ class Fenetre(qtw.QWidget):
         qtc.QTimer.singleShot(TEMPS_MAINTIENT, lambda: lineedits.setStyleSheet(f"background: {color};"))
         lineedits.setText(nouvelle_valeur)
 
+
+class BackstagePopup(qtw.QWidget):
+    def __init__(self, parent, callbacks, button) -> None:
+        '''
+        créeer une petite liste qui peut etre ratachée à un evenement comme le click d'un bouton
+        '''
+        super().__init__(parent, qtc.Qt.Window | qtc.Qt.FramelessWindowHint)
+        self.setAttribute(qtc.Qt.WA_TranslucentBackground)
+        self.callbacks = callbacks
+        self.button = button
+        self._setup_ui()
+
+
+    def _setup_ui(self) -> None:
+        '''
+        met en forme la liste constituée d'un layoute avec des boutons
+
+        **Préconditions :**
+        - ``self.callbacks`` doit avoir les memes clef que options
+        '''
+        # adapte le style
+        self.setStyleSheet("""
+        QWidget {
+            background: white;
+            border: 1px solid #bbb;
+            border-radius: 6px;
+        }
+        QPushButton {
+            padding: 8px 12px;
+            text-align: left;
+            font-size: 13px;
+        }
+        QPushButton:hover {
+            background: #e5e5e5;
+        }
+        """)
+        # definit les texte de chaque bouton
+        options = [
+            ("Nouveau", "new"),
+            ("Ouvrir...", "open"),
+            ("Enregistrer", "save"),
+            ("Enregistrer sous...", "save_as"),
+            ("Imprimer...", "print"),
+        ]
+        # creer et ajoute chaque bouton au layoute
+        layout = qtw.QVBoxLayout(self)
+        for text, key in options:
+            btn = qtw.QPushButton(text)
+            btn.clicked.connect(lambda checked=False, k=key: (self.hide(), self.callbacks[k]()))
+            layout.addWidget(btn)
+
+
+    def ouvrir_liste(self) -> None:
+        '''
+        rend la liste visible et connecte la methode permetant de la fermer
+
+        **Préconditions :**
+        - ``self.button`` doit rediriger vers les un bouton
+        '''    
+        self.adjustSize()
+        self.show()
+        self.button.clicked.disconnect()
+        self.button.clicked.connect(self._fermer_liste)
+
+
+    def _fermer_liste(self) -> None:
+        '''
+        ferme cache la liste et connecte la methode permetant de l'ouvrir a nouveau
+
+        **Préconditions :**
+        - ``self.button`` doit rediriger vers les un bouton
+        '''
+        self.button.clicked.disconnect()
+        self.button.clicked.connect(self.ouvrir_liste)
+        self.hide()
+
+
+    def positionner_list(self,main_widget:qtw.QWidget) -> None:
+        '''
+        positionne la list par rapport a la taille de la fenetre
+
+        :param main_widget: widget de la fenetre dans la quelle est ajoutee la liste
+        '''
+        top_left = main_widget.mapToGlobal(main_widget.rect().topLeft())
+        x = top_left.x() + 4
+        y = top_left.y() + 40
+        self.move(x, y)
+
+
 class CloseWatcher(qtc.QObject):
     def __init__(self, methode_a_appeler) -> None:
         '''
