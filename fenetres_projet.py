@@ -168,21 +168,10 @@ class Frame_Train(qtw.QFrame):
         super().__init__()
         self._train = train
         self.fenetre = fenetre
-        layout = self.genere_train()
+        self._zone_text_train = self.genere_widget_train()
+        layout = self.genere_layout_train()
         self.setLayout(layout)
         self.setFixedWidth(300)
-
-
-    def genere_train(self) -> qtw.QVBoxLayout:
-        """
-        genere le layout train contenant un titre et les parametre du train
-
-        :return: layout du train
-        """
-        titre = self.genere_titre_train()
-        self._zone_text_train = self.genere_widget_train()
-        return self.genere_layout_train(titre)
-    
 
 
     def genere_titre_train(self) -> qtw.QLabel:
@@ -200,6 +189,25 @@ class Frame_Train(qtw.QFrame):
         titre.setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px') # Style du titre
         titre.setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
         return titre
+    
+
+    def genere_layout_train(self) -> qtw.QVBoxLayout:
+        """
+        genere le layout vertical principal du train en y ajoutant les labels et widgets
+
+        :return: layoute du train est retournée
+
+        **Préconditions :**
+        - ``self._zone_text_train`` doit être valide et contenir la key widget
+        """
+        layout = qtw.QVBoxLayout()
+        layout.addStretch()
+        layout.addWidget(self.genere_titre_train()) 
+        layout.addWidget(self.genere_type_train()) 
+        layout.addStretch()
+        for key in self._zone_text_train:
+            self.fenetre.ajoute(layout, list(self._zone_text_train[key]['widget'].values()))
+        return layout
 
 
     def genere_widget_train(self) -> dict[qtw.QWidget,qtw.QLineEdit]:
@@ -219,6 +227,19 @@ class Frame_Train(qtw.QFrame):
                 train_gui[global_key] = self.genere_un_parametre(sous_obj,key,value,unitee)
         return train_gui
     
+
+    def genere_type_train(self) -> None:
+        '''
+        créer une liste deroulante pour le choix du type de train 
+        '''
+        combobox = qtw.QComboBox()
+        items = ['Train Simple', 'Train Epicicloïdal']
+        for item in items:
+            combobox.addItem(item)
+            index = combobox.count() - 1
+            combobox.setItemData(index, qtc.Qt.AlignCenter, qtc.Qt.TextAlignmentRole)
+        return combobox
+
 
     def genere_un_parametre(self,sous_obj,key,value,unitee):
         '''
@@ -240,25 +261,6 @@ class Frame_Train(qtw.QFrame):
             sous_obj['variable'][key].setValidator(qtg.QIntValidator())
         sous_obj['variable'][key].setFixedWidth(60)
         return sous_obj
-    
-
-    def genere_layout_train(self, titre:qtw.QLabel) -> qtw.QVBoxLayout:
-        """
-        genere le layout vertical principal du train en y ajoutant les labels et widgets
-
-        :param titre: label titre incérer dans le layout
-        :return: layoute du train est retournée
-
-        **Préconditions :**
-        - ``self._zone_text_train`` doit être valide et contenir la key widget
-        """
-        layout = qtw.QVBoxLayout()
-        layout.addStretch()
-        layout.addWidget(titre) 
-        layout.addStretch()
-        for key in self._zone_text_train:
-            self.fenetre.ajoute(layout, list(self._zone_text_train[key]['widget'].values()))
-        return layout
     
 
     def modifie_parametre(self, nouvelle_valeur:int, value_name:str, sous_obj:md.Global) -> None:
