@@ -208,9 +208,6 @@ class Frame_Train(qtw.QFrame):
         en ce basant sur les key du xlsx
 
         :return: dict avec le widget et la variable liée a chaque parametre de chaque sous obj
-
-        **Préconditions :**
-        - ``self.fenetre._xlsx_param`` doit être valide
         """
         train_gui = {}
         description_train = self._train.description
@@ -218,16 +215,32 @@ class Frame_Train(qtw.QFrame):
             sous_obj = {'widget':{},'variable':{}}
             sous_obj['objet'] = description_train[global_key]
             for i, (key, value) in enumerate(sous_obj['objet'].description.items()):
-                unitee  = sous_obj['objet'].unitee[i]
-                sous_obj['widget'][key],sous_obj['variable'][key] = self.fenetre._ajout_nom_zone_texte_unitee(key,unitee,str(round(value,4)))
-                sous_obj['variable'][key].setFixedWidth(60)
-                sous_obj['variable'][key].setValidator(qtg.QIntValidator())
-                sous_obj['variable'][key].editingFinished.connect(lambda k=key, variable=sous_obj['variable'][key], obj=sous_obj['objet']:
-                    self.modifie_parametre(int(variable.text()), k,obj)) # self._zone_text_train n'existe pas encore
-                train_gui[global_key] = sous_obj
+                unitee  = sous_obj['objet'].unitee[i]   
+                train_gui[global_key] = self.genere_un_parametre(sous_obj,key,value,unitee)
         return train_gui
     
 
+    def genere_un_parametre(self,sous_obj,key,value,unitee):
+        '''
+        genere un parametre, les labels et le linedit sont integrer dans un widget
+
+
+        :param sous_obj: sous objet de l'objet train
+        :param key: nom du parametre du sous objet train
+        :param value: valeur par defaut du parametre
+        :param unitee: unitee du parametre
+        :return: retourne le sous objet avec l'ajout de la variable linedit et du widget principale
+        '''
+        sous_obj['widget'][key],sous_obj['variable'][key] = self.fenetre._ajout_nom_zone_texte_unitee(key,unitee,str(round(value,4)))
+        if key.startswith('_'):
+            sous_obj['variable'][key].setReadOnly(True)
+        else:
+            sous_obj['variable'][key].editingFinished.connect(lambda k=key, variable=sous_obj['variable'][key], obj=sous_obj['objet']:
+                self.modifie_parametre(int(variable.text()), k,obj)) # self._zone_text_train n'existe pas encore
+            sous_obj['variable'][key].setValidator(qtg.QIntValidator())
+        sous_obj['variable'][key].setFixedWidth(60)
+        return sous_obj
+    
 
     def genere_layout_train(self, titre:qtw.QLabel) -> qtw.QVBoxLayout:
         """

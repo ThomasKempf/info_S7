@@ -22,7 +22,7 @@ class Engrenage(Global):
         super().__init__()
         self.description = {
             'resistance_elastique': 0,
-            'Diametre' : 0
+            '_Diametre' : 0
         }
         self.unitee = [
             'Mpa',
@@ -39,12 +39,12 @@ class Train_global(Global):
             'vitesse_entree': 0,
             'puissance_entree': 0,
             'couple_sortie': 0,
-            'couple_entree': 0,
+            '_couple_entree': 0,
             'entraxe': 0,
-		    'vitesse_sortie_calculee': 0,
-            'force_tangentielle_calculee': 0,
-            'rapport_reduction':0,
-		    'module': 0,
+		    '_vitesse_sortie_calculee': 0,
+            '_force_tangentielle_calculee': 0,
+            '_rapport_reduction':0,
+		    '_module': 0,
             'alpha': 20,
             'beta':0,
         }
@@ -172,7 +172,7 @@ class Calcule_train_simple(Calcule_train):
             vitesse_sortie = (P_entree / Couple_sortie) * (60 / (2 * math.pi))
             
         # Mise à jour du dictionnaire 'description'
-        self._param_global['vitesse_sortie_calculee'] = vitesse_sortie
+        self._param_global['_vitesse_sortie_calculee'] = vitesse_sortie
 
         
 ######################################################################################################################################
@@ -182,13 +182,13 @@ class Calcule_train_simple(Calcule_train):
             P_entree = self._param_global['puissance_entree']
             V_entree = self._param_global['vitesse_entree']
 
-            self._param_global['couple_entree'] = P_entree / (V_entree * (2 * math.pi / 60))  # Convertir tr/min en rad/s
+            self._param_global['_couple_entree'] = P_entree / (V_entree * (2 * math.pi / 60))  # Convertir tr/min en rad/s
     
 ######################################################################################################################################
 
     def calculer_force_tangentielle(self):
         # Calcule la force tangentielle à partir du couple de sortie et de l'entraxe
-        Ce = self._param_global['couple_entree']
+        Ce = self._param_global['_couple_entree']
         r = self._param_global['entraxe']  # En mètres
         a = self._param_global['alpha']
 
@@ -198,7 +198,7 @@ class Calcule_train_simple(Calcule_train):
         else:
             force_tangentielle = Ce / (r *math.cos(a)) 
 
-        self._param_global['force_tangentielle_calculee'] = force_tangentielle
+        self._param_global['_force_tangentielle_calculee'] = force_tangentielle
 
 ######################################################################################################################################
 
@@ -206,10 +206,10 @@ class Calcule_train_simple(Calcule_train):
 
     def calculer_module(self):
 
-        FT = self._param_global['force_tangentielle_calculee']
+        FT = self._param_global['_force_tangentielle_calculee']
         RES = self._param_pignon['resistance_elastique'] # il n'est pas le meme pour les deux engrenages?
 
-        self._param_global['module'] = 2.34 * math.sqrt(FT / (RES*10))
+        self._param_global['_module'] = 2.34 * math.sqrt(FT / (RES*10))
     
 
 ######################################################################################################################################
@@ -221,12 +221,12 @@ class Calcule_train_simple(Calcule_train):
     # un des diamètres dans la classe Calcule_Engrenage et aussi un nb de dents pour pouvoir le calculer
     def calculer_diametres_primitifs(self):
         e = self._param_global['entraxe']
-        r = self._param_global['rapport_reduction']
+        r = self._param_global['_rapport_reduction']
         D1 = (2 * e) / (1 + r)
         D2 = r * D1         
 
-        self._param_pignon['Diametre'] = D1
-        self._param_roue['Diametre'] = D2
+        self._param_pignon['_Diametre'] = D1
+        self._param_roue['_Diametre'] = D2
 
     ######################################################################################################################################
 
@@ -236,7 +236,7 @@ class Calcule_train_simple(Calcule_train):
         Calcule le rapport de réduction i = V_entree / V_sortie.
         Nécessite que V_entree et V_sortie soient dans les MÊMES unités (ici tr/min).
         """
-        vitesse_sortie = self._param_global['vitesse_sortie_calculee']
+        vitesse_sortie = self._param_global['_vitesse_sortie_calculee']
         if vitesse_sortie is None:
             # S'assurer que la vitesse de sortie est calculée
             self.calculer_vitesse_sortie()
@@ -249,7 +249,7 @@ class Calcule_train_simple(Calcule_train):
             vitesse_entree = self._param_global['vitesse_entree']
             rapport_reduction = vitesse_entree / vitesse_sortie
         
-        self._param_global['rapport_reduction'] = rapport_reduction
+        self._param_global['_rapport_reduction'] = rapport_reduction
 
     ###########################################################################################
 
