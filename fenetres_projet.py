@@ -56,7 +56,7 @@ class FenetreProjet(Fenetre):
         self.genere_toolbars()
         self.layouts['main'].addWidget(self.widgets['toolbar'])
         for i in range(7):
-            frame = Frame_Train(self._train,self)
+            frame = Frame_Train(self._train,self,i+1)
             self.layouts['train'].addWidget(frame)
         self.layouts['train'].addStretch() 
         self.widgets['container'].setLayout(self.layouts['train'])
@@ -158,14 +158,16 @@ class FenetreProjet(Fenetre):
 
 
 class Frame_Train(qtw.QFrame):
-    def __init__(self,train:md.Train,fenetre:FenetreProjet):
+    def __init__(self,train:md.Train,fenetre:FenetreProjet,numero:int):
         '''
         creer un frame contenant la representation d'un train
 
         :param train: objet contenant la description du train
         :param fenetre: fenetre donnant l'accès au methode outil mais aussi au instance de la fenetre
+        :param numero: numero du train
         '''
         super().__init__()
+        self.num = numero
         self._train = train
         self.fenetre = fenetre
         self._zone_text_train = self.genere_widget_train()
@@ -224,22 +226,46 @@ class Frame_Train(qtw.QFrame):
         return combobox
     
 
-    def genere_image_train(self):
-        '''
-        genere l'image de train epcicicloïdale et l'adapte
 
-        :return: retourne le label de l'image
-        '''
-        label = self.fenetre._genere_lable_image('./epicicloïdale.png')
-        label.setFixedSize(210, 210)
-        label.setScaledContents(True)  
-        label.setStyleSheet("""
-        background-color: white;       /* fond blanc */
-        border: 2px solid black;       /* bordure de 2px noire */
-        border-radius: 15px;           /* coins arrondis de 15px */
-        padding: 20px;
-    """)
-        return label
+
+    def genere_image_train(self):
+        """
+        Génère un widget contenant l'image et un label supplémentaire avec un nombre.
+        """
+        # Créer un conteneur pour l'image et le label
+        container = qtw.QFrame()
+        container.setObjectName("monContainer")
+        container.setFixedSize(230, 230)  # Taille du conteneu
+        container.setStyleSheet("""
+                    QFrame#monContainer {
+                        background-color: white;       /* fond blanc */
+                        border: 2px solid black;       /* bordure de 2px noire */
+                        border-radius: 15px;           /* coins arrondis de 15px */
+                    }
+        """)
+        # Label pour l'image
+        label_image = self.fenetre._genere_lable_image('./epicicloïdale.png')
+        label_image.setParent(container)
+        label_image.setFixedSize(210, 210)
+        label_image.setScaledContents(True)
+
+        # Label pour le nombre
+        label_nombre = qtw.QLabel(str(self.num), container)  # Exemple : nombre à afficher
+        label_nombre.setAlignment(qtc.Qt.AlignLeft)
+        label_nombre.setStyleSheet("""
+            font-size: 20px;
+            font-weight: bold;
+            color: black;
+            padding-left: 5px;
+        """)
+
+
+        label_image.move(10, 10)
+        label_nombre.move(10, 5)
+        return container
+
+
+
 
 
     def genere_un_parametre(self,sous_obj,key,value,unitee):
