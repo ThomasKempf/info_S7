@@ -172,23 +172,6 @@ class Frame_Train(qtw.QFrame):
         layout = self.genere_layout_train()
         self.setLayout(layout)
         self.setFixedWidth(300)
-
-
-    def genere_titre_train(self) -> qtw.QLabel:
-        """
-        genere le label titre et le met en forme
-
-        :return: label du titre
-
-        **Préconditions :**
-        - ``self._param['labels']`` doit être valide
-        """
-        titre = qtw.QLabel(*PROJET['labels'])
-        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop) # Alignement à gauche et en haut
-        titre.setFont(qtg.QFont('Arial',20, qtg.QFont.Weight.Bold)) 
-        titre.setStyleSheet('color: #222; margin-bottom: 20px;padding: 8px') # Style du titre
-        titre.setAlignment(qtg.Qt.AlignmentFlag.AlignCenter) # Centrer le texte horizontalement
-        return titre
     
 
     def genere_layout_train(self) -> qtw.QVBoxLayout:
@@ -202,8 +185,8 @@ class Frame_Train(qtw.QFrame):
         """
         layout = qtw.QVBoxLayout()
         layout.addStretch()
-        layout.addWidget(self.genere_titre_train()) 
         layout.addWidget(self.genere_type_train()) 
+        layout.addWidget(self.genere_image_train(), alignment=qtc.Qt.AlignCenter)
         layout.addStretch()
         for key in self._zone_text_train:
             self.fenetre.ajoute(layout, list(self._zone_text_train[key]['widget'].values()))
@@ -239,12 +222,29 @@ class Frame_Train(qtw.QFrame):
             index = combobox.count() - 1
             combobox.setItemData(index, qtc.Qt.AlignCenter, qtc.Qt.TextAlignmentRole)
         return combobox
+    
+
+    def genere_image_train(self):
+        '''
+        genere l'image de train epcicicloïdale et l'adapte
+
+        :return: retourne le label de l'image
+        '''
+        label = self.fenetre._genere_lable_image('./epicicloïdale.png')
+        label.setFixedSize(210, 210)
+        label.setScaledContents(True)  
+        label.setStyleSheet("""
+        background-color: white;       /* fond blanc */
+        border: 2px solid black;       /* bordure de 2px noire */
+        border-radius: 15px;           /* coins arrondis de 15px */
+        padding: 20px;
+    """)
+        return label
 
 
     def genere_un_parametre(self,sous_obj,key,value,unitee):
         '''
         genere un parametre, les labels et le linedit sont integrer dans un widget
-
 
         :param sous_obj: sous objet de l'objet train
         :param key: nom du parametre du sous objet train
