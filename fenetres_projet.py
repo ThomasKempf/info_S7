@@ -48,14 +48,13 @@ class FenetreProjet(Fenetre):
             'scrolls':['train']
         }
         super().__init__(PROJET,elements)
-        
         self._methode_train = train
         self._xlsx_file = xlsx_file
         self._train = train.train_1 # obj contenant toute la descritption, obj de type Train
         self.setStyleSheet(self._param['styleSheet'])
         self.genere_toolbars()
         self.layouts['main'].addWidget(self.widgets['toolbar'])
-        for i in range(7):
+        for i in range(1):
             frame = Frame_Train(self._train,self,i+1)
             self.layouts['train'].addWidget(frame)
         self.layouts['train'].addStretch() 
@@ -204,10 +203,15 @@ class Frame_Train(qtw.QFrame):
         """
         train_gui = {}
         description_train = self._train.description
+        print('description_train:',description_train)
         for global_key in description_train:
+            print('hello')  
             sous_obj = {'widget':{},'variable':{}}
             sous_obj['objet'] = description_train[global_key]
+            print('sous obj:',sous_obj['objet'].description)
+            print('unitee',sous_obj['objet'].unitee)
             for i, (key, value) in enumerate(sous_obj['objet'].description.items()):
+                print(i)
                 unitee  = sous_obj['objet'].unitee[i]   
                 train_gui[global_key] = self.genere_un_parametre(sous_obj,key,value,unitee)
         return train_gui

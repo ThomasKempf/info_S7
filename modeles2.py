@@ -1,5 +1,6 @@
 # Fichier: modeles.py
 import math 
+from Parametres_dyna import Calcule_train
 
 # --- Définition des classes de base ---
 
@@ -87,23 +88,6 @@ class Calcule_Engrenage:
         self.beta = beta
         self.module = module 
 
-# Classe Train 
-class Calcule_train:
-    """Classe de base pour les trains d'Calcule_Engrenages."""
-    def __init__(self):
-        # Initialisation par défaut, nécessaire pour la sous-classe
-        self._rapport_reduction: float = 0.0 
-        self.error = 0
-
-    def calculer_rapport(self):
-        """La méthode 'calculer_rapport' doit être implémentée par la sous-classe."""
-        raise NotImplementedError("La methode 'calculer_rapport' doit être implementee par la sous-classe.")
-
-    @property
-    def rapport_reduction(self) -> float:
-        """Propriété publique (getter) du rapport de reduction."""
-        return self._rapport_reduction
-
 # --- Classe TrainSimple (Cinématique P/C/V) ---
 
 class Calcule_train_simple(Calcule_train):
@@ -120,15 +104,15 @@ class Calcule_train_simple(Calcule_train):
         Initialise le train d'Calcule_Engrenages simple avec ses paramètres d'entrée/sortie.
         """
         train = Train(1)
-        train.description['global']['vitesse_entree'] = vitesse_entree
-        train.description['global']['puissance_entree'] = puissance_entree
-        train.description['global']['couple_sortie'] = couple_sortie
+        train.description['global'].description['vitesse_entree'] = vitesse_entree
+        train.description['global'].description['puissance_entree'] = puissance_entree
+        train.description['global'].description['couple_sortie'] = couple_sortie
 
-        train.description['global']['entraxe'] = entraxe
+        train.description['global'].description['entraxe'] = entraxe
         # implemente variable liee au engrenages
-        train.description['pignon']['resistance_elastique'] = res_elastique
-        train.description['roue']['resistance_elastique'] = res_elastique
-        super()._init_(train) # Appel de l'initialisation de la classe parente
+        train.description['pignon'].description['resistance_elastique'] = res_elastique
+        train.description['roue'].description['resistance_elastique'] = res_elastique
+        super().__init__(train) # Appel de l'initialisation de la classe parente
         self.calculer_parametres()
 
        # self._vitesse_sortie = None 
@@ -167,7 +151,7 @@ class Calcule_train_simple(Calcule_train):
             vitesse_sortie = (P_entree / Couple_sortie) * (60 / (2 * math.pi))
             
         # Mise à jour du dictionnaire 'description'
-        self._param_global['vitesse_sortie_calculee'] = vitesse_sortie
+        self._param_global['_vitesse_sortie_calculee'] = vitesse_sortie
         #commm test
 
         
@@ -218,8 +202,8 @@ class Calcule_train_simple(Calcule_train):
         D1 = (2 * e) / (1 + r)
         D2 = r * D1         
 
-        self._param_pignon['Diametre'] = D1
-        self._param_roue['Diametre'] = D2
+        self._param_pignon['_Diametre'] = D1
+        self._param_roue['_Diametre'] = D2
         
         print("affichage e",e)
         print("affichage r",r)
