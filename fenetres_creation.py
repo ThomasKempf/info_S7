@@ -13,7 +13,8 @@
 """
 
 import modeles2 as mod
-from outil_gui import (Fenetre,Simulation_train)
+import time
+from outil_gui import Fenetre
 import xlsx_reducteur as xlsx
 from PySide6 import (
     QtWidgets as qtw,
@@ -24,7 +25,7 @@ from PySide6 import (
 
 CREATION_PROJET = {
     'buttons':['Précedent','Next'],
-    'geometrie': [1000, 600],
+    'geometrie': [940, 600],
     'titre': 'Creation Projet',
     'styleSheet': '''
         QWidget {
@@ -48,37 +49,77 @@ CREATION_PROJET = {
 
 PAGE_0 = {
     'labels_unitee':{
-                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','validator':qtg.QIntValidator(0, 10000),'margin':[122,0,0,0]},
-                'Puissance':{'unitee':'kW','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000),'margin':[100,0,0,0]},
-                'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':qtg.QIntValidator(0, 10000),'margin':[0,0,100,0]}
+                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','validator':qtg.QDoubleValidator(0.0, 10000.0, 6),'parent':'block_gauche'},
+                'Puissance':{'unitee':'W','valeur_defaut':'1500','validator':qtg.QDoubleValidator(0.0, 10000.0, 6),'parent':'block_gauche'},
+                'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':qtg.QDoubleValidator(0.0, 10000.0, 6),'parent':'block_droit'}
             },
-    'labels':['Reducteur'],
+    'labels':['Reducteur','Choix Parametre Global'],
     'styleSheet': '''
                 QWidget {
                     background: #fff;           /* Couleur de fond blanche */
-                    border: 1px solid #222;     /* Bordure */
+                    border: 2px solid #222;     /* Bordure */
                     border-radius: 6px;         /* Coins arrondis */
                     padding: 60px;              /* Rembourrage interne */
                     font-size: 18px;             /* Taille de la police */
                     font-weight: bold;           /* Gras */
+                }
+                QLineEdit {
+                    border: 1px solid #222;
+                    border-radius: 6px;
                 }
         '''
 }
 
 
 PAGE_1 = {
+    'labels':['nombre d’étage :'],
+    'styleSheet': '''
+                QWidget {
+                    background: #fff; /* Couleur de fond blanche */
+                }
+                QWidget#sous_block {
+                    border: 1px solid #222;
+                    border-radius: 6px;
+                }
+                QLineEdit {
+                    border: 1px solid #222;
+                    border-radius: 3px;
+                    height: 22px;
+                }
+                QComboBox {
+                    border: 1px solid #222;
+                    border-radius: 3px;
+                    height: 22px;
+                }
+            '''
+}
+
+
+LIGNE_TRAIN = {
     'labels_unitee':{
                 'entraxe':{'unitee':'mm','valeur_defaut':'400','validator':qtg.QIntValidator(0, 10000)},
                 'σ_max':{'unitee':'Mpa','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000)},
             },
-    'labels':['nombre d’étage :','1'],
-    'comboboxes':{'liste_deroulante':['engrenage droit', 'engrenage hélicoïdal', 'conique']},
+    'labels':['1'],
+    'comboboxes':{'type_engrenage':['  Engrenage droit', '  Engrenage hélicoïdal'],
+                  'type_train':['  Train Simple', '  Train Epicicloïdal']},
     'styleSheet': '''
                 QWidget {
                     background: #fff; /* Couleur de fond blanche */
+                }
+                QWidget#sous_block {
                     border: 1px solid #222;
                     border-radius: 6px;
-                    padding: 8px;
+                }
+                QLineEdit {
+                    border: 1px solid #222;
+                    border-radius: 3px;
+                    height: 22px;
+                }
+                QComboBox {
+                    border: 1px solid #222;
+                    border-radius: 3px;
+                    height: 22px;
                 }
             '''
 }
@@ -111,7 +152,7 @@ class FenetreCreationProjet(Fenetre):
         '''
         elements = {
             'layouts':{'main':'v','button':'h'},
-            'buttons':['next','precedent'],
+            'buttons':['precedent','next'],
             'stack':['stack']
         }
         super().__init__(CREATION_PROJET,elements)
@@ -152,6 +193,7 @@ class FenetreCreationProjet(Fenetre):
             self.buttons[key].setFixedSize(*taille)
             self.buttons[key].clicked.connect(getattr(self, fonction[i]))
             layout.addWidget(self.buttons[key])
+        self.buttons['precedent'].hide()
 
 
     def ajoute_composants(self) -> None:
@@ -174,6 +216,9 @@ class FenetreCreationProjet(Fenetre):
         - ``self.stack['stack']`` doit etre valide
         '''
         i = self.stack['stack'].currentIndex()
+        if i == 1:
+            self.buttons['precedent'].hide()
+            self.buttons['next'].setText(CREATION_PROJET['buttons'][1])
         if i > 0:
             self.stack['stack'].setCurrentIndex(i - 1)
 
@@ -187,6 +232,9 @@ class FenetreCreationProjet(Fenetre):
         - ``self.stack['stack']`` doit etre valide
         '''
         i = self.stack['stack'].currentIndex()
+        if i == 0:
+            self.buttons['precedent'].show()
+            self.buttons['next'].setText("Créer Projet")
         if i < self.stack['stack'].count() - 1:
             self.stack['stack'].setCurrentIndex(i + 1)
         else:
@@ -213,9 +261,9 @@ class FenetreCreationProjet(Fenetre):
         description_global =  self._page[0].variables
         self._description_global = mod.Global()
         self._description_global.description =  description_global
-        self._description_train = self._page[1].variables
+        variables_lignes = self._page[1].variables_lignes
         values_global = [int(val) for val in description_global.values()]
-        values_train = [int(val) for val in self._description_train.values()]
+        values_train = [int(val) for val in variables_lignes[0].values()] # ajoute que le premier train
         self._train = mod.Calcule_train_simple(*values_global, *values_train)
     
         
@@ -248,21 +296,25 @@ class Page_0():
         # genere les elements
         elements = {
             'layouts':{'main':'h','block_gauche':'v','block_centre':'v','block_droit':'h'},
-            'labels':['reducteur'],
+            'labels':['reducteur','titre'],
+            'frames':['block_gauche','block_droit']
         }
         result = fenetre.genere_elements(elements,PAGE_0)
         # lie les elements a des instances courantes
         self.layouts = result['layouts']
-        self.reducteur = result['labels']['reducteur']
+        self.labels = result['labels']
+        self.labels['reducteur'].setStyleSheet(PAGE_0['styleSheet'])
+        self.frames = result['frames']
+        taille = [[170, 120],[170, 60]]
+        self._fenetre.adapte_frames(self.frames,taille)
         self._widgets,self._variables = self._genere_widgets_unitee()
         self._labels_fleches = self._genere_fleches_page0(2)
-        self.reducteur.setStyleSheet(PAGE_0['styleSheet'])
+        self._fenetre.style_titre(self.labels['titre'])
         # ajoute les elements
-        self._add_element_block_gauche()
+        self._add_element_block_gauche_et_droite()
         self._add_element_block_centre()
-        self._add_element_block_droit()
         fenetre.creer_getters_variables_lineedits(self,self._variables)
-        
+         
 
     def _genere_widgets_unitee(self) -> tuple[dict[qtw.QWidget], dict[qtw.QLineEdit]]:
         '''
@@ -274,12 +326,17 @@ class Page_0():
 
         **Préconditions :**
         - ``(PAGE_0['labels_unitee']`` doit exister et avoir la bonne structure
-        - ``self._fenetre`` doit etre un objet de la classe Fenetre
+        - ``self._fenetre`` et ``self.frames`` doit etre un objet de la classe Fenetre
+        - _adapte_frames(self) doit etre appeler avant cette methode
         '''
         widgets,variables = self._fenetre._genere_variables_unitees(PAGE_0['labels_unitee'])
         for key in (PAGE_0['labels_unitee']):
-            variables[key].setFixedWidth(60)
-            widgets[key].setContentsMargins(*PAGE_0['labels_unitee'][key]['margin'])
+            parent = PAGE_0['labels_unitee'][key]['parent']
+            widgets[key].setParent(self.frames[parent])
+            widgets[key].setStyleSheet('background: #fff')
+            variables[key].setFixedWidth(40)
+            par_defaut = PAGE_0['labels_unitee'][key]['valeur_defaut']
+            widgets[key].adjustSize()
         return widgets,variables
     
 
@@ -298,19 +355,21 @@ class Page_0():
         for i in range(nbr_fleche):
             label[i] = self._fenetre._genere_lable_image('./fleche.png')
         return label
+        
 
-
-    def _add_element_block_gauche(self) -> None:
+    def _add_element_block_gauche_et_droite(self) -> None:
         '''
-        ajoute les elements du block gauche constituee de la vitesse et de la puissance
+        place les elements contenu dans les farmes du block gauche et droit pour ensuite les ajouter à leurs layout
 
         **Préconditions :**
         - ``self.layouts`` et ``self._widgets`` doivent etre valide et contenir les bonne key
         '''
-        self.layouts['block_gauche'].addStretch()
-        liste = [self._widgets['Vitesse'],self._widgets['Puissance']]
-        self._fenetre.ajoute(self.layouts['block_gauche'],liste)
-        self.layouts['block_gauche'].addStretch()
+        widgets_pose = [[21,10],[5,62],[20,10]]
+        for i, key in enumerate(self._widgets):
+            self._widgets[key].move(*widgets_pose[i])
+        key_liste = ['block_gauche','block_droit']
+        for i in range(len(key_liste)):
+            self.layouts[key_liste[i]].addWidget(self.frames[key_liste[i]])
 
 
     def _add_element_block_centre(self) -> None:
@@ -321,19 +380,8 @@ class Page_0():
         - ``self.layouts`` et ``self.reducteur`` doivent etre valide
         '''
         self.layouts['block_centre'].addStretch()
-        self.layouts['block_centre'].addWidget(self.reducteur)
+        self.layouts['block_centre'].addWidget(self.labels['reducteur'])
         self.layouts['block_centre'].addStretch()
-
-
-    def _add_element_block_droit(self) -> None:
-        '''
-        ajoute les elements du block droit constituee seulement du couple en le positionant
-
-        **Préconditions :**
-        - ``self.layouts`` et ``self._widgets`` doivent etre valide et contenir les bonnes clef
-        '''
-        self.layouts['block_droit'].addStretch()
-        self.layouts['block_droit'].addWidget(self._widgets['Couple'])
 
 
     def genere_page(self) -> qtw.QWidget:
@@ -346,11 +394,17 @@ class Page_0():
         - ``self.layouts`` doivent etre valide et contenir les bonnes clef
         - ``fenetre`` doit etre un objet de la classe Fenetre
         '''
+
+        self.layouts['main'].addStretch()
         liste = [self.layouts['block_gauche'],self._labels_fleches[0],
                  self.layouts['block_centre'],self._labels_fleches[1],self.layouts['block_droit']]
         self._fenetre.ajoute(self.layouts['main'],liste)
+        self.layouts['main'].addStretch()
+        self.layouts['main'].setSpacing(40)
         page = qtw.QWidget()
         page.setLayout(self.layouts['main'])
+        self.labels['titre'].setParent(page)
+        self.labels['titre'].move(10, 10)
         return page
 
 
@@ -359,16 +413,29 @@ class Page_1():
     def __init__(self, fenetre: Fenetre) -> None:
         '''
         generation de la page 1 qui contient le choix du nombre de train, de leurs type et de leur materiaux
+
+        :param fenetre: objet de classe fenetre permetant d'atteindre les methode outils de celle ci
         '''
         self._fenetre = fenetre
-        self._genere_variable_elements_variables()
+        self._nbr_lignes_precedent = 1
+        self._genere_elements()
         self._add_element_block_gauche()
-        self._add_element_block_droite()
+        self._genere_premiere_ligne()
         self._add_element_block_ligne()
-        fenetre.creer_getters_variables_lineedits(self, self._variables)
+
+
+    @property
+    def variables_lignes(self):
+        '''
+        retourne une liste contenant le dict des variables lineedit de chaque ligne
+        '''
+        liste_variable = []
+        for i in range(len(self._lignes)):
+            liste_variable.append(self._lignes[i].variables)
+        return liste_variable
         
 
-    def _genere_variable_elements_variables(self) -> None:
+    def _genere_elements(self) -> None:
         '''
         genere tout les elements utiliser dans la page tout en les adaptant
         pour ensuite les lier à des instances courante
@@ -379,11 +446,10 @@ class Page_1():
         '''
         # genere les elements principale de la page
         elements = {
-            'layouts':{'page':'v','ligne':'h','bloc_gauche':'h','bloc_droit':'h'},
-            'widgets':['bloc_gauche','bloc_droit'],
-            'labels':['nbr_etage','1'],
+            'layouts':{'page':'v','premiere_ligne':'h','bloc_gauche':'h','ligne':'h','ligne_vertical':'v'},
+            'widgets':['bloc_gauche'],
+            'labels':['nbr_etage'],
             'lineedits':['nbr_train'],
-            'comboboxes':['liste_deroulante']
         }
         result = self._fenetre.genere_elements(elements,PAGE_1)
         # assoicie les elements avec des instance courante
@@ -391,18 +457,80 @@ class Page_1():
         self.widgets = result['widgets']
         self.labels = result['labels']
         self.nbr_train = result['lineedits']['nbr_train']
-        self.liste_deroulante = result['comboboxes']['liste_deroulante']
-        # genere leselements restant
-        widgets,self._variables = self._fenetre._genere_variables_unitees(PAGE_1['labels_unitee'])
-        self.widgets.update(widgets)
-        self.nbr_train.setValidator(qtg.QDoubleValidator())
-        self.nbr_train.setFixedWidth(80)
+        # genere les elements restant
+        self.nbr_train.setValidator(qtg.QIntValidator(0, 9))
+        self.nbr_train.setFixedWidth(30)
         self.nbr_train.setText('1')
+        self.nbr_train.editingFinished.connect(self._refresh_ligne)
+        self.nbr_train.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
         self.widgets['bloc_gauche'].setStyleSheet(PAGE_1['styleSheet'])
-        self.widgets['bloc_droit'].setStyleSheet(PAGE_1['styleSheet'])
+
+
+    def _genere_premiere_ligne(self):
+        '''
+        reactualise le nombre de ligne, relis la variable associée 
+        pour ensuite suprimmer ou ajouter une par une les lignes
+        '''
+        # genere premiere ligne
+        self._lignes =[]
+        self._lignes.append(Ligne_train(self._fenetre,1))
+        self.widgets['premiere_ligne'] = self._lignes[0].widget
+        # adapte et ajoute widget des lignes suivante qui n'existe pas encore
+        self.layouts['ligne_vertical'].setSpacing(15)
+        widget = qtw.QWidget()
+        widget.setLayout(self.layouts['ligne_vertical'])
+        self.layouts['ligne'].addStretch()
+        self.layouts['ligne'].addWidget(widget)
+        self._variables = self._lignes[0].variables
+
+
+    def _refresh_ligne(self) -> None:
+        '''
+        reactualise le nombre de ligne, relis la variable associée 
+        pour ensuite suprimmer ou ajouter une par une les lignes
+        '''
+        # verifie la valeur
+        MAX = 7
+        nouveau_nbr_ligne = int(self.nbr_train.text())
+        if nouveau_nbr_ligne > MAX or nouveau_nbr_ligne == 0:
+            if nouveau_nbr_ligne > MAX:
+                nouveau_nbr_ligne = MAX
+            else:
+                nouveau_nbr_ligne = 1
+            self._fenetre.signaler_lineedits_erreur(self.nbr_train,str(nouveau_nbr_ligne))
+        # reactualise les lignes
+        difference = nouveau_nbr_ligne - self._nbr_lignes_precedent
+        if difference < 0:
+            for i in range(abs(difference)):
+                self._suprime_une_ligne(self._nbr_lignes_precedent - i - 1)
+        elif difference > 0:
+            for i in range(difference):
+                self._ajoute_une_ligne(self._nbr_lignes_precedent + i)
+        self._nbr_lignes_precedent = nouveau_nbr_ligne
         
 
-    def _add_element_block_gauche(self):
+    def _ajoute_une_ligne(self,num) -> None:
+        '''
+        ajoute un nouvelle objet de Ligne_train à la liste et au layouts asscociée
+
+        :param num: numero de la nouvelle ligne de train dans la liste
+        '''
+        self._lignes.append(Ligne_train(self._fenetre,num+1))
+        self.layouts['ligne_vertical'].addWidget(self._lignes[num].widget)
+
+    
+    def _suprime_une_ligne(self,num) -> None:
+        '''
+        suprimme un objet de Ligne_train à la liste et au layouts asscociée
+
+        :param num: numero de la ligne de train dans la liste
+        '''
+        self.layouts['ligne_vertical'].removeWidget(self._lignes[num].widget)
+        self._lignes[num].widget.deleteLater()
+        self._lignes.pop(num)
+
+
+    def _add_element_block_gauche(self) -> None:
         '''
         ajoute les elements du block gauche constituee du choix des nombres de train
 
@@ -412,18 +540,8 @@ class Page_1():
         liste = [self.labels['nbr_etage'],self.nbr_train]
         self._fenetre.ajoute(self.layouts['bloc_gauche'],liste)
         self.widgets['bloc_gauche'].setLayout(self.layouts['bloc_gauche'])
+        self.widgets['bloc_gauche'].setObjectName("sous_block")
 
-
-    def _add_element_block_droite(self) -> None:
-        '''
-        ajoute les elements du block droit constituee des parametres d'un train
-
-        **Préconditions :**
-        - les self.labels , layoute liste_deroulante et widgets doivent etre valide
-        '''
-        liste_widgets = [self.labels['1'],self.liste_deroulante,self.widgets['entraxe'],self.widgets['σ_max']]
-        self._fenetre.ajoute(self.layouts['bloc_droit'],liste_widgets)
-        self.widgets['bloc_droit'].setLayout(self.layouts['bloc_droit'])
 
 
     def _add_element_block_ligne(self) -> None:
@@ -432,12 +550,12 @@ class Page_1():
         et le block droit avec les differents parametre de train
 
         **Préconditions :**
-        - ``self.layouts['ligne'], self.widgets['bloc_gauche'], self.widgets['bloc_droit'] `` doivent etre valide
+        - ``self.layouts['premiere_ligne'], self.widgets['bloc_gauche'], self.widgets['bloc_droit'] `` doivent etre valide
         '''
-        self.layouts['ligne'].addWidget(self.widgets['bloc_gauche'])
-        self.layouts['ligne'].addSpacing(100)  # Espace fixe entre les deux blocs
-        self.layouts['ligne'].addWidget(self.widgets['bloc_droit'])
-        self.layouts['ligne'].addStretch()
+        self.layouts['premiere_ligne'].addWidget(self.widgets['bloc_gauche'])
+        self.layouts['premiere_ligne'].addSpacing(93)  # Espace fixe entre les deux blocs
+        self.layouts['premiere_ligne'].addWidget(self.widgets['premiere_ligne'])
+        self.layouts['premiere_ligne'].addStretch()
 
 
     def genere_page(self) -> qtw.QWidget:
@@ -447,13 +565,95 @@ class Page_1():
         :return: widget de la page
 
         **Préconditions :**
-        - ``self.layouts['page'], self.layouts['ligne'] `` doivent etre valide
+        - ``self.layouts['page'], self.layouts['premiere_ligne'] `` doivent etre valide
         '''
+        self.layouts['page'].addLayout(self.layouts['premiere_ligne'])
         self.layouts['page'].addLayout(self.layouts['ligne'])
         self.layouts['page'].addStretch()
         page = qtw.QWidget()
         page.setLayout(self.layouts['page'])
         return page
+
+
+class Ligne_train():
+    def __init__(self,fenetre,numero) -> None:
+        '''
+        genere un widget avec tout les elements necessaire à la partie droite d'un train
+
+        :param fenetre: objet de classe fenetre permetant d'atteindre les methode outils de celle ci
+        :param numero: numero du train dans l'ordre croissant du reducteur
+        '''
+        self._fenetre = fenetre
+        self._numero = numero
+        self._genere_elements()
+        self._add_element_block_droite()
+        self._fenetre.creer_getters_variables_lineedits(self,self._variables)
+
+
+    @property
+    def widget(self):
+        '''
+        acces au widget du module entier
+        '''
+        return self._widgets['main']
+    
+
+    def _genere_elements(self) -> None:
+        '''
+        genere tout les elements utiliser dans la partie droite de la page necessaire pour un train
+
+        **Préconditions :**
+        - ``self._fenetre et PAGE_1`` doit etre valide
+        '''
+        elements = {
+            'layouts':{'main':'h','list':'h'},
+            'widgets':['main','list'],
+            'labels':['1'],
+            'comboboxes':['type_engrenage','type_train']
+        }
+        result = self._fenetre.genere_elements(elements,LIGNE_TRAIN)
+        self.layouts = result['layouts']
+        self._widgets = result['widgets']
+        self.numero_train = result['labels']['1']
+        self.numero_train.setText(str(self._numero))
+        self.comboboxes = result['comboboxes']
+        # genere les elements restant
+        self._genere_elements_a_unitee()
+        self._widgets['main'].setStyleSheet(LIGNE_TRAIN['styleSheet'])
+
+
+    def _genere_elements_a_unitee(self) -> None:
+        '''
+        genere les elements avec unitée, l'entraxe et la resistance elastique
+        '''
+        widgets,self._variables = self._fenetre._genere_variables_unitees(LIGNE_TRAIN['labels_unitee'])
+        for key in self._variables:
+            widgets[key].setObjectName("sous_block")
+            self._variables[key].setFixedWidth(40)
+            par_defaut = LIGNE_TRAIN['labels_unitee'][key]['valeur_defaut']
+        self._widgets.update(widgets)
+
+
+    def _add_element_block_droite(self) -> None:
+        '''
+        ajoute les elements du block droit constituee des parametres d'un train
+
+        **Préconditions :**
+        - les self.labels , layoute liste_deroulante et widgets doivent etre valide
+        '''
+        for key in self.comboboxes:
+            self.layouts['list'].addWidget(self.comboboxes[key])
+        self._widgets['list'].setLayout(self.layouts['list'])
+        self._widgets['list'].setObjectName("sous_block")
+        liste_widgets = [3,self.numero_train,self._widgets['list'],30,self._widgets['entraxe'],self._widgets['σ_max'],3]
+        self._fenetre.ajoute(self.layouts['main'],liste_widgets)
+        self._widgets['main'].setLayout(self.layouts['main'])
+        self._widgets['main'].setObjectName("sous_block")
+        self._widgets['main'].setFixedHeight(55)
+        self.numero_train.setObjectName("sous_block")
+        self.numero_train.setFixedWidth(45)
+        self.numero_train.setAlignment(qtc.Qt.AlignCenter)
+
 
 
 class FenetreAttenteCreation(Fenetre):
