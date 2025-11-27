@@ -54,7 +54,7 @@ class FenetreProjet(Fenetre):
         self.setStyleSheet(self._param['styleSheet'])
         self.genere_toolbars()
         self.layouts['main'].addWidget(self.widgets['toolbar'])
-        for i in range(1):
+        for i in range(7):
             frame = Frame_Train(self._train,self,i+1)
             self.layouts['train'].addWidget(frame)
         self.layouts['train'].addStretch() 
@@ -157,7 +157,7 @@ class FenetreProjet(Fenetre):
 
 
 class Frame_Train(qtw.QFrame):
-    def __init__(self,train:md.Train,fenetre:FenetreProjet,numero:int):
+    def __init__(self,train:md.Train_simple,fenetre:FenetreProjet,numero:int):
         '''
         creer un frame contenant la representation d'un train
 
