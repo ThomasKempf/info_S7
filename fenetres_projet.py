@@ -158,7 +158,7 @@ class FenetreProjet(Fenetre):
 
 
 class Frame_Train(qtw.QFrame):
-    def __init__(self,train:md.Train,fenetre:FenetreProjet,numero:int):
+    def __init__(self,train:md.Train_simple,fenetre:FenetreProjet,numero:int):
         '''
         creer un frame contenant la representation d'un train
 
@@ -204,7 +204,7 @@ class Frame_Train(qtw.QFrame):
         """
         train_gui = {}
         description_train = self._train.description
-        for global_key in description_train:
+        for global_key in description_train: 
             sous_obj = {'widget':{},'variable':{}}
             sous_obj['objet'] = description_train[global_key]
             for i, (key, value) in enumerate(sous_obj['objet'].description.items()):
@@ -305,7 +305,7 @@ class Frame_Train(qtw.QFrame):
         """
         # met a jour l'objet train
         sous_obj.description[value_name] = nouvelle_valeur
-        self.fenetre._methode_train.calculer_parametres()
+        self.fenetre._methode_train.calculer_parametres(value_name)
         # met a jour le xlsx
         self.fenetre._xlsx_file.ecrire_description_ogjet_multiple(self._train,1)
         self.fenetre._xlsx_file.save()
