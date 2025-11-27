@@ -309,7 +309,7 @@ class Frame_Train(qtw.QFrame):
         """
         # met a jour l'objet train
         sous_obj.description[value_name] = nouvelle_valeur
-        self.fenetre._methode_train.calculer_parametres()
+        self.fenetre._methode_train.calculer_parametres(value_name)
         # met a jour le xlsx
         self.fenetre._xlsx_file.ecrire_description_ogjet_multiple(self._train,1)
         self.fenetre._xlsx_file.save()

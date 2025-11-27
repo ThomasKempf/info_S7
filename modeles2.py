@@ -22,14 +22,13 @@ class Engrenage(Global):
         super().__init__()
         self.description = {
             'resistance_elastique': 0,
-            '_Diametre' : 0
+            '_diametre' : 0
         }
         self.unitee = [
             'Mpa',
             'm'
             ]
         
-
 
 class Train_global(Global):
     def __init__(self) -> None:
@@ -41,8 +40,8 @@ class Train_global(Global):
             'couple_sortie': 0,
             '_couple_entree': 0,
             'entraxe': 0,
-		    '_vitesse_sortie_calculee': 0,
-            '_force_tangentielle_calculee': 0,
+		    '_vitesse_sortie': 0,
+            '_force_tangentielle': 0,
             '_rapport_reduction':0,
 		    '_module': 0,
             'alpha': 20,

@@ -90,7 +90,7 @@ class TrainSimple(Train):
         if P_entree != 0: 
             self._vitesse_sortie = (P_entree/Couple_sortie)*(60/(2*math.pi)) 
 
-        self.description['_vitesse_sortie_calculee'] = self._vitesse_sortie
+        self.description['_vitesse_sortie'] = self._vitesse_sortie
 
 
 

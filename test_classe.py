@@ -25,7 +25,7 @@ print(f"Couple de sortie       : {train.couple_sortie} Nm")
 print(f"Vitesse de sortie calc : {vitesse_sortie:.2f} tr/min")
 
 # 🔹 Vérification du rapport de réduction correspondant
-rapport = train.calculer_rapport()
+rapport = train.calculer_rapport_reduction()
 print(f"Rapport de réduction   : {rapport:.4f}")
 
 # 🔹 Affichage du dictionnaire complet (optionnel)
