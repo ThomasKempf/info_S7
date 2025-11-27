@@ -146,10 +146,6 @@ class Calcule_train:
         self._param_pignon['_diametre'] = D1
         self._param_roue['_diametre'] = D2
         
-        print("affichage e",e)
-        print("affichage r",r)
-        print(f"Diametre primitif pignon : {D1:.4f} m")
-        print(f"Diametre primitif roue   : {D2:.4f} m")
 
     ######################################################################################################################################
 

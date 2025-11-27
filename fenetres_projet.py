@@ -203,15 +203,10 @@ class Frame_Train(qtw.QFrame):
         """
         train_gui = {}
         description_train = self._train.description
-        print('description_train:',description_train)
-        for global_key in description_train:
-            print('hello')  
+        for global_key in description_train: 
             sous_obj = {'widget':{},'variable':{}}
             sous_obj['objet'] = description_train[global_key]
-            print('sous obj:',sous_obj['objet'].description)
-            print('unitee',sous_obj['objet'].unitee)
             for i, (key, value) in enumerate(sous_obj['objet'].description.items()):
-                print(i)
                 unitee  = sous_obj['objet'].unitee[i]   
                 train_gui[global_key] = self.genere_un_parametre(sous_obj,key,value,unitee)
         return train_gui
