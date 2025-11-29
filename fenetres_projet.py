@@ -28,6 +28,11 @@ PROJET = {
     'labels':['Train_1'],
     'buttons':['Fichier','','Aide'],
     'styleSheet':"""
+                    QFrame#monContainer {
+                        background-color: white;       /* fond blanc */
+                        border: 2px solid black;       /* bordure de 2px noire */
+                        border-radius: 15px;           /* coins arrondis de 15px */
+                    }
         """
 }
 
@@ -167,6 +172,7 @@ class Frame_Train(qtw.QFrame):
         :param numero: numero du train
         '''
         super().__init__()
+        self.largeur_param = 270
         self.num = numero
         self._train = train
         self.fenetre = fenetre
@@ -185,14 +191,20 @@ class Frame_Train(qtw.QFrame):
         **Préconditions :**
         - ``self._zone_text_train`` doit être valide et contenir la key widget
         """
-        layout = qtw.QVBoxLayout()
-        layout.addStretch()
-        layout.addWidget(self.genere_type_train()) 
-        layout.addWidget(self.genere_image_train(), alignment=qtc.Qt.AlignCenter)
-        layout.addStretch()
+        main_layout = qtw.QVBoxLayout()
+        main_layout.addStretch()
+        main_layout.addWidget(self.genere_type_train()) 
+        main_layout.addWidget(self.genere_image_train(), alignment=qtc.Qt.AlignCenter)
+        main_layout.addStretch()
         for key in self._zone_text_train:
-            self.fenetre.ajoute(layout, list(self._zone_text_train[key]['widget'].values()))
-        return layout
+            container = qtw.QFrame()
+            container.setFixedWidth(self.largeur_param)
+            layout = qtw.QVBoxLayout(container)
+            container.setObjectName("monContainer")
+            widget_list = [qtw.QLabel(key)] + list(self._zone_text_train[key]['widget'].values()) # titre + param
+            self.fenetre.ajoute(layout, widget_list)
+            main_layout.addWidget(container, alignment=qtc.Qt.AlignHCenter)
+        return main_layout
 
 
     def genere_widget_train(self) -> dict[qtw.QWidget,qtw.QLineEdit]:
@@ -235,14 +247,7 @@ class Frame_Train(qtw.QFrame):
         # Créer un conteneur pour l'image et le label
         container = qtw.QFrame()
         container.setObjectName("monContainer")
-        container.setFixedSize(230, 230)  # Taille du conteneu
-        container.setStyleSheet("""
-                    QFrame#monContainer {
-                        background-color: white;       /* fond blanc */
-                        border: 2px solid black;       /* bordure de 2px noire */
-                        border-radius: 15px;           /* coins arrondis de 15px */
-                    }
-        """)
+        container.setFixedSize(self.largeur_param, 230)  # Taille du conteneu
         # Label pour l'image
         label_image = self.fenetre._genere_lable_image('./epicicloïdale.png')
         label_image.setParent(container)
@@ -260,7 +265,7 @@ class Frame_Train(qtw.QFrame):
         """)
 
 
-        label_image.move(10, 10)
+        label_image.move(30, 10)
         label_nombre.move(10, 5)
         return container
 
