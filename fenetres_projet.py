@@ -33,6 +33,16 @@ PROJET = {
                         border: 2px solid black;       /* bordure de 2px noire */
                         border-radius: 15px;           /* coins arrondis de 15px */
                     }
+                    #bp_moins { 
+                        background-color: black;
+                        padding: 0;
+                        border-radius:3;
+                        height: 6px; 
+                        width: 30px; 
+                    }
+                    #bp_moins:hover {
+                        background-color: red;
+                    }
         """
 }
 
@@ -60,15 +70,20 @@ class FenetreProjet(Fenetre):
         self.setStyleSheet(self._param['styleSheet'])
         self.genere_toolbars()
         self.layouts['main'].addWidget(self.widgets['toolbar'])
+        # genere les trains
+        self.frames_train = []
         for i in range(7):
-            frame = Frame_Train(self._train,self,i+1)
-            self.layouts['train'].addWidget(frame)
+            self.frames_train.append(Frame_Train(self._train,self,i+1))
+        self.ajoute(self.layouts['train'],self.frames_train)
+        self.ajoute_bp_moins()
+        # ajoute le bouton pour mettre plus de train
+        self.bouton_plus = qtw.QPushButton('+')
+        self.bouton_plus.setObjectName('bp_moins')
+        self.layouts['train'].addWidget(self.bouton_plus)
         self.layouts['train'].addStretch() 
         self.widgets['container'].setLayout(self.layouts['train'])
         self.scrolls['train'].setWidget(self.widgets['container'])
-
         self.scrolls['train'].setWidgetResizable(False)
-
         # politiques de barres (facultatif)
         self.scrolls['train'].setHorizontalScrollBarPolicy(qtc.Qt.ScrollBarAsNeeded)
         self.scrolls['train'].setVerticalScrollBarPolicy(qtc.Qt.ScrollBarAsNeeded)
@@ -103,7 +118,17 @@ class FenetreProjet(Fenetre):
         self._create_backstage()
     
 
+    def supprime_frame_train(self):
+        self.frames_train[len(self.frames_train) - 1].deleteLater()
+        self.frames_train.pop()
+        if len(self.frames_train) > 1: 
+            self.ajoute_bp_moins()
 
+
+    def ajoute_bp_moins(self):
+        self.frames_train[len(self.frames_train)-1].bp_moins.show()
+        self.frames_train[len(self.frames_train)-1].bp_moins.setFixedSize(30, 6)
+        self.frames_train[len(self.frames_train)-1].bp_moins.clicked.connect(self.supprime_frame_train)
 
     def _fichier(self) -> None:
         '''
@@ -253,20 +278,18 @@ class Frame_Train(qtw.QFrame):
         label_image.setParent(container)
         label_image.setFixedSize(210, 210)
         label_image.setScaledContents(True)
-
         # Label pour le nombre
         label_nombre = qtw.QLabel(str(self.num), container)  # Exemple : nombre à afficher
-        label_nombre.setAlignment(qtc.Qt.AlignLeft)
-        label_nombre.setStyleSheet("""
-            font-size: 20px;
-            font-weight: bold;
-            color: black;
-            padding-left: 5px;
-        """)
+        label_nombre.setStyleSheet('font-size: 20px; font-weight: bold; color: black; padding-left: 5px;')
+        # Label - pour supprimer le train
+        self.bp_moins = qtw.QPushButton(container)  # Exemple : nombre à afficher
+        self.bp_moins.setObjectName('bp_moins')
 
 
         label_image.move(30, 10)
         label_nombre.move(10, 5)
+        self.bp_moins.move(220, 15)
+        self.bp_moins.hide()
         return container
 
 
