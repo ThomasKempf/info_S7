@@ -87,8 +87,6 @@ class FenetreProjet(Fenetre):
         # politiques de barres (facultatif)
         self.scrolls['train'].setHorizontalScrollBarPolicy(qtc.Qt.ScrollBarAsNeeded)
         self.scrolls['train'].setVerticalScrollBarPolicy(qtc.Qt.ScrollBarAsNeeded)
-
-
         # ajoute la scrollarea au layout principal
         self.layouts['main'].addWidget(self.scrolls['train'])
         self.setLayout(self.layouts['main'])
@@ -119,6 +117,10 @@ class FenetreProjet(Fenetre):
     
 
     def supprime_frame_train(self):
+        '''
+        supprime le dernier fram de train à droite, tout en reduisant aussi la liste le contenant
+        
+        '''
         self.frames_train[len(self.frames_train) - 1].deleteLater()
         self.frames_train.pop()
         if len(self.frames_train) > 1: 
@@ -126,9 +128,13 @@ class FenetreProjet(Fenetre):
 
 
     def ajoute_bp_moins(self):
+        '''
+        ajoute le bouton mois qui permet de supprimer un fram de train
+        '''
         self.frames_train[len(self.frames_train)-1].bp_moins.show()
         self.frames_train[len(self.frames_train)-1].bp_moins.setFixedSize(30, 6)
         self.frames_train[len(self.frames_train)-1].bp_moins.clicked.connect(self.supprime_frame_train)
+
 
     def _fichier(self) -> None:
         '''
