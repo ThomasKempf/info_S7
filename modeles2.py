@@ -139,7 +139,7 @@ class Calcule_train_simple(Calcule_train):
         super().__init__(train) # Appel de l'initialisation de la classe parente
         self.calculer_parametres()
 
-if __name__ == 'main':
+if __name__ == '__main__':
     print('hello')
 
     # Exemple d'utilisation
