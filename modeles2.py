@@ -21,11 +21,9 @@ class Engrenage(Global):
         self.titre = f'engrenage {num}'
         super().__init__()
         self.description = {
-            'resistance_elastique': 0,
             '_diametre' : 0
         }
         self.unitee = [
-            'Mpa',
             'm'
             ]
 
@@ -45,6 +43,7 @@ class Train_global(Global):
 		    '_module': 0,
             'alpha': 20,
             'beta':0,
+            'resistance_elastique': 0,
         }
         self.unitee = [
             'RPM',
@@ -57,7 +56,8 @@ class Train_global(Global):
             ' ',
             ' ',
             '°',
-            '°'
+            '°',
+            'MPa'
             ]
 
 
@@ -138,3 +138,19 @@ class Calcule_train_simple(Calcule_train):
 
         super().__init__(train) # Appel de l'initialisation de la classe parente
         self.calculer_parametres()
+
+if __name__ == 'main':
+    print('hello')
+
+    # Exemple d'utilisation
+    listeTrain = [Train_simple(1), Train_simple(2)]
+    for i in range(len(listeTrain)):
+        listeTrain[i].description['global'].description['resistance_elastique'] = 340  # Exemple de puissance
+        listeTrain[i].description['global'].description['entraxe'] = 100      # Exemple de couple de sortie
+       
+    listeTrain[0].description['global'].description['vitesse_entree'] = 340 
+    listeTrain[0].description['global'].description['puissance_entree'] = 340 
+    listeTrain[1].description['global'].description['couple_sortie'] = 340 
+    print('hello')
+    reducteur = Reducteur(listeTrain)
+    print(listeTrain)
