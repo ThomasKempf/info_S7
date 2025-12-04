@@ -13,8 +13,8 @@ class Global():
                     }
         self.unitee = ['RPM','W','Nm']
         self.error = 0
-
-
+        
+            
 class Engrenage(Global):
     def __init__(self,num:int) -> None:
         super().__init__()
@@ -28,7 +28,6 @@ class Engrenage(Global):
             'Mpa',
             'm'
             ]
-        
 
 class Train_global(Global):
     def __init__(self) -> None:
@@ -76,6 +75,8 @@ class Train_simple(Global):
         self.unitee = None
 
 
+
+# --- Classe TrainEpi (Cinématique P/C/V) ---
 class Train_epi(Global):
     def __init__(self,num:int) -> None:
         super().__init__()
@@ -93,6 +94,27 @@ class Train_epi(Global):
         self.unitee = None
 
 
+class Reducteur():
+    def __init__(self, listeTrain:list[Train_simple]) -> None:
+        # Objectif est de renvoyer les valeurs de dimensionnement en recevant une liste contenant les différents trains de réductions
+        self.titre = 'reducteur'
+        self.listeTrain = listeTrain
+        self.calculer_RR()
+        
+
+        self.calc_train = []
+        for i in range (len(listeTrain)):
+            self.calc_train.append(Calcule_train_simple(listeTrain[i]))
+        
+    def calculer_RR(self):
+        #calcul rapport de réduction
+        pass
+
+    # Rajouter dans paramdyna, une méthode de calcul pour les différents attributs nécessaires (type Vitesse entree, entraxe, etc...)
+        
+
+        
+
 # Classe Engrenage (ajoutée à partir de votre exemple)
 class Calcule_Engrenage:
     """Représente un Calcule_Engrenage avec ses paramètres géométriques."""
@@ -109,23 +131,10 @@ class Calcule_train_simple(Calcule_train):
     
     # Représente un train d'Calcule_Engrenages droits.
     
-    def __init__(self, 
-                 vitesse_entree: float, 
-                 puissance_entree: float, 
-                 couple_sortie: float, 
-                 entraxe: float, 
-                 res_elastique: float):
+    def __init__(self,train: Train_simple) -> None:
         """
         Initialise le train d'Calcule_Engrenages simple avec ses paramètres d'entrée/sortie.
         """
-        train = Train_simple(1)
-        train.description['global'].description['vitesse_entree'] = vitesse_entree
-        train.description['global'].description['puissance_entree'] = puissance_entree
-        train.description['global'].description['couple_sortie'] = couple_sortie
 
-        train.description['global'].description['entraxe'] = entraxe
-        # implemente variable liee au engrenages
-        train.description['pignon'].description['resistance_elastique'] = res_elastique
-        train.description['roue'].description['resistance_elastique'] = res_elastique
         super().__init__(train) # Appel de l'initialisation de la classe parente
         self.calculer_parametres()
