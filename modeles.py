@@ -90,22 +90,7 @@ class TrainSimple(Train):
         if P_entree != 0: 
             self._vitesse_sortie = (P_entree/Couple_sortie)*(60/(2*math.pi)) 
 
-        self.description['vitesse_sortie_calculee'] = self._vitesse_sortie
-
-# NOUVELLE COMMANDE : Méthode pour afficher le dictionnaire
-    def afficher_description(self):
-        """
-        Affiche le contenu du dictionnaire 'description' dans le terminal.
-        """
-        print("\n--- Description Détaillée du Train d'Engrenages ---")
-        for cle, valeur in self.description.items():
-            # Formatage pour une meilleure lisibilité dans le terminal
-            # Si c'est un flottant, on le formate à deux décimales, sinon on imprime la valeur brute
-            if isinstance(valeur, float):
-                print(f"{cle.replace('_', ' ').capitalize():<30}: {valeur:.2f}")
-            else:
-                print(f"{cle.replace('_', ' ').capitalize():<30}: {valeur}")
-        print("-------------------------------------------------")
+        self.description['_vitesse_sortie'] = self._vitesse_sortie
 
 
 

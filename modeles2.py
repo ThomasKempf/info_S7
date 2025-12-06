@@ -1,11 +1,123 @@
 # Fichier: modeles.py
-import math 
+from Parametres_dyna import Calcule_train
 
 # --- Définition des classes de base ---
 
+
+class Global():
+    def __init__(self) -> None:
+        self.titre = 'parametre globale'
+        self.description = {'vitesse_entree': 0,
+                            'puissance_entree': 0,
+                            'couple_sortie': 0
+                    }
+        self.unitee = ['RPM','W','Nm']
+        self.error = 0
+        
+            
+class Engrenage(Global):
+    def __init__(self,num:int) -> None:
+        super().__init__()
+        self.titre = f'engrenage {num}'
+        super().__init__()
+        self.description = {
+            '_diametre' : 0
+        }
+        self.unitee = [
+            'm'
+            ]
+
+class Train_global(Global):
+    def __init__(self) -> None:
+        super().__init__()
+        self.titre = 'train global'
+        self.description = {
+            'vitesse_entree': 0,
+            'puissance_entree': 0,
+            'couple_sortie': 0,
+            '_couple_entree': 0,
+            'entraxe': 0,
+		    '_vitesse_sortie': 0,
+            '_force_tangentielle': 0,
+            '_rapport_reduction':0,
+		    '_module': 0,
+            'alpha': 20,
+            'beta':0,
+            'resistance_elastique': 0,
+        }
+        self.unitee = [
+            'RPM',
+            'W',
+            'Nm',
+            'Nm',
+            'm',
+            'RPM',
+            'N',
+            ' ',
+            ' ',
+            '°',
+            '°',
+            'MPa'
+            ]
+
+
+class Train_simple(Global):
+    def __init__(self,num:int) -> None:
+        super().__init__()
+        self.titre = f'train_simple_{num}'
+        self.description =  {
+            'global': Train_global(),
+            'pignon': Engrenage(0),
+            'roue': Engrenage(1)
+        }
+        self.description['pignon'].titre = 'pignon'
+        self.description['roue'].titre = 'roue'
+        self.unitee = None
+
+
+
+# --- Classe TrainEpi (Cinématique P/C/V) ---
+class Train_epi(Global):
+    def __init__(self,num:int) -> None:
+        super().__init__()
+        self.titre = f'train_epi_{num}'
+        self.description =  {
+            'global': Train_global(),
+            'pignon': Engrenage(0),
+            'satelite': Engrenage(1),
+            'couronne': Engrenage(2),
+            '_nb_satelite':3,
+        }
+        self.description['pignon'].titre = 'pignon'
+        self.description['satelite'].titre = 'roue'
+        self.description['couronne'].titre = 'couronne'
+        self.unitee = None
+
+
+class Reducteur():
+    def __init__(self, listeTrain:list[Train_simple]) -> None:
+        # Objectif est de renvoyer les valeurs de dimensionnement en recevant une liste contenant les différents trains de réductions
+        self.titre = 'reducteur'
+        self.listeTrain = listeTrain
+        self.calculer_RR()
+        
+
+        self.calc_train = []
+        for i in range (len(listeTrain)):
+            self.calc_train.append(Calcule_train_simple(listeTrain[i]))
+        
+    def calculer_RR(self):
+        #calcul rapport de réduction
+        pass
+
+    # Rajouter dans paramdyna, une méthode de calcul pour les différents attributs nécessaires (type Vitesse entree, entraxe, etc...)
+        
+
+        
+
 # Classe Engrenage (ajoutée à partir de votre exemple)
-class Engrenage:
-    """Représente un engrenage avec ses paramètres géométriques."""
+class Calcule_Engrenage:
+    """Représente un Calcule_Engrenage avec ses paramètres géométriques."""
     def __init__(self, nbr_dents: int, rayon_prim: float = 0.0, alpha: float = 0.0, beta: float = 0.0, module: float = 0.0):
         self.nbr_dents = nbr_dents
         self.rayon_prim = rayon_prim
@@ -13,184 +125,32 @@ class Engrenage:
         self.beta = beta
         self.module = module 
 
-# Classe Train 
-class Train:
-    """Classe de base pour les trains d'engrenages."""
-    def __init__(self):
-        # Initialisation par défaut, nécessaire pour la sous-classe
-        self._rapport_reduction: float = 0.0 
-
-    def calculer_rapport(self):
-        """La méthode 'calculer_rapport' doit être implémentée par la sous-classe."""
-        raise NotImplementedError("La methode 'calculer_rapport' doit être implementee par la sous-classe.")
-
-    @property
-    def rapport_reduction(self) -> float:
-        """Propriété publique (getter) du rapport de reduction."""
-        return self._rapport_reduction
-
 # --- Classe TrainSimple (Cinématique P/C/V) ---
 
-class TrainSimple(Train):
+class Calcule_train_simple(Calcule_train):
     
-    # Représente un train d'engrenages droits.
+    # Représente un train d'Calcule_Engrenages droits.
     
-    def __init__(self, 
-                 vitesse_entree: float, 
-                 puissance_entree: float, 
-                 couple_sortie: float, 
-                 entraxe: float, 
-                 res_elastique: float):
+    def __init__(self,train: Train_simple) -> None:
         """
-        Initialise le train d'engrenages simple avec ses paramètres d'entrée/sortie.
+        Initialise le train d'Calcule_Engrenages simple avec ses paramètres d'entrée/sortie.
         """
-        super().__init__() # Appel de l'initialisation de la classe parente
-        
-        self.vitesse_entree = vitesse_entree
-        self.puissance_entree = puissance_entree
-        self.couple_sortie = couple_sortie
-        self.entraxe = entraxe
-        self.res_elastique = res_elastique
-        self.alpha = 20.0  # angle de pression
-        
-        # Initialisation du dictionnaire
-        self.description = {}
 
-        # Remplissage du dictionnaire avec les données d'entrée
-        self.description['vitesse_entree'] = vitesse_entree
-        self.description['puissance_entree'] = puissance_entree 
-        self.description['couple_sortie'] = couple_sortie
-        self.description['entraxe'] = entraxe
-        self.description['res_elastique'] = res_elastique
-        self.description['alpha'] = 20.0 # anglede pression
-        self.description['beta'] = 0.0   # angle de spirale
+        super().__init__(train) # Appel de l'initialisation de la classe parente
+        self.calculer_parametres()
 
-       # self._vitesse_sortie = None 
+if __name__ == '__main__':
+    print('hello')
 
-        # Le calcul est basé sur P, C et la conversion de rad/s en tr/min
-        # ne pas oublier d'ajouter "self.methode" ici dès qu'on ajoute une nouvelle méthode
-        self.calculer_vitesse_sortie()
-        self.calculer_couple_entree()
-        self.calculer_force_tangentielle()
-        self.calculer_module()
-
-##############################################################################################################################
-
-    def calculer_vitesse_sortie(self):
-        """
-        Calcule la vitesse de sortie en tr/min à partir de la puissance (P) et du couple de sortie (Cs).
-        Formule utilisée : V_out [tr/min] = (P / Cs) * (60 / 2*pi).
-        Cette formule suppose un rendement de 1 (idéal) et que P est en Watts, Cs en Nm.
-        """
-        P_entree = self.puissance_entree
-        Couple_sortie = self.couple_sortie
-
-        if Couple_sortie <= 0:
-            print("Erreur : Le couple de sortie doit être positif.")
-            self._vitesse_sortie = 0.0
-        else: 
-            # Calcul : (P_entree / Couple_sortie) donne la vitesse en rad/s (omega)
-            #           ... * (60 / 2*pi) convertit de rad/s à tr/min
-            self._vitesse_sortie = (P_entree / Couple_sortie) * (60 / (2 * math.pi))
-            
-        # Mise à jour du dictionnaire 'description'
-        self.description['vitesse_sortie_calculee'] = self._vitesse_sortie
-        
-        return self._vitesse_sortie
-
-        
-######################################################################################################################################
-
-    def calculer_couple_entree(self):
-            # Calcule le couple d'entrée à partir de la puissance et de la vitesse d'entrée
-            P_entree = self.puissance_entree
-            V_entree = self.vitesse_entree
-
-            self._couple_entree = P_entree / (V_entree * (2 * math.pi / 60))  # Convertir tr/min en rad/s
-            # Mise à jour du dictionnaire 'description'
-            self.description['couple_entree_calcule'] = self._couple_entree
-            return self._couple_entree
-    
-######################################################################################################################################
-
-    def calculer_force_tangentielle(self):
-        # Calcule la force tangentielle à partir du couple de sortie et de l'entraxe
-        Ce = self._couple_entree
-        r = self.entraxe  # En mètres
-        a = self.alpha
-
-        if r <= 0:
-            print("Erreur : L'entraxe doit être positif.")
-            self._force_tangentielle = 0.0
-        else:
-            self._force_tangentielle = Ce / (r *math.cos(a)) 
-
-        # Mise à jour du dictionnaire 'description'
-        self.description['force_tangentielle_calculee'] = self._force_tangentielle
-        return self._force_tangentielle
-
-######################################################################################################################################
-
-    # Calcul du module du système
-
-    def calculer_module(self):
-
-        FT = self._force_tangentielle
-        RES = self.res_elastique
-
-        self.module = 2.34 * math.sqrt(FT / (RES*10))
-        self.description['module_calcule'] = self.module
-        return self.module
-    
-
-######################################################################################################################################
-
-    # Calcul des diamètres primitifs, il estr nécessaire de demander à l'utilisateur de donner 
-    # un des diamètres dans la classe engrenage et aussi un nb de dents pour pouvoir le calculer
-
-    ######################################################################################################################################
-
-    # Implémentation requise de la classe Train
-    def calculer_rapport(self) -> float:
-        """
-        Calcule le rapport de réduction i = V_entree / V_sortie.
-        Nécessite que V_entree et V_sortie soient dans les MÊMES unités (ici tr/min).
-        """
-        if self._vitesse_sortie is None:
-            # S'assurer que la vitesse de sortie est calculée
-            self.calculer_vitesse_sortie()
-            
-        if self._vitesse_sortie == 0:
-            print("Erreur : La vitesse de sortie calculée est nulle.")
-            self._rapport_reduction = 0.0
-        else:
-            # i = V_entree / V_sortie
-            self._rapport_reduction = self.vitesse_entree / self._vitesse_sortie
-        
-        # Mise à jour du dictionnaire 'description'
-        self.description['rapport_reduction_par_vitesses'] = self._rapport_reduction
-        
-        return self._rapport_reduction
-
-    ###########################################################################################
-
-        
-    # NOUVELLE COMMANDE : Méthode pour afficher le dictionnaire
-    def afficher_description(self):
-        """
-        Affiche le contenu du dictionnaire 'description' dans le terminal.
-        """
-        print("\n--- Description Détaillée du Train d'Engrenages ---")
-        for cle, valeur in self.description.items():
-            # Formatage pour une meilleure lisibilité dans le terminal
-            # Si c'est un flottant, on le formate à deux décimales, sinon on imprime la valeur brute
-            if isinstance(valeur, float):
-                print(f"{cle.replace('_', ' ').capitalize():<30}: {valeur:.2f}")
-            else:
-                print(f"{cle.replace('_', ' ').capitalize():<30}: {valeur}")
-        print("-------------------------------------------------")
-
-
-
-    
-    
+    # Exemple d'utilisation
+    listeTrain = [Train_simple(1), Train_simple(2)]
+    for i in range(len(listeTrain)):
+        listeTrain[i].description['global'].description['resistance_elastique'] = 340  # Exemple de puissance
+        listeTrain[i].description['global'].description['entraxe'] = 100      # Exemple de couple de sortie
+       
+    listeTrain[0].description['global'].description['vitesse_entree'] = 340 
+    listeTrain[0].description['global'].description['puissance_entree'] = 340 
+    listeTrain[1].description['global'].description['couple_sortie'] = 340 
+    print('hello')
+    reducteur = Reducteur(listeTrain)
+    print(listeTrain)
