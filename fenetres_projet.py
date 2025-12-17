@@ -43,6 +43,16 @@ PROJET = {
                     #bp_moins:hover {
                         background-color: red;
                     }
+                    #bp_plus { 
+                        background: none;          /* pas de fond */
+                        border: none;              /* pas de bordure */
+                        color: black;              /* texte noir */
+                        font-size: 80px;           /* texte très gros, ajuste à ton goût */
+                        font-weight: bold;         /* optionnel : texte en gras */
+                    }
+                    #bp_plus:hover {
+                        color: red;
+                    }
         """
 }
 
@@ -63,7 +73,6 @@ class FenetreProjet(Fenetre):
             'scrolls':['train']
         }
         super().__init__(PROJET,elements)
-        
         self._methode_train = train
         self._xlsx_file = xlsx_file
         self._train = train.train_1 # obj contenant toute la descritption, obj de type Train
@@ -76,14 +85,13 @@ class FenetreProjet(Fenetre):
             self.frames_train.append(Frame_Train(self._train,self,i+1))
         self.ajoute(self.layouts['train'],self.frames_train)
         self.ajoute_bp_moins()
-        # ajoute le bouton pour mettre plus de train
-        self.bouton_plus = qtw.QPushButton('+')
-        self.bouton_plus.setObjectName('bp_moins')
-        self.layouts['train'].addWidget(self.bouton_plus)
+        self.ajoute_bp_plus()
+        if len(self.frames_train) <= 7:
+            self.bouton_plus.hide()
         self.layouts['train'].addStretch() 
         self.widgets['container'].setLayout(self.layouts['train'])
         self.scrolls['train'].setWidget(self.widgets['container'])
-        self.scrolls['train'].setWidgetResizable(False)
+        self.scrolls['train'].setWidgetResizable(True)
         # politiques de barres (facultatif)
         self.scrolls['train'].setHorizontalScrollBarPolicy(qtc.Qt.ScrollBarAsNeeded)
         self.scrolls['train'].setVerticalScrollBarPolicy(qtc.Qt.ScrollBarAsNeeded)
@@ -125,6 +133,23 @@ class FenetreProjet(Fenetre):
         self.frames_train.pop()
         if len(self.frames_train) > 1: 
             self.ajoute_bp_moins()
+        if len(self.frames_train) < 7:
+            self.bouton_plus.show()
+
+    
+    def ajoute_frame_train(self):
+        '''
+        ajoute un fram de train à droite, tout en augmentant aussi la liste le contenant
+        
+        '''
+        self.frames_train[len(self.frames_train)-1].bp_moins.hide()
+        self.frames_train.append(Frame_Train(self._train,self,len(self.frames_train)+1))
+        self.layouts['train'].insertWidget(len(self.frames_train)-1, self.frames_train[len(self.frames_train)-1])
+        self.ajoute_bp_moins()
+        print('hello', len(self.frames_train))
+        if len(self.frames_train) >= 7:
+            self.bouton_plus.hide()
+        
 
 
     def ajoute_bp_moins(self):
@@ -134,6 +159,16 @@ class FenetreProjet(Fenetre):
         self.frames_train[len(self.frames_train)-1].bp_moins.show()
         self.frames_train[len(self.frames_train)-1].bp_moins.setFixedSize(30, 6)
         self.frames_train[len(self.frames_train)-1].bp_moins.clicked.connect(self.supprime_frame_train)
+
+
+    def ajoute_bp_plus(self):
+        '''
+        ajoute le bouton plus qui permet d'ajouter un fram de train
+        '''
+        self.bouton_plus = qtw.QPushButton('+')
+        self.bouton_plus.setObjectName('bp_plus')
+        self.bouton_plus.clicked.connect(self.ajoute_frame_train)
+        self.layouts['train'].addWidget(self.bouton_plus)
 
 
     def _fichier(self) -> None:
