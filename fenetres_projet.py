@@ -215,7 +215,7 @@ class FenetreProjet(Fenetre):
             "new": self.compens,
             "open": self.compens,
             "save": self._enregistrer,
-            "save_as": self.compens,
+            "save_as": self.save_as,
             "print": self.compens,
         }
         self.backstage = BackstagePopup(self,callbacks,self.buttons['fichier'])
@@ -250,6 +250,7 @@ class FenetreProjet(Fenetre):
             return False
         if not path.lower().endswith(".xlsx"):
             path += ".xlsx"
+        self.setWindowTitle(str(path))
         return self.genere_xlsx(path)
 
     
