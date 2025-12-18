@@ -26,11 +26,13 @@ NBR_COLONNE_TRAIN = 3 # nombre de colonne pris par un train
 
 
 class Xlsx_file():
-    def __init__(self) -> None:
+    def __init__(self,path) -> None:
         """
         contient les methode permetant d'ecrire dans un fichir xlsx
+
+        :param path: chemain complet du fichier xlsx à creer
         """
-        self._fichier_excel = os.path.join(PATH, f"{NAME}.xlsx")
+        self._fichier_excel = path
         self._wb = Workbook()
         self._ws = self._wb.active
 
@@ -65,6 +67,7 @@ class Xlsx_file():
         end_letter = get_column_letter(colonne_fin)
         self._ws.merge_cells(f"{start_letter}{ligne}:{end_letter}{ligne}")
 
+
     def save(self) -> None:
         """
         enregistre les modification faite dans le fichier
@@ -76,18 +79,15 @@ class Xlsx_file():
 
 
 class ProjetXlsx(Xlsx_file):
-    def __init__(self,param_global:Global) -> None:
+    def __init__(self,path) -> None:
         """
         créer un fichier xlsx en y écrivant les parametre global
 
-        :param param_global: donne les parametres global qui sont écris en premier
+        :param path: chemain complet du fichier xlsx à creer
         """
-        super().__init__()
-        # ecriture des parametre globale
-        self._param = [copy.deepcopy(param_global)]
-        self._ecrire_valeur(self._param[0],COLONNE_DEPART)
-        self.save
-    
+        super().__init__(path)
+        self._param = [0]
+
 
     def ecrire_description_simple(self,param:Global,num:int) -> None:
         """
@@ -99,7 +99,7 @@ class ProjetXlsx(Xlsx_file):
         :param num: contient le num unique de reference de l'objet qui permet de le situer dans le xlsx
         """
         # definit variable temporaire
-        colonne_unitee = COLONNE_DEPART + num*(NBR_COLONNE_SEPRARATION + NBR_COLONNE_TRAIN)
+        colonne_unitee = COLONNE_DEPART + (num-1)*(NBR_COLONNE_SEPRARATION + NBR_COLONNE_TRAIN)
         colonne_valeur = colonne_unitee + 1
         if num == len(self._param): 
             # cas ou param n'est pas encore incorporee dans self._param
@@ -125,7 +125,7 @@ class ProjetXlsx(Xlsx_file):
         :param num: contient le num unique de reference de l'objet qui permet de le situer dans le xlsx
         """
         # definit variable temporaire
-        colonne_unitee = COLONNE_DEPART + num*(NBR_COLONNE_SEPRARATION + NBR_COLONNE_TRAIN)
+        colonne_unitee = COLONNE_DEPART + (num-1)*(NBR_COLONNE_SEPRARATION + NBR_COLONNE_TRAIN)
         colonne_valeur = colonne_unitee + 1                   
         decalage = 0    
         if num == len(self._param): 

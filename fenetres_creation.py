@@ -13,7 +13,6 @@
 """
 
 import modeles2 as mod
-import time
 from outil_gui import Fenetre
 import xlsx_reducteur as xlsx
 from PySide6 import (
@@ -244,7 +243,6 @@ class FenetreCreationProjet(Fenetre):
             self.showMinimized()
             # prendre les dernieres valeurs
             self.genere_projet()
-            self.genere_xlsx()
             fenetre_attente.close()
             self.close()
 
@@ -265,24 +263,6 @@ class FenetreCreationProjet(Fenetre):
         values_global = [int(val) for val in description_global.values()]
         values_train = [int(val) for val in variables_lignes[0].values()] # ajoute que le premier train
         self._train = mod.Calcule_train_simple(*values_global, *values_train)
-    
-        
-    def genere_xlsx(self) -> None:
-        '''
-        genere les differents instance utilisant la classe xlsx.
-        xlsx_param est une liste contenant tout les parametres du projet
-        en utilisant des classe tamplate pour etre sur d'avoir la bonne structure
-        xlsx_file contient toute les metodes lier au ficher xlsx, permetant de le modifier et le sauvegrader
-
-        **Préconditions :**
-        - il est important de les laisser en instance courante pour pouvoir les lire juste avant la fermeture de la page
-        - ``self._description_global`` doit etre valide et contenir la description global (vitesse,puissance,couple)
-        - ``self._description_global`` doit etre un objet train
-        '''
-        # creation du fichier
-        self.xlsx_file = xlsx.ProjetXlsx(self._description_global)
-        self.xlsx_file.ecrire_description_ogjet_multiple(self._train.train_1,1)
-        self.xlsx_file.save()
 
 
 class Page_0():

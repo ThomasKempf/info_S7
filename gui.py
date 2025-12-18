@@ -72,9 +72,8 @@ def detecte_fermeture_fenetre(fenetre: qtw.QWidget) -> None:
     :param fenetre: contient l'objet de la fenetre, qui est de pres ou de loin un widget
     """
     try:
-        xlsx_file = getattr(fenetre, "xlsx_file")
         train = getattr(fenetre, "_train")
-        fenetre_projet = FenetreProjet(xlsx_file, train)
+        fenetre_projet = FenetreProjet(train)
         fenetre_projet.show()
     except Exception as e:
         print("Impossible de récupérer les attributs :", e)

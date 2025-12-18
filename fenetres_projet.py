@@ -15,6 +15,8 @@
 from outil_gui import Fenetre,BackstagePopup
 import modeles2 as md
 import xlsx_reducteur as xlsx
+import xlsx_reducteur as xlsx
+import os
 from PySide6 import (
     QtWidgets as qtw,
     QtGui as qtg,
@@ -58,12 +60,10 @@ PROJET = {
 
 
 class FenetreProjet(Fenetre):
-    def __init__(self, xlsx_file:xlsx.ProjetXlsx, train:md.Calcule_train) -> None:
+    def __init__(self, train:md.Calcule_train) -> None:
         """
         créer une fenetre Projet tout en construisant les layoutes des trains
 
-        :param xlsx_param: liste d'ogjet de parametre utiliser par le xlsx, le premier sont les parmetres global, ensuite vienne les trains
-        :param xlsx_file: ogjet utiliser pour le xlsx du projet, c'est dans celui si qu'on écris les param precedents
         :param train: objet de la classe Simulation_train contenant les methode de calcule et la descritption du Train
         """
         elements = {
@@ -74,7 +74,6 @@ class FenetreProjet(Fenetre):
         }
         super().__init__(PROJET,elements)
         self._methode_train = train
-        self._xlsx_file = xlsx_file
         self._train = train.train_1 # obj contenant toute la descritption, obj de type Train
         self.setStyleSheet(self._param['styleSheet'])
         self.genere_toolbars()
@@ -146,7 +145,6 @@ class FenetreProjet(Fenetre):
         self.frames_train.append(Frame_Train(self._train,self,len(self.frames_train)+1))
         self.layouts['train'].insertWidget(len(self.frames_train)-1, self.frames_train[len(self.frames_train)-1])
         self.ajoute_bp_moins()
-        print('hello', len(self.frames_train))
         if len(self.frames_train) >= 7:
             self.bouton_plus.hide()
         
@@ -183,8 +181,13 @@ class FenetreProjet(Fenetre):
         '''
         fonction ratachée au bouton enregistrer, son nom permet de le lier autotmatique
         ne pas modifier la structure nie le nom de la methode
+        verifie si un xlsx est deja creer, si oui il le met a jour, sinon il lance la methode save as
         '''
-        print('enregistrer')
+        if hasattr(self, "xlsx_file"):
+            self.xlsx_file.ecrire_description_ogjet_multiple(self._train,1)
+            self.xlsx_file.save()
+        else:
+            self.save_as()
 
 
     def _aide(self) -> None:
@@ -203,6 +206,7 @@ class FenetreProjet(Fenetre):
         ''' fonction test'''
         print('helli')
 
+
     def _create_backstage(self) -> None:
         '''
         ratache les methode au key des boutons de la liste, pour ensuite la créer à l'aide de la classse appropriee
@@ -210,7 +214,7 @@ class FenetreProjet(Fenetre):
         callbacks={
             "new": self.compens,
             "open": self.compens,
-            "save": self.compens_2,
+            "save": self._enregistrer,
             "save_as": self.compens,
             "print": self.compens,
         }
@@ -226,6 +230,47 @@ class FenetreProjet(Fenetre):
         event.size()
         if hasattr(self, 'backstage') and self.backstage is not None:
             self.backstage.positionner_list(self)
+
+
+    def save_as(self):
+        '''
+        ouvre une fenetre de dialogue pour enregistrer le fichier xlsx
+        '''
+        default_name = os.path.join(
+            os.path.expanduser("~"),
+            "réducteur.xlsx"
+        )
+        path, _ = qtw.QFileDialog.getSaveFileName(
+            self,
+            "Enregistrer sous",
+            default_name,
+            "Fichier Excel (*.xlsx);;Tous les fichiers (*)"
+        )
+        if not path:
+            return False
+        if not path.lower().endswith(".xlsx"):
+            path += ".xlsx"
+        return self.genere_xlsx(path)
+
+    
+    def genere_xlsx(self,path) -> None:
+        '''
+        genere les differents instance utilisant la classe xlsx.
+        xlsx_param est une liste contenant tout les parametres du projet
+        en utilisant des classe tamplate pour etre sur d'avoir la bonne structure
+        xlsx_file contient toute les metodes lier au ficher xlsx, permetant de le modifier et le sauvegrader
+
+        :param path: chemain complet du fichier xlsx à creer
+
+        **Préconditions :**
+        - il est important de les laisser en instance courante pour pouvoir les lire juste avant la fermeture de la page
+        - ``self._description_global`` doit etre valide et contenir la description global (vitesse,puissance,couple)
+        - ``self._description_global`` doit etre un objet train
+        '''
+        # creation du fichier
+        self.xlsx_file = xlsx.ProjetXlsx(path)
+        self.xlsx_file.ecrire_description_ogjet_multiple(self._train,1)
+        self.xlsx_file.save()
 
 
 class Frame_Train(qtw.QFrame):
@@ -369,15 +414,12 @@ class Frame_Train(qtw.QFrame):
 
         **Préconditions :**
         - L'attribut ``self._train`` doit contenir la descrpition de l'objet de Type Train.
-        - ``self.fenetre._xlsx_file`` et ``self._zone_text_train`` 
-          doivent être valides et contenir les clés attendues.
+        - ``self._zone_text_train`` 
+          doit être valides et contenir les clés attendues.
         """
         # met a jour l'objet train
         sous_obj.description[value_name] = nouvelle_valeur
         self.fenetre._methode_train.calculer_parametres(value_name)
-        # met a jour le xlsx
-        self.fenetre._xlsx_file.ecrire_description_ogjet_multiple(self._train,1)
-        self.fenetre._xlsx_file.save()
         # met a jour la fenetre
         for global_key in  self._zone_text_train:
             for key in self._zone_text_train[global_key]['variable']:
