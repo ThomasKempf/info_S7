@@ -55,40 +55,62 @@ MENU = {
     '''
 }
 
-def next_fenetre(fenetre_depart: qtw.QWidget, fenetre_suivante: qtw.QWidget) -> None:
-    """
-    Ferme la fenêtre de départ et affiche la fenêtre suivante.
 
-    :param fenetre_depart: fenetre anterieur a fermer
-    :param fenetre_suivante: nouvelle fenetre à mettre en avant
-    """
-    fenetre_depart.close()
-    fenetre_suivante.show()
+class Projet():
+    def __init__(self) -> None:
+        """
+        Classe principale pour lancer l'interface graphique du projet.
+        """
+        # Variable globale pour stocker l'instance de la fenêtre
+        self.app = qtw.QApplication(sys.argv)
+        # Créer les fenetres
+        fenetre_menu = FenetreMenu(MENU, self)
+        self.fenetre_creation = FenetreCreationProjet()
+        # Surveille la femerture de la fenetre_creation
+        self.watcher = CloseWatcher(self.ouvre_projet_lors_fermeture)
+        self.fenetre_creation.installEventFilter(self.watcher)
+        # lie le bouton créer projet à la mise en avant de fenetre_creation
+        fenetre_menu.buttons['creer_projet'].clicked.connect(lambda checked=False: self.next_fenetre(fenetre_menu, self.fenetre_creation)) 
+        fenetre_menu.show()
+        sys.exit(self.app.exec())
 
 
-def ouvre_projet_lors_fermeture(fenetre: qtw.QWidget) -> None:
-    """
-    Cette fonction sera appelée *avant* que la fenêtre soit détruite.
-    Tente de récupérer des attributs spécifiques de la fenêtre et
-    ouvre la FenetreProjet si possible.
+    def next_fenetre(self,fenetre_depart: qtw.QWidget, fenetre_suivante: qtw.QWidget) -> None:
+        """
+        Ferme la fenêtre de départ et affiche la fenêtre suivante.
 
-    :param fenetre: contient l'objet de la fenetre, qui est de pres ou de loin un widget
-    """
-    try:
-        train = getattr(fenetre, "_train")
-        fenetre_projet = FenetreProjet(train)
-        fenetre_projet.show()
-    except Exception as e:
-        print("Impossible de récupérer les attributs :", e)
+        :param fenetre_depart: fenetre anterieur a fermer
+        :param fenetre_suivante: nouvelle fenetre à mettre en avant
+        """
+        fenetre_depart.close()
+        fenetre_suivante.show()
+
+
+    def ouvre_projet_lors_fermeture(self,fenetre: qtw.QWidget) -> None:
+        """
+        Cette fonction sera appelée *avant* que la fenêtre soit détruite.
+        Tente de récupérer des attributs spécifiques de la fenêtre et
+        ouvre la FenetreProjet si possible.
+
+        :param fenetre: contient l'objet de la fenetre, qui est de pres ou de loin un widget
+        """
+        try:
+            train = getattr(fenetre, "_train")
+            fenetre_projet = FenetreProjet(train, self)
+            fenetre_projet.show()
+        except Exception as e:
+            print("Impossible de récupérer les attributs :", e)
 
 
 class FenetreMenu(Fenetre):
-    def __init__(self, param: dict) -> None:
+    def __init__(self, param: dict, projet: Projet) -> None:
         """
         Classe pour générer uniquement la fenêtre de menu.
 
         :param param: dictionnaire contenant les paramètres de la fenêtre, propre à chaque fenêtre
+        :param projet: instance de la classe Projet pour le passer à la fenetre projet
         """
+        self.project = projet
         super().__init__(param, {
             'layouts': {'main': 'h', 'left': 'v', 'right': 'v'},
             'widgets': ['engrenages'],
@@ -182,7 +204,7 @@ class FenetreMenu(Fenetre):
             fenetre_erreur.exec()
             return
         train = mod.Calcule_train_simple(reducteur[1])
-        fenetre_projet = FenetreProjet(train)
+        fenetre_projet = FenetreProjet(train, self.project)
         fenetre_projet.show()
         self.close()
         
@@ -199,18 +221,9 @@ class FenetreFichierInvalide(qtw.QMessageBox):
         self.setStandardButtons(qtw.QMessageBox.StandardButton.Ok)
 
 
-if __name__ == '__main__':
-    # Variable globale pour stocker l'instance de la fenêtre
-    app = qtw.QApplication(sys.argv)
-    # Créer les fenetres
-    fenetre_menu = FenetreMenu(MENU)
-    fenetre_creation = FenetreCreationProjet()
-    # Surveille la femerture de la fenetre_creation
-    watcher = CloseWatcher(ouvre_projet_lors_fermeture)
-    fenetre_creation.installEventFilter(watcher)
-    # lie le bouton créer projet à la mise en avant de fenetre_creation
-    fenetre_menu.buttons['creer_projet'].clicked.connect(lambda checked=False: next_fenetre(fenetre_menu, fenetre_creation))
 
-    
-    fenetre_menu.show()
-    sys.exit(app.exec())
+
+
+if __name__ == '__main__':
+    projet = Projet()
+    projet.ouvrir_menu()

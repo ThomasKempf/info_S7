@@ -57,13 +57,13 @@ PROJET = {
         """
 }
 
-
 class FenetreProjet(Fenetre):
-    def __init__(self, train:md.Calcule_train) -> None:
+    def __init__(self, train:md.Calcule_train, projet) -> None:
         """
         créer une fenetre Projet tout en construisant les layoutes des trains
 
         :param train: objet de la classe Simulation_train contenant les methode de calcule et la descritption du Train
+        :param projet: instance de la classe de type Projet pour le passer à la fenetre projet
         """
         elements = {
             'layouts':{'main':'v','train':'h'},
@@ -72,6 +72,7 @@ class FenetreProjet(Fenetre):
             'scrolls':['train']
         }
         super().__init__(PROJET,elements)
+        self.projet = projet
         self._methode_train = train
         self._train = train.train_1 # obj contenant toute la descritption, obj de type Train
         self.setStyleSheet(self._param['styleSheet'])
@@ -197,13 +198,17 @@ class FenetreProjet(Fenetre):
         print('aide')
 
 
+    def creer_nouveau_projet(self) -> None:
+        '''
+        genere un nouveau objet projet et ouvre directement la fenetre de creation de projet
+        '''
+        self.projet.fenetre_creation.show()
+        self.projet.fenetre_creation.raise_()
+
+
     def compens(self) -> None:
         ''' fonction test'''
         print('hello')
-
-    def compens_2(self) -> None:
-        ''' fonction test'''
-        print('helli')
 
 
     def _create_backstage(self) -> None:
@@ -211,7 +216,7 @@ class FenetreProjet(Fenetre):
         ratache les methode au key des boutons de la liste, pour ensuite la créer à l'aide de la classse appropriee
         '''
         callbacks={
-            "new": self.compens,
+            "new": self.creer_nouveau_projet,
             "open": self.compens,
             "save": self._enregistrer,
             "save_as": self.save_as,
