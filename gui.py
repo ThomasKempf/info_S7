@@ -12,6 +12,8 @@
 
 """
 import sys
+import os
+import xlsx_reducteur as xlsx
 from PySide6 import (
     QtWidgets as qtw,
     QtGui as qtg
@@ -105,6 +107,7 @@ class FenetreMenu(Fenetre):
         self._adapte_titre()
         self.buttons['exit'].setFixedSize(210, 50)
         self.buttons['exit'].clicked.connect(self.close)
+        self.buttons['ouvrir_projet'].clicked.connect(self._ouvrir_projet)
         self._generer_icone_engrenage(self.widgets['engrenages'])
 
 
@@ -159,6 +162,26 @@ class FenetreMenu(Fenetre):
         self.labels['titre'].setAlignment(qtg.Qt.AlignmentFlag.AlignLeft | qtg.Qt.AlignmentFlag.AlignTop)
         self.labels['titre'].setAlignment(qtg.Qt.AlignmentFlag.AlignCenter)
 
+
+    def _ouvrir_projet(self) -> None:
+        """
+        Ouvre une fenêtre de projet existante.
+        """
+        path, _ = qtw.QFileDialog.getOpenFileName(self,
+            "Ouvrir un projet",
+            os.path.expanduser("~"),
+            "Fichier Excel (*.xlsx);;Tous les fichiers (*)"
+        )
+        print(path)
+        fichier_xslx = xlsx.ProjetXlsx(path)
+        fichier_xslx.ouverture_espace_existant()
+        reducteur = fichier_xslx.lire_fichier()
+        print(reducteur, len(reducteur), type(reducteur))
+        for i in range(len(reducteur)-1):
+            for global_key in reducteur[i+1].description:
+                for key in reducteur[i+1].description[global_key].description:
+                    print(i,global_key, key, reducteur[i+1].description[global_key].description[key])
+        
 
 if __name__ == '__main__':
     # Variable globale pour stocker l'instance de la fenêtre

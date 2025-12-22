@@ -255,7 +255,6 @@ class FenetreCreationProjet(Fenetre):
         - il est important de les laisser en instance courante pour pouvoir les lire juste avant la fermeture de la page
         - ``self._page[0].variables`` doit etre valide de 0 a 1
         '''
-        
         description_global =  self._page[0].variables
         self._description_global = mod.Global()
         self._description_global.description =  description_global

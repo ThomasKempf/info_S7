@@ -15,7 +15,6 @@
 from outil_gui import Fenetre,BackstagePopup
 import modeles2 as md
 import xlsx_reducteur as xlsx
-import xlsx_reducteur as xlsx
 import os
 from PySide6 import (
     QtWidgets as qtw,
@@ -270,6 +269,7 @@ class FenetreProjet(Fenetre):
         '''
         # creation du fichier
         self.xlsx_file = xlsx.ProjetXlsx(path)
+        self.xlsx_file.creation_espace_travail()
         self.xlsx_file.ecrire_description_ogjet_multiple(self._train,1)
         self.xlsx_file.save()
 
