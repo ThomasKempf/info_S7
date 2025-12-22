@@ -44,8 +44,8 @@ class Calcule_train:
         :param param: param est le nom du parametre changée, l'info permet de vérifier si le recalcule est necessaire,
                         si param = None cela veux dire qu'il faut faire le calcule par defaut
         """
-        # verifie si le calcule est nécessaire
-        parametres = ['puissance_entree','couple_sortie'] # param necessaire au calcule
+        # verifie si le calcul est nécessaire
+        parametres = ['puissance_entree','couple_sortie'] # param necessaire au calcul
         if param not in parametres and param != None:
             return
         
@@ -120,7 +120,7 @@ class Calcule_train:
         if param not in parametres and param != None:
             return
         FT = self._param_global['_force_tangentielle']
-        RES = self._param_pignon['resistance_elastique'] # il n'est pas le meme pour les deux engrenages?
+        RES = self._param_global['resistance_elastique'] # il n'est pas le meme pour les deux engrenages?
 
         self._param_global['_module'] = 2.34 * math.sqrt(FT / (RES*10))
     

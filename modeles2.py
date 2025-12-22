@@ -13,22 +13,19 @@ class Global():
                     }
         self.unitee = ['RPM','W','Nm']
         self.error = 0
-
-
+        
+            
 class Engrenage(Global):
     def __init__(self,num:int) -> None:
         super().__init__()
         self.titre = f'engrenage {num}'
         super().__init__()
         self.description = {
-            'resistance_elastique': 0,
             '_diametre' : 0
         }
         self.unitee = [
-            'Mpa',
             'm'
             ]
-        
 
 class Train_global(Global):
     def __init__(self) -> None:
@@ -46,6 +43,7 @@ class Train_global(Global):
 		    '_module': 0,
             'alpha': 20,
             'beta':0,
+            'resistance_elastique': 0,
         }
         self.unitee = [
             'RPM',
@@ -58,7 +56,8 @@ class Train_global(Global):
             ' ',
             ' ',
             '°',
-            '°'
+            '°',
+            'MPa'
             ]
 
 
@@ -76,6 +75,8 @@ class Train_simple(Global):
         self.unitee = None
 
 
+
+# --- Classe TrainEpi (Cinématique P/C/V) ---
 class Train_epi(Global):
     def __init__(self,num:int) -> None:
         super().__init__()
@@ -93,6 +94,27 @@ class Train_epi(Global):
         self.unitee = None
 
 
+class Reducteur():
+    def __init__(self, listeTrain:list[Train_simple]) -> None:
+        # Objectif est de renvoyer les valeurs de dimensionnement en recevant une liste contenant les différents trains de réductions
+        self.titre = 'reducteur'
+        self.listeTrain = listeTrain
+        self.calculer_RR()
+        
+
+        self.calc_train = []
+        for i in range (len(listeTrain)):
+            self.calc_train.append(Calcule_train_simple(listeTrain[i]))
+        
+    def calculer_RR(self):
+        #calcul rapport de réduction
+        pass
+
+    # Rajouter dans paramdyna, une méthode de calcul pour les différents attributs nécessaires (type Vitesse entree, entraxe, etc...)
+        
+
+        
+
 # Classe Engrenage (ajoutée à partir de votre exemple)
 class Calcule_Engrenage:
     """Représente un Calcule_Engrenage avec ses paramètres géométriques."""
@@ -109,23 +131,26 @@ class Calcule_train_simple(Calcule_train):
     
     # Représente un train d'Calcule_Engrenages droits.
     
-    def __init__(self, 
-                 vitesse_entree: float, 
-                 puissance_entree: float, 
-                 couple_sortie: float, 
-                 entraxe: float, 
-                 res_elastique: float):
+    def __init__(self,train: Train_simple) -> None:
         """
         Initialise le train d'Calcule_Engrenages simple avec ses paramètres d'entrée/sortie.
         """
-        train = Train_simple(1)
-        train.description['global'].description['vitesse_entree'] = vitesse_entree
-        train.description['global'].description['puissance_entree'] = puissance_entree
-        train.description['global'].description['couple_sortie'] = couple_sortie
 
-        train.description['global'].description['entraxe'] = entraxe
-        # implemente variable liee au engrenages
-        train.description['pignon'].description['resistance_elastique'] = res_elastique
-        train.description['roue'].description['resistance_elastique'] = res_elastique
         super().__init__(train) # Appel de l'initialisation de la classe parente
         self.calculer_parametres()
+
+if __name__ == '__main__':
+    print('hello')
+
+    # Exemple d'utilisation
+    listeTrain = [Train_simple(1), Train_simple(2)]
+    for i in range(len(listeTrain)):
+        listeTrain[i].description['global'].description['resistance_elastique'] = 340  # Exemple de puissance
+        listeTrain[i].description['global'].description['entraxe'] = 100      # Exemple de couple de sortie
+       
+    listeTrain[0].description['global'].description['vitesse_entree'] = 340 
+    listeTrain[0].description['global'].description['puissance_entree'] = 340 
+    listeTrain[1].description['global'].description['couple_sortie'] = 340 
+    print('hello')
+    reducteur = Reducteur(listeTrain)
+    print(listeTrain)
