@@ -21,6 +21,7 @@ from PySide6 import (
 from outil_gui import (Fenetre,CloseWatcher)
 from fenetres_creation import FenetreCreationProjet
 from fenetres_projet import FenetreProjet
+import modeles2 as mod
 
 # parametre specifique a la fenetre menu
 MENU = {
@@ -65,7 +66,7 @@ def next_fenetre(fenetre_depart: qtw.QWidget, fenetre_suivante: qtw.QWidget) -> 
     fenetre_suivante.show()
 
 
-def detecte_fermeture_fenetre(fenetre: qtw.QWidget) -> None:
+def ouvre_projet_lors_fermeture(fenetre: qtw.QWidget) -> None:
     """
     Cette fonction sera appelée *avant* que la fenêtre soit détruite.
     Tente de récupérer des attributs spécifiques de la fenêtre et
@@ -165,7 +166,7 @@ class FenetreMenu(Fenetre):
 
     def _ouvrir_projet(self) -> None:
         """
-        Ouvre une fenêtre de projet existante.
+        Ouvre un projet reducteur existante, lie le contenue et ouvre la fenetre projet.
         """
         path, _ = qtw.QFileDialog.getOpenFileName(self,
             "Ouvrir un projet",
@@ -176,12 +177,27 @@ class FenetreMenu(Fenetre):
         fichier_xslx = xlsx.ProjetXlsx(path)
         fichier_xslx.ouverture_espace_existant()
         reducteur = fichier_xslx.lire_fichier()
-        print(reducteur, len(reducteur), type(reducteur))
-        for i in range(len(reducteur)-1):
-            for global_key in reducteur[i+1].description:
-                for key in reducteur[i+1].description[global_key].description:
-                    print(i,global_key, key, reducteur[i+1].description[global_key].description[key])
+        if len(reducteur) <= 1:
+            fenetre_erreur = FenetreFichierInvalide()
+            fenetre_erreur.exec()
+            return
+        train = mod.Calcule_train_simple(reducteur[1])
+        fenetre_projet = FenetreProjet(train)
+        fenetre_projet.show()
+        self.close()
         
+
+class FenetreFichierInvalide(qtw.QMessageBox):
+    def __init__(self) -> None:
+        """
+        Classe pour générer une fenêtre de message d'erreur lorsque le fichier ouvert est invalide.
+        """
+        super().__init__()
+        self.setIcon(qtw.QMessageBox.Icon.Critical)
+        self.setWindowTitle("Erreur de fichier")
+        self.setText("Le fichier sélectionné est invalide ou vide.")
+        self.setStandardButtons(qtw.QMessageBox.StandardButton.Ok)
+
 
 if __name__ == '__main__':
     # Variable globale pour stocker l'instance de la fenêtre
@@ -190,10 +206,11 @@ if __name__ == '__main__':
     fenetre_menu = FenetreMenu(MENU)
     fenetre_creation = FenetreCreationProjet()
     # Surveille la femerture de la fenetre_creation
-    watcher = CloseWatcher(detecte_fermeture_fenetre)
+    watcher = CloseWatcher(ouvre_projet_lors_fermeture)
     fenetre_creation.installEventFilter(watcher)
     # lie le bouton créer projet à la mise en avant de fenetre_creation
     fenetre_menu.buttons['creer_projet'].clicked.connect(lambda checked=False: next_fenetre(fenetre_menu, fenetre_creation))
+
     
     fenetre_menu.show()
     sys.exit(app.exec())

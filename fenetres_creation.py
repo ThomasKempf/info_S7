@@ -255,13 +255,21 @@ class FenetreCreationProjet(Fenetre):
         - il est important de les laisser en instance courante pour pouvoir les lire juste avant la fermeture de la page
         - ``self._page[0].variables`` doit etre valide de 0 a 1
         '''
+        # cette fonction est encore en prototype le temps que les differentes classes de calcul soit implementée
         description_global =  self._page[0].variables
         self._description_global = mod.Global()
         self._description_global.description =  description_global
         variables_lignes = self._page[1].variables_lignes
         values_global = [int(val) for val in description_global.values()]
         values_train = [int(val) for val in variables_lignes[0].values()] # ajoute que le premier train
-        self._train = mod.Calcule_train_simple(*values_global, *values_train)
+        # creation du train
+        train = mod.Train_simple(1)
+        train.description['global'].description['vitesse_entree'] = values_global[0]
+        train.description['global'].description['puissance_entree'] = values_global[1]
+        train.description['global'].description['couple_sortie'] = values_global[2]
+        train.description['global'].description['entraxe'] = values_train[0]
+        train.description['global'].description['resistance_elastique'] = values_train[1]
+        self._train = mod.Calcule_train_simple(train)
 
 
 class Page_0():

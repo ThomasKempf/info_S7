@@ -217,6 +217,9 @@ class ProjetXlsx(Xlsx_file):
     def lire_fichier(self) -> None:
         '''
         lie un fichier xlsx contenant un projet reducteur
+
+        :return: liste contenant les different train du reducteur [0 = placeholder, 1 = train 1, 2 = train 2, ...]
+        retourne [0] si le fichier est vide ou pas de la bonne structure
         '''
         LIGNE_TITRE = 2 # ligne dans la quelle ce trouve le titre principale, est utiliser comme reference pour toutes les autres valeurs
         COLONNE_DEPART = 2 # numero de colonne de la premiere valeur
@@ -229,13 +232,15 @@ class ProjetXlsx(Xlsx_file):
             ligne = LIGNE_TITRE
             valeur_cellule = self._lire_cellule(ligne,colonne)
             if valeur_cellule is None:
-                return self._param
+                return self._param # cas ou la cellule est vide, fin de la lecture
             elif valeur_cellule.startswith('train_simple_'):
                 num_part = valeur_cellule[len('train_simple_'):]
                 train = Train_simple( int(num_part) )
-            else:
+            elif valeur_cellule.startswith('train_epi_'):
                 num_part = valeur_cellule[len('train_epi_'):]
                 train = Train_epi( int(num_part) )
+            else:
+                return self._param # cas ou le titre n'est pas reconnu, fin de la lecture
             train.titre = valeur_cellule
             # lire chaque valeur de la description du train
             for global_key in train.description:
