@@ -87,7 +87,7 @@ class Calcule_train:
     def calculer_force_tangentielle(self,param:str = None):
         '''
         :param param: param est le nom du parametre changée, l'info permet de vérifier si le recalcule est necessaire,
-                        si param = None cela veux dire qu'il faut faire le calcule par defaut
+                        si param = None cela veuxff dire qu'il faut faire le calcule par defaut
         '''
         # verifie si le calcule est néccessaire
         parametres = ['_couple_entree','entraxe','alpha'] 
