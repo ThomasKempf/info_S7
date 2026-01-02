@@ -1,5 +1,6 @@
 # Fichier: modeles.py
 from Parametres_dyna import Calcule_train
+import math
 
 # --- Définition des classes de base ---
 
@@ -34,7 +35,7 @@ class Train_global(Global):
         self.description = {
             'vitesse_entree': 0,
             'puissance_entree': 0,
-            'couple_sortie': 0,
+            'couple_sortie': 100,
             '_couple_entree': 0,
             'entraxe': 0,
 		    '_vitesse_sortie': 0,
@@ -106,12 +107,13 @@ class Reducteur():
     #     self.calc_train = []
     #     for i in range (len(listeTrain)):
     #         self.calc_train.append(Calcule_train_simple(listeTrain[i]))
-    def __init__(self, listeTrain: list[Train_simple], rr_global_vise: float, P_totale: float, V_entree_totale: float) -> None:
+    def __init__(self, listeTrain: list[Train_simple]) -> None:
         self.titre = 'reducteur'
         self.listeTrain = listeTrain
-        self.rr_global_vise = rr_global_vise # Nouveau paramètre
-        self.P_totale = P_totale             # Nouveau paramètre
-        self.V_entree_totale = V_entree_totale # Nouveau paramètre
+
+        self.P_totale = listeTrain[0].description['global'].description['puissance_entree']             # Nouveau paramètre
+        self.V_entree_totale = listeTrain[0].description['global'].description['vitesse_entree'] # Nouveau paramètre
+        self.rr_global_vise = self.calculer_RR_global()  # Calcul du RR global visé
         
         # Étape 1 : On définit les rapports de réduction par étage
         self.calculer_RR()
@@ -136,6 +138,16 @@ class Reducteur():
             v_actuelle = calculateur._param_global['_vitesse_sortie']
         
         
+    def calculer_RR_global(self):
+        '''
+        calcule le le rapport de réduction global du réducteur
+        
+        :return: rapport de réduction global
+        '''
+        couple_sortie = self.listeTrain[-1].description['global'].description['couple_sortie']      
+        omega_entree = self.V_entree_totale * 2 * math.pi / 60
+        omega_sortie = self.P_totale / couple_sortie
+        return omega_entree / omega_sortie
 
 
     def calculer_RR(self):
@@ -206,10 +218,12 @@ if __name__ == '__main__':
         # Données de base indispensables pour le dimensionnement
         t.description['global'].description['resistance_elastique'] = 340
         t.description['global'].description['entraxe'] = 0.1 # en mètres
-        t.description['global'].description['couple_sortie'] = 100 # Pour amorcer Vs > 0
+    mes_etages[0].description['global'].description['vitesse_entree'] = 1500  # en RPM
+    mes_etages[0].description['global'].description['puissance_entree'] = 4000  # en Watts
+    mes_etages[-1].description['global'].description['couple_sortie'] = 380  # en Nm
 
     # Lancement avec les 3 inputs : Rapport global, Puissance, Vitesse In
-    reducteur = Reducteur(mes_etages, rr_global_vise=25, P_totale=1500, V_entree_totale=3000)
+    reducteur = Reducteur(mes_etages)
 
     #  AJOUT DES PRINTS POUR VOIR LES RÉSULTATS
     print("\n" + "="*40)
