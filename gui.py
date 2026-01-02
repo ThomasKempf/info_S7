@@ -95,8 +95,8 @@ class Projet():
         :param fenetre: contient l'objet de la fenetre, qui est de pres ou de loin un widget
         """
         try:
-            train = getattr(fenetre, "_train")
-            fenetre_projet = FenetreProjet(train, self)
+            reducteur = getattr(fenetre, "_reducteur")
+            fenetre_projet = FenetreProjet(reducteur, self)
             fenetre_projet.show()
         except Exception as e:
             print("Impossible de récupérer les attributs :", e)
@@ -219,7 +219,6 @@ class FenetreFichierInvalide(qtw.QMessageBox):
         self.setWindowTitle("Erreur de fichier")
         self.setText("Le fichier sélectionné est invalide ou vide.")
         self.setStandardButtons(qtw.QMessageBox.StandardButton.Ok)
-
 
 
 

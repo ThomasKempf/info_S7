@@ -256,20 +256,33 @@ class FenetreCreationProjet(Fenetre):
         - ``self._page[0].variables`` doit etre valide de 0 a 1
         '''
         # cette fonction est encore en prototype le temps que les differentes classes de calcul soit implementée
+        # extrait les description des pages
         description_global =  self._page[0].variables
-        self._description_global = mod.Global()
-        self._description_global.description =  description_global
         variables_lignes = self._page[1].variables_lignes
+        # lis des données des linedits et des differentes variables
         values_global = [int(val) for val in description_global.values()]
-        values_train = [int(val) for val in variables_lignes[0].values()] # ajoute que le premier train
-        # creation du train
-        train = mod.Train_simple(1)
-        train.description['global'].description['vitesse_entree'] = values_global[0]
-        train.description['global'].description['puissance_entree'] = values_global[1]
-        train.description['global'].description['couple_sortie'] = values_global[2]
-        train.description['global'].description['entraxe'] = values_train[0]
-        train.description['global'].description['resistance_elastique'] = values_train[1]
-        self._train = mod.Calcule_train_simple(train)
+        mes_etages = []
+        for num_train in range(len(variables_lignes)):
+            values_train = []
+            variables_train = variables_lignes[num_train]
+            # creation du train
+            if variables_train['type_train'] == '  Train Simple':
+                mes_etages.append(mod.Train_simple(num_train + 1))
+            elif variables_train['type_train'] == '  Train Epicicloïdal':
+                mes_etages.append(mod.Train_epi(num_train + 1))
+            # incorporation des valeur
+            for key in variables_train:
+                if isinstance(variables_train[key],str):
+                    values_train.append(variables_train[key]) # cas des combobox
+                else:
+                    values_train.append(int(variables_train[key].text())) # cas des linedits
+            mes_etages[num_train].description['global'].description['entraxe'] = values_train[0]
+            mes_etages[num_train].description['global'].description['resistance_elastique'] = values_train[1]
+        # ajout des parametres globals
+        mes_etages[0].description['global'].description['vitesse_entree'] = values_global[0]
+        mes_etages[0].description['global'].description['puissance_entree'] = values_global[1]
+        mes_etages[-1].description['global'].description['couple_sortie'] = values_global[2]
+        self._reducteur = mod.Reducteur(mes_etages)
 
 
 class Page_0():
@@ -574,7 +587,17 @@ class Ligne_train():
         self._numero = numero
         self._genere_elements()
         self._add_element_block_droite()
-        self._fenetre.creer_getters_variables_lineedits(self,self._variables)
+    
+
+    @property
+    def variables(self):
+        '''
+        au varaibles 
+        '''
+        variables = self._variables
+        for key in self.comboboxes:
+            variables[key] = self.comboboxes[key].currentText()
+        return variables
 
 
     @property
@@ -628,15 +651,19 @@ class Ligne_train():
         **Préconditions :**
         - les self.labels , layoute liste_deroulante et widgets doivent etre valide
         '''
+        # ajoute les combobox au layout list
         for key in self.comboboxes:
             self.layouts['list'].addWidget(self.comboboxes[key])
         self._widgets['list'].setLayout(self.layouts['list'])
         self._widgets['list'].setObjectName("sous_block")
+        # ajoute tout les elements au layout main
         liste_widgets = [3,self.numero_train,self._widgets['list'],30,self._widgets['entraxe'],self._widgets['σ_max'],3]
         self._fenetre.ajoute(self.layouts['main'],liste_widgets)
+        # adapte le widget principal
         self._widgets['main'].setLayout(self.layouts['main'])
         self._widgets['main'].setObjectName("sous_block")
         self._widgets['main'].setFixedHeight(55)
+        # adapte le label numero train
         self.numero_train.setObjectName("sous_block")
         self.numero_train.setFixedWidth(45)
         self.numero_train.setAlignment(qtc.Qt.AlignCenter)

@@ -58,11 +58,11 @@ PROJET = {
 }
 
 class FenetreProjet(Fenetre):
-    def __init__(self, train:md.Calcule_train, projet) -> None:
+    def __init__(self, reducteur:md.Reducteur, projet) -> None:
         """
         créer une fenetre Projet tout en construisant les layoutes des trains
 
-        :param train: objet de la classe Simulation_train contenant les methode de calcule et la descritption du Train
+        :param reducteur: objet de la classe Reducteur la description de touts les trains
         :param projet: instance de la classe de type Projet pour le passer à la fenetre projet
         """
         elements = {
@@ -73,15 +73,14 @@ class FenetreProjet(Fenetre):
         }
         super().__init__(PROJET,elements)
         self.projet = projet
-        self._methode_train = train
-        self._train = train.train_1 # obj contenant toute la descritption, obj de type Train
+        self.liste_train = reducteur.listeTrain
         self.setStyleSheet(self._param['styleSheet'])
         self.genere_toolbars()
         self.layouts['main'].addWidget(self.widgets['toolbar'])
         # genere les trains
         self.frames_train = []
-        for i in range(7):
-            self.frames_train.append(Frame_Train(self._train,self,i+1))
+        for i in range(len(self.liste_train)):
+            self.frames_train.append(Frame_Train(self.liste_train[i],self,i+1))
         self.ajoute(self.layouts['train'],self.frames_train)
         self.ajoute_bp_moins()
         self.ajoute_bp_plus()
