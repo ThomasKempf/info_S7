@@ -183,7 +183,8 @@ class FenetreProjet(Fenetre):
         verifie si un xlsx est deja creer, si oui il le met a jour, sinon il lance la methode save as
         '''
         if hasattr(self, "xlsx_file"):
-            self.xlsx_file.ecrire_description_ogjet_multiple(self._train,1)
+            for i in range(len(self.liste_train)):
+                self.xlsx_file.ecrire_description_ogjet_multiple(self.liste_train[i], i + 1)
             self.xlsx_file.save()
         else:
             self.save_as()
@@ -274,7 +275,8 @@ class FenetreProjet(Fenetre):
         # creation du fichier
         self.xlsx_file = xlsx.ProjetXlsx(path)
         self.xlsx_file.creation_espace_travail()
-        self.xlsx_file.ecrire_description_ogjet_multiple(self._train,1)
+        for i in range(len(self.liste_train)):
+            self.xlsx_file.ecrire_description_ogjet_multiple(self.liste_train[i], i + 1)
         self.xlsx_file.save()
 
 

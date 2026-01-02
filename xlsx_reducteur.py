@@ -225,7 +225,7 @@ class ProjetXlsx(Xlsx_file):
         COLONNE_DEPART = 2 # numero de colonne de la premiere valeur
         NBR_COLONNE_SEPRARATION = 1 # nombre de colonne separant les train
         NBR_COLONNE_TRAIN = 3 # nombre de colonne pris par un train
-        self._param = [0]
+        self._param = []
         colonne = COLONNE_DEPART
         while True:
             # lire le titre principale pour savoir quel type de train il s'agit

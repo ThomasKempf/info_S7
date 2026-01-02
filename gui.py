@@ -198,13 +198,14 @@ class FenetreMenu(Fenetre):
         print(path)
         fichier_xslx = xlsx.ProjetXlsx(path)
         fichier_xslx.ouverture_espace_existant()
-        reducteur = fichier_xslx.lire_fichier()
-        if len(reducteur) <= 1:
+        mes_etages = fichier_xslx.lire_fichier()
+        if len(mes_etages) == 0:
             fenetre_erreur = FenetreFichierInvalide()
             fenetre_erreur.exec()
             return
-        train = mod.Calcule_train_simple(reducteur[1])
-        fenetre_projet = FenetreProjet(train, self.project)
+        print(mes_etages)
+        reducteur = mod.Reducteur(mes_etages)
+        fenetre_projet = FenetreProjet(reducteur, self.project)
         fenetre_projet.show()
         self.close()
         
