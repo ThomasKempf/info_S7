@@ -353,8 +353,7 @@ class BackstagePopup(qtw.QWidget):
             ("Nouveau", "new"),
             ("Ouvrir...", "open"),
             ("Enregistrer", "save"),
-            ("Enregistrer sous...", "save_as"),
-            ("Imprimer...", "print"),
+            ("Enregistrer sous...", "save_as")
         ]
         # creer et ajoute chaque bouton au layoute
         layout = qtw.QVBoxLayout(self)

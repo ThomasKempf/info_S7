@@ -220,7 +220,6 @@ class FenetreProjet(Fenetre):
             "open": self.compens,
             "save": self._enregistrer,
             "save_as": self.save_as,
-            "print": self.compens,
         }
         self.backstage = BackstagePopup(self,callbacks,self.buttons['fichier'])
 
@@ -356,8 +355,6 @@ class Frame_Train(qtw.QFrame):
         return combobox
     
 
-
-
     def genere_image_train(self):
         """
         Génère un widget contenant l'image et un label supplémentaire avec un nombre.
@@ -377,16 +374,11 @@ class Frame_Train(qtw.QFrame):
         # Label - pour supprimer le train
         self.bp_moins = qtw.QPushButton(container)  # Exemple : nombre à afficher
         self.bp_moins.setObjectName('bp_moins')
-
-
         label_image.move(30, 10)
         label_nombre.move(10, 5)
         self.bp_moins.move(220, 15)
         self.bp_moins.hide()
         return container
-
-
-
 
 
     def genere_un_parametre(self,sous_obj,key,value,unitee):
