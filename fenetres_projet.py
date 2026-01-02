@@ -84,7 +84,7 @@ class FenetreProjet(Fenetre):
         self.ajoute(self.layouts['train'],self.frames_train)
         self.ajoute_bp_moins()
         self.ajoute_bp_plus()
-        if len(self.frames_train) <= 7:
+        if len(self.frames_train) >= 7:
             self.bouton_plus.hide()
         self.layouts['train'].addStretch() 
         self.widgets['container'].setLayout(self.layouts['train'])
