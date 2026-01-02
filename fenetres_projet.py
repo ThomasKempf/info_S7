@@ -15,6 +15,7 @@
 from outil_gui import Fenetre,BackstagePopup
 import modeles2 as md
 import xlsx_reducteur as xlsx
+import os
 from PySide6 import (
     QtWidgets as qtw,
     QtGui as qtg,
@@ -28,18 +29,41 @@ PROJET = {
     'labels':['Train_1'],
     'buttons':['Fichier','','Aide'],
     'styleSheet':"""
+                    QFrame#monContainer {
+                        background-color: white;       /* fond blanc */
+                        border: 2px solid black;       /* bordure de 2px noire */
+                        border-radius: 15px;           /* coins arrondis de 15px */
+                    }
+                    #bp_moins { 
+                        background-color: black;
+                        padding: 0;
+                        border-radius:3;
+                        height: 6px; 
+                        width: 30px; 
+                    }
+                    #bp_moins:hover {
+                        background-color: red;
+                    }
+                    #bp_plus { 
+                        background: none;          /* pas de fond */
+                        border: none;              /* pas de bordure */
+                        color: black;              /* texte noir */
+                        font-size: 80px;           /* texte très gros, ajuste à ton goût */
+                        font-weight: bold;         /* optionnel : texte en gras */
+                    }
+                    #bp_plus:hover {
+                        color: red;
+                    }
         """
 }
 
-
 class FenetreProjet(Fenetre):
-    def __init__(self, xlsx_file:xlsx.ProjetXlsx, train:md.Calcule_train) -> None:
+    def __init__(self, reducteur:md.Reducteur, projet) -> None:
         """
         créer une fenetre Projet tout en construisant les layoutes des trains
 
-        :param xlsx_param: liste d'ogjet de parametre utiliser par le xlsx, le premier sont les parmetres global, ensuite vienne les trains
-        :param xlsx_file: ogjet utiliser pour le xlsx du projet, c'est dans celui si qu'on écris les param precedents
-        :param train: objet de la classe Simulation_train contenant les methode de calcule et la descritption du Train
+        :param reducteur: objet de la classe Reducteur la description de touts les trains
+        :param projet: instance de la classe de type Projet pour le passer à la fenetre projet
         """
         elements = {
             'layouts':{'main':'v','train':'h'},
@@ -48,26 +72,27 @@ class FenetreProjet(Fenetre):
             'scrolls':['train']
         }
         super().__init__(PROJET,elements)
-        self._methode_train = train
-        self._xlsx_file = xlsx_file
-        self._train = train.train_1 # obj contenant toute la descritption, obj de type Train
+        self.projet = projet
+        self.liste_train = reducteur.listeTrain
         self.setStyleSheet(self._param['styleSheet'])
         self.genere_toolbars()
         self.layouts['main'].addWidget(self.widgets['toolbar'])
-        for i in range(7):
-            frame = Frame_Train(self._train,self,i+1)
-            self.layouts['train'].addWidget(frame)
+        # genere les trains
+        self.frames_train = []
+        for i in range(len(self.liste_train)):
+            self.frames_train.append(Frame_Train(self.liste_train[i],self,i+1))
+        self.ajoute(self.layouts['train'],self.frames_train)
+        self.ajoute_bp_moins()
+        self.ajoute_bp_plus()
+        if len(self.frames_train) <= 7:
+            self.bouton_plus.hide()
         self.layouts['train'].addStretch() 
         self.widgets['container'].setLayout(self.layouts['train'])
         self.scrolls['train'].setWidget(self.widgets['container'])
-
-        self.scrolls['train'].setWidgetResizable(False)
-
+        self.scrolls['train'].setWidgetResizable(True)
         # politiques de barres (facultatif)
         self.scrolls['train'].setHorizontalScrollBarPolicy(qtc.Qt.ScrollBarAsNeeded)
         self.scrolls['train'].setVerticalScrollBarPolicy(qtc.Qt.ScrollBarAsNeeded)
-
-
         # ajoute la scrollarea au layout principal
         self.layouts['main'].addWidget(self.scrolls['train'])
         self.setLayout(self.layouts['main'])
@@ -97,6 +122,50 @@ class FenetreProjet(Fenetre):
         self._create_backstage()
     
 
+    def supprime_frame_train(self):
+        '''
+        supprime le dernier fram de train à droite, tout en reduisant aussi la liste le contenant
+        
+        '''
+        self.frames_train[len(self.frames_train) - 1].deleteLater()
+        self.frames_train.pop()
+        if len(self.frames_train) > 1: 
+            self.ajoute_bp_moins()
+        if len(self.frames_train) < 7:
+            self.bouton_plus.show()
+
+    
+    def ajoute_frame_train(self):
+        '''
+        ajoute un fram de train à droite, tout en augmentant aussi la liste le contenant
+        
+        '''
+        self.frames_train[len(self.frames_train)-1].bp_moins.hide()
+        self.frames_train.append(Frame_Train(self._train,self,len(self.frames_train)+1))
+        self.layouts['train'].insertWidget(len(self.frames_train)-1, self.frames_train[len(self.frames_train)-1])
+        self.ajoute_bp_moins()
+        if len(self.frames_train) >= 7:
+            self.bouton_plus.hide()
+        
+
+
+    def ajoute_bp_moins(self):
+        '''
+        ajoute le bouton mois qui permet de supprimer un fram de train
+        '''
+        self.frames_train[len(self.frames_train)-1].bp_moins.show()
+        self.frames_train[len(self.frames_train)-1].bp_moins.setFixedSize(30, 6)
+        self.frames_train[len(self.frames_train)-1].bp_moins.clicked.connect(self.supprime_frame_train)
+
+
+    def ajoute_bp_plus(self):
+        '''
+        ajoute le bouton plus qui permet d'ajouter un fram de train
+        '''
+        self.bouton_plus = qtw.QPushButton('+')
+        self.bouton_plus.setObjectName('bp_plus')
+        self.bouton_plus.clicked.connect(self.ajoute_frame_train)
+        self.layouts['train'].addWidget(self.bouton_plus)
 
 
     def _fichier(self) -> None:
@@ -111,8 +180,13 @@ class FenetreProjet(Fenetre):
         '''
         fonction ratachée au bouton enregistrer, son nom permet de le lier autotmatique
         ne pas modifier la structure nie le nom de la methode
+        verifie si un xlsx est deja creer, si oui il le met a jour, sinon il lance la methode save as
         '''
-        print('enregistrer')
+        if hasattr(self, "xlsx_file"):
+            self.xlsx_file.ecrire_description_ogjet_multiple(self._train,1)
+            self.xlsx_file.save()
+        else:
+            self.save_as()
 
 
     def _aide(self) -> None:
@@ -123,23 +197,28 @@ class FenetreProjet(Fenetre):
         print('aide')
 
 
+    def creer_nouveau_projet(self) -> None:
+        '''
+        genere un nouveau objet projet et ouvre directement la fenetre de creation de projet
+        '''
+        self.projet.fenetre_creation.show()
+        self.projet.fenetre_creation.raise_()
+
+
     def compens(self) -> None:
         ''' fonction test'''
         print('hello')
 
-    def compens_2(self) -> None:
-        ''' fonction test'''
-        print('helli')
 
     def _create_backstage(self) -> None:
         '''
         ratache les methode au key des boutons de la liste, pour ensuite la créer à l'aide de la classse appropriee
         '''
         callbacks={
-            "new": self.compens,
+            "new": self.creer_nouveau_projet,
             "open": self.compens,
-            "save": self.compens_2,
-            "save_as": self.compens,
+            "save": self._enregistrer,
+            "save_as": self.save_as,
             "print": self.compens,
         }
         self.backstage = BackstagePopup(self,callbacks,self.buttons['fichier'])
@@ -156,6 +235,49 @@ class FenetreProjet(Fenetre):
             self.backstage.positionner_list(self)
 
 
+    def save_as(self):
+        '''
+        ouvre une fenetre de dialogue pour enregistrer le fichier xlsx
+        '''
+        default_name = os.path.join(
+            os.path.expanduser("~"),
+            "réducteur.xlsx"
+        )
+        path, _ = qtw.QFileDialog.getSaveFileName(
+            self,
+            "Enregistrer sous",
+            default_name,
+            "Fichier Excel (*.xlsx);;Tous les fichiers (*)"
+        )
+        if not path:
+            return False
+        if not path.lower().endswith(".xlsx"):
+            path += ".xlsx"
+        self.setWindowTitle(str(path))
+        return self.genere_xlsx(path)
+
+    
+    def genere_xlsx(self,path) -> None:
+        '''
+        genere les differents instance utilisant la classe xlsx.
+        xlsx_param est une liste contenant tout les parametres du projet
+        en utilisant des classe tamplate pour etre sur d'avoir la bonne structure
+        xlsx_file contient toute les metodes lier au ficher xlsx, permetant de le modifier et le sauvegrader
+
+        :param path: chemain complet du fichier xlsx à creer
+
+        **Préconditions :**
+        - il est important de les laisser en instance courante pour pouvoir les lire juste avant la fermeture de la page
+        - ``self._description_global`` doit etre valide et contenir la description global (vitesse,puissance,couple)
+        - ``self._description_global`` doit etre un objet train
+        '''
+        # creation du fichier
+        self.xlsx_file = xlsx.ProjetXlsx(path)
+        self.xlsx_file.creation_espace_travail()
+        self.xlsx_file.ecrire_description_ogjet_multiple(self._train,1)
+        self.xlsx_file.save()
+
+
 class Frame_Train(qtw.QFrame):
     def __init__(self,train:md.Train_simple,fenetre:FenetreProjet,numero:int):
         '''
@@ -166,6 +288,7 @@ class Frame_Train(qtw.QFrame):
         :param numero: numero du train
         '''
         super().__init__()
+        self.largeur_param = 270
         self.num = numero
         self._train = train
         self.fenetre = fenetre
@@ -184,14 +307,20 @@ class Frame_Train(qtw.QFrame):
         **Préconditions :**
         - ``self._zone_text_train`` doit être valide et contenir la key widget
         """
-        layout = qtw.QVBoxLayout()
-        layout.addStretch()
-        layout.addWidget(self.genere_type_train()) 
-        layout.addWidget(self.genere_image_train(), alignment=qtc.Qt.AlignCenter)
-        layout.addStretch()
+        main_layout = qtw.QVBoxLayout()
+        main_layout.addStretch()
+        main_layout.addWidget(self.genere_type_train()) 
+        main_layout.addWidget(self.genere_image_train(), alignment=qtc.Qt.AlignCenter)
+        main_layout.addStretch()
         for key in self._zone_text_train:
-            self.fenetre.ajoute(layout, list(self._zone_text_train[key]['widget'].values()))
-        return layout
+            container = qtw.QFrame()
+            container.setFixedWidth(self.largeur_param)
+            layout = qtw.QVBoxLayout(container)
+            container.setObjectName("monContainer")
+            widget_list = [qtw.QLabel(key)] + list(self._zone_text_train[key]['widget'].values()) # titre + param
+            self.fenetre.ajoute(layout, widget_list)
+            main_layout.addWidget(container, alignment=qtc.Qt.AlignHCenter)
+        return main_layout
 
 
     def genere_widget_train(self) -> dict[qtw.QWidget,qtw.QLineEdit]:
@@ -234,33 +363,24 @@ class Frame_Train(qtw.QFrame):
         # Créer un conteneur pour l'image et le label
         container = qtw.QFrame()
         container.setObjectName("monContainer")
-        container.setFixedSize(230, 230)  # Taille du conteneu
-        container.setStyleSheet("""
-                    QFrame#monContainer {
-                        background-color: white;       /* fond blanc */
-                        border: 2px solid black;       /* bordure de 2px noire */
-                        border-radius: 15px;           /* coins arrondis de 15px */
-                    }
-        """)
+        container.setFixedSize(self.largeur_param, 230)  # Taille du conteneu
         # Label pour l'image
         label_image = self.fenetre._genere_lable_image('./epicicloïdale.png')
         label_image.setParent(container)
         label_image.setFixedSize(210, 210)
         label_image.setScaledContents(True)
-
         # Label pour le nombre
         label_nombre = qtw.QLabel(str(self.num), container)  # Exemple : nombre à afficher
-        label_nombre.setAlignment(qtc.Qt.AlignLeft)
-        label_nombre.setStyleSheet("""
-            font-size: 20px;
-            font-weight: bold;
-            color: black;
-            padding-left: 5px;
-        """)
+        label_nombre.setStyleSheet('font-size: 20px; font-weight: bold; color: black; padding-left: 5px;')
+        # Label - pour supprimer le train
+        self.bp_moins = qtw.QPushButton(container)  # Exemple : nombre à afficher
+        self.bp_moins.setObjectName('bp_moins')
 
 
-        label_image.move(10, 10)
+        label_image.move(30, 10)
         label_nombre.move(10, 5)
+        self.bp_moins.move(220, 15)
+        self.bp_moins.hide()
         return container
 
 
@@ -299,15 +419,12 @@ class Frame_Train(qtw.QFrame):
 
         **Préconditions :**
         - L'attribut ``self._train`` doit contenir la descrpition de l'objet de Type Train.
-        - ``self.fenetre._xlsx_file`` et ``self._zone_text_train`` 
-          doivent être valides et contenir les clés attendues.
+        - ``self._zone_text_train`` 
+          doit être valides et contenir les clés attendues.
         """
         # met a jour l'objet train
         sous_obj.description[value_name] = nouvelle_valeur
         self.fenetre._methode_train.calculer_parametres(value_name)
-        # met a jour le xlsx
-        self.fenetre._xlsx_file.ecrire_description_ogjet_multiple(self._train,1)
-        self.fenetre._xlsx_file.save()
         # met a jour la fenetre
         for global_key in  self._zone_text_train:
             for key in self._zone_text_train[global_key]['variable']:

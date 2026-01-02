@@ -16,16 +16,25 @@ class Calcule_train:
     def calculer_rapport_reduction(self):
         """La méthode 'calculer_rapport' doit être implémentée par la sous-classe."""
         raise NotImplementedError("La methode 'calculer_rapport' doit être implementee par la sous-classe.")
+    
+    def calculer_mise_a_jour_complete(self):
+        """Recalcule toute la physique (Couple -> Force -> Module -> Diamètre) 
+           basé sur les vitesses d'entrée/sortie imposées."""
+        self.calculer_rapport_reduction() # Recalcul simple i = Ve/Vs
+        self.calculer_couple_entree()     # C = P/w
+        self.calculer_force_tangentielle()
+        self.calculer_module()
+        self.calculer_diametre()
 
     @property
     def rapport_reduction(self) -> float:
-        """Propriété publique (getter) du rapport de reduction."""
+        """Propriété  (getter) du rapport de reduction."""
         return self._rapport_reduction
 
     
     def calculer_parametres(self,param=None):
             '''
-            :param param: permet de donner en arg le parametre qui a été modifier
+            :param: permet de donner en arg le parametre qui a été modifié
             '''
             self.calculer_vitesse_sortie(param)
             self.calculer_couple_entree(param)
@@ -87,7 +96,7 @@ class Calcule_train:
     def calculer_force_tangentielle(self,param:str = None):
         '''
         :param param: param est le nom du parametre changée, l'info permet de vérifier si le recalcule est necessaire,
-                        si param = None cela veuxff dire qu'il faut faire le calcule par defaut
+                        si param = None cela veux dire qu'il faut faire le calcule par defaut
         '''
         # verifie si le calcule est néccessaire
         parametres = ['_couple_entree','entraxe','alpha'] 
@@ -125,7 +134,9 @@ class Calcule_train:
         self._param_global['_module'] = 2.34 * math.sqrt(FT / (RES*10))
     
 
+
 ######################################################################################################################################
+
 
         # Calcul des diamètres primitifs
 
