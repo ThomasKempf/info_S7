@@ -202,8 +202,7 @@ class FenetreProjet(Fenetre):
         '''
         genere un nouveau objet projet et ouvre directement la fenetre de creation de projet
         '''
-        self.projet.fenetre_creation.show()
-        self.projet.fenetre_creation.raise_()
+        self.projet.fenetre_creation.showNormal()
 
 
     def compens(self) -> None:

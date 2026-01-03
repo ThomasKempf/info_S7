@@ -245,6 +245,7 @@ class FenetreCreationProjet(Fenetre):
             self.genere_projet()
             fenetre_attente.close()
             self.close()
+            self.precedente_page()
 
 
     def genere_projet(self) -> None:
