@@ -64,14 +64,14 @@ class Projet():
         # Variable globale pour stocker l'instance de la fenêtre
         self.app = qtw.QApplication(sys.argv)
         # Créer les fenetres
-        fenetre_menu = FenetreMenu(MENU, self)
+        self.fenetre_menu = FenetreMenu(MENU, self)
         self.fenetre_creation = FenetreCreationProjet()
         # Surveille la femerture de la fenetre_creation
         self.watcher = CloseWatcher(self.ouvre_projet_lors_fermeture)
         self.fenetre_creation.installEventFilter(self.watcher)
         # lie le bouton créer projet à la mise en avant de fenetre_creation
-        fenetre_menu.buttons['creer_projet'].clicked.connect(lambda checked=False: self.next_fenetre(fenetre_menu, self.fenetre_creation)) 
-        fenetre_menu.show()
+        self.fenetre_menu.buttons['creer_projet'].clicked.connect(lambda checked=False: self.next_fenetre(self.fenetre_menu, self.fenetre_creation)) 
+        self.fenetre_menu.show()
         sys.exit(self.app.exec())
 
 
@@ -206,6 +206,7 @@ class FenetreMenu(Fenetre):
         print(mes_etages)
         reducteur = mod.Reducteur(mes_etages)
         fenetre_projet = FenetreProjet(reducteur, self.project)
+        fenetre_projet.setWindowTitle(str(path))
         fenetre_projet.show()
         self.close()
         

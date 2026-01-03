@@ -208,6 +208,7 @@ class FenetreProjet(Fenetre):
     def compens(self) -> None:
         ''' fonction test'''
         print('hello')
+        self.projet.fenetre_menu._ouvrir_projet()
 
 
     def _create_backstage(self) -> None:
