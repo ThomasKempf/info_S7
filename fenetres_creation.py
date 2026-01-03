@@ -274,6 +274,8 @@ class FenetreCreationProjet(Fenetre):
                 mes_etages.append(mod.Train_simple(num_train + 1))
             elif variables_train['type_train'] == '  Train Epicicloïdal':
                 mes_etages.append(mod.Train_epi(num_train + 1))
+            if variables_train['type_engrenage'] == '  Engrenage hélicoïdal':
+                mes_etages[num_train].description['global'].description['beta'] = 20 # angle d'hélice par defaut
             # incorporation des valeur
             for key in variables_train:
                 if isinstance(variables_train[key],str):
