@@ -104,9 +104,9 @@ class Calcule_train:
             return
         # Calcule la force tangentielle à partir du couple de sortie et de l'entraxe
         Ce = self._param_global['_couple_entree']
-        r = self._param_global['entraxe']  # En mètres
+        r = self._param_global['entraxe']/1000  # En mètres
         a = self._param_global['alpha']
-
+        print( self._param_global['entraxe'],r)
         if r <= 0:
             print("Erreur : L'entraxe doit être positif.")
             force_tangentielle = 0.0
@@ -149,13 +149,13 @@ class Calcule_train:
         parametres = ['entraxe','_rapport_reduction'] 
         if param not in parametres and param != None:
             return
-        e = self._param_global['entraxe']
+        e = self._param_global['entraxe']/1000
         r = self._param_global['_rapport_reduction']
         D1 = (2 * e) / (1 + r)
         D2 = r * D1         
 
-        self._param_pignon['_diametre'] = D1
-        self._param_roue['_diametre'] = D2
+        self._param_pignon['_diametre'] = D1*1000
+        self._param_roue['_diametre'] = D2*1000
         
 
     ######################################################################################################################################

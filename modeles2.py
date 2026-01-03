@@ -25,7 +25,7 @@ class Engrenage(Global):
             '_diametre' : 0
         }
         self.unitee = [
-            'm'
+            'mm'
             ]
 
 class Train_global(Global):
@@ -51,7 +51,7 @@ class Train_global(Global):
             'W',
             'Nm',
             'Nm',
-            'm',
+            'mm',
             'RPM',
             'N',
             ' ',
@@ -217,7 +217,7 @@ if __name__ == '__main__':
     for t in mes_etages:
         # Données de base indispensables pour le dimensionnement
         t.description['global'].description['resistance_elastique'] = 340
-        t.description['global'].description['entraxe'] = 0.1 # en mètres
+        t.description['global'].description['entraxe'] = 100 # en mm
     mes_etages[0].description['global'].description['vitesse_entree'] = 1500  # en RPM
     mes_etages[0].description['global'].description['puissance_entree'] = 4000  # en Watts
     mes_etages[-1].description['global'].description['couple_sortie'] = 380  # en Nm
@@ -241,8 +241,8 @@ if __name__ == '__main__':
         print(f"  - Vitesse Entrée : {global_data['vitesse_entree']:.1f} RPM")
         print(f"  - Vitesse Sortie : {global_data['_vitesse_sortie']:.1f} RPM")
         print(f"  - Module calculé : {global_data['_module']:.4f} mm")
-        print(f"  - Diamètre Pignon (D1) : {pignon_data['_diametre']*1000:.2f} mm")
-        print(f"  - Diamètre Roue (D2)   : {roue_data['_diametre']*1000:.2f} mm")
+        print(f"  - Diamètre Pignon (D1) : {pignon_data['_diametre']:.2f} mm")
+        print(f"  - Diamètre Roue (D2)   : {roue_data['_diametre']:.2f} mm")
     
     print("\n" + "="*40)
 
