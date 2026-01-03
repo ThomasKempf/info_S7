@@ -27,7 +27,7 @@ from PySide6 import (
 PROJET = {
     'titre': 'Projet',
     'labels':['Train_1'],
-    'buttons':['Fichier','','Aide'],
+    'buttons':['Fichier',''],
     'styleSheet':"""
                     QFrame#monContainer {
                         background-color: white;       /* fond blanc */
@@ -68,7 +68,7 @@ class FenetreProjet(Fenetre):
         elements = {
             'layouts':{'main':'v','train':'h'},
             'widgets': ['toolbar','container'],
-            'buttons':['fichier','enregistrer','aide'],
+            'buttons':['fichier','enregistrer'],
             'scrolls':['train']
         }
         super().__init__(PROJET,elements)
@@ -188,14 +188,6 @@ class FenetreProjet(Fenetre):
             self.xlsx_file.save()
         else:
             self.save_as()
-
-
-    def _aide(self) -> None:
-        '''
-        fonction ratachée au bouton aide, son nom permet de le lier autotmatique
-        ne pas modifier la structure nie le nom de la methode
-        '''
-        print('aide')
 
 
     def creer_nouveau_projet(self) -> None:
