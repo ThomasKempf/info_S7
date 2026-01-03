@@ -285,7 +285,11 @@ class Fenetre(qtw.QWidget):
         :param lineedits: objet lineedits a modifier
         :param nouvelle_valeur: nouvelle valeur correcte à lui assignée
         '''
-        if all(ch == '0' for ch in lineedits.text()):
+        value = lineedits.text()
+        if '.' in value:  # vérifier qu'il y a un point
+            partie_entière, partie_decimale = value.split('.', 1)  # ne sépare qu'au premier point
+            value = partie_entière + partie_decimale
+        if all(ch == '0' for ch in value):
             if nouvelle_valeur == None:
                 nouvelle_valeur = self.valeur_precedente[str(lineedits)]
             self.signaler_lineedits_erreur(lineedits,nouvelle_valeur)

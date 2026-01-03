@@ -21,6 +21,9 @@ from PySide6 import (
     QtCore as qtc
 )
 
+# validator pour les float
+validator = qtg.QDoubleValidator()
+validator.setLocale(qtc.QLocale(qtc.QLocale.C))
 
 CREATION_PROJET = {
     'buttons':['Précedent','Next'],
@@ -48,9 +51,9 @@ CREATION_PROJET = {
 
 PAGE_0 = {
     'labels_unitee':{
-                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','validator':qtg.QDoubleValidator(0.0, 10000.0, 6),'parent':'block_gauche'},
-                'Puissance':{'unitee':'W','valeur_defaut':'1500','validator':qtg.QDoubleValidator(0.0, 10000.0, 6),'parent':'block_gauche'},
-                'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':qtg.QDoubleValidator(0.0, 10000.0, 6),'parent':'block_droit'}
+                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','validator':validator,'parent':'block_gauche'},
+                'Puissance':{'unitee':'W','valeur_defaut':'1500','validator':validator,'parent':'block_gauche'},
+                'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':validator,'parent':'block_droit'}
             },
     'labels':['Reducteur','Choix Parametre Global'],
     'styleSheet': '''
@@ -96,8 +99,8 @@ PAGE_1 = {
 
 LIGNE_TRAIN = {
     'labels_unitee':{
-                'entraxe':{'unitee':'mm','valeur_defaut':'400','validator':qtg.QIntValidator(0, 10000)},
-                'σ_max':{'unitee':'Mpa','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000)},
+                'entraxe':{'unitee':'mm','valeur_defaut':'400','validator':validator},
+                'σ_max':{'unitee':'Mpa','valeur_defaut':'1500','validator':validator},
             },
     'labels':['1'],
     'comboboxes':{'type_engrenage':['  Engrenage droit', '  Engrenage hélicoïdal'],
@@ -261,7 +264,7 @@ class FenetreCreationProjet(Fenetre):
         description_global =  self._page[0].variables
         variables_lignes = self._page[1].variables_lignes
         # lis des données des linedits et des differentes variables
-        values_global = [int(val) for val in description_global.values()]
+        values_global = [float(val) for val in description_global.values()]
         mes_etages = []
         for num_train in range(len(variables_lignes)):
             values_train = []
@@ -276,7 +279,7 @@ class FenetreCreationProjet(Fenetre):
                 if isinstance(variables_train[key],str):
                     values_train.append(variables_train[key]) # cas des combobox
                 else:
-                    values_train.append(int(variables_train[key].text())) # cas des linedits
+                    values_train.append(float(variables_train[key].text())) # cas des linedits
             mes_etages[num_train].description['global'].description['entraxe'] = values_train[0]
             mes_etages[num_train].description['global'].description['resistance_elastique'] = values_train[1]
         # ajout des parametres globals

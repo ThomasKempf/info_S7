@@ -391,13 +391,15 @@ class Frame_Train(qtw.QFrame):
         :param unitee: unitee du parametre
         :return: retourne le sous objet avec l'ajout de la variable linedit et du widget principale
         '''
+        validator = qtg.QDoubleValidator()# validator pour forcer l'entrée de nombre flottant avec point decimal
+        validator.setLocale(qtc.QLocale(qtc.QLocale.C))
         sous_obj['widget'][key],sous_obj['variable'][key] = self.fenetre._ajout_nom_zone_texte_unitee(key,unitee,str(round(value,4)))
         if key.startswith('_'):
             sous_obj['variable'][key].setReadOnly(True)
         else:
             sous_obj['variable'][key].editingFinished.connect(lambda k=key, variable=sous_obj['variable'][key], obj=sous_obj['objet']:
-                self.modifie_parametre(int(variable.text()), k,obj)) # self._zone_text_train n'existe pas encore
-            sous_obj['variable'][key].setValidator(qtg.QIntValidator())
+                self.modifie_parametre(float(variable.text()), k,obj)) # self._zone_text_train n'existe pas encore
+            sous_obj['variable'][key].setValidator(validator)
         sous_obj['variable'][key].setFixedWidth(60)
         return sous_obj
     
