@@ -73,6 +73,7 @@ class FenetreProjet(Fenetre):
         }
         super().__init__(PROJET,elements)
         self.projet = projet
+        self.reducteur = reducteur
         self.liste_train = reducteur.listeTrain
         self.setStyleSheet(self._param['styleSheet'])
         self.genere_toolbars()
@@ -84,7 +85,7 @@ class FenetreProjet(Fenetre):
         self.ajoute(self.layouts['train'],self.frames_train)
         self.ajoute_bp_moins()
         self.ajoute_bp_plus()
-        if len(self.frames_train) <= 7:
+        if len(self.frames_train) >= 7:
             self.bouton_plus.hide()
         self.layouts['train'].addStretch() 
         self.widgets['container'].setLayout(self.layouts['train'])
@@ -140,8 +141,9 @@ class FenetreProjet(Fenetre):
         ajoute un fram de train à droite, tout en augmentant aussi la liste le contenant
         
         '''
+        self.reducteur.ajouter_train('simple')
         self.frames_train[len(self.frames_train)-1].bp_moins.hide()
-        self.frames_train.append(Frame_Train(self._train,self,len(self.frames_train)+1))
+        self.frames_train.append(Frame_Train(self.reducteur,self,len(self.frames_train)+1))
         self.layouts['train'].insertWidget(len(self.frames_train)-1, self.frames_train[len(self.frames_train)-1])
         self.ajoute_bp_moins()
         if len(self.frames_train) >= 7:
@@ -166,7 +168,7 @@ class FenetreProjet(Fenetre):
         self.bouton_plus.setObjectName('bp_plus')
         self.bouton_plus.clicked.connect(self.ajoute_frame_train)
         self.layouts['train'].addWidget(self.bouton_plus)
-
+        self.bouton_plus.show()
 
     def _fichier(self) -> None:
         '''
