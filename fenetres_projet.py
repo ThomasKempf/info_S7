@@ -80,7 +80,7 @@ class FenetreProjet(Fenetre):
         # genere les trains
         self.frames_train = []
         for i in range(len(self.liste_train)):
-            self.frames_train.append(Frame_Train(self.liste_train[i],self,i+1))
+            self.frames_train.append(Frame_Train(reducteur,self,i+1))
         self.ajoute(self.layouts['train'],self.frames_train)
         self.ajoute_bp_moins()
         self.ajoute_bp_plus()
@@ -279,18 +279,19 @@ class FenetreProjet(Fenetre):
 
 
 class Frame_Train(qtw.QFrame):
-    def __init__(self,train:md.Train_simple,fenetre:FenetreProjet,numero:int):
+    def __init__(self,reducteur:md.Reducteur,fenetre:FenetreProjet,numero:int):
         '''
         creer un frame contenant la representation d'un train
 
-        :param train: objet contenant la description du train
+        :param reducteur: objet contenant la description du reducteur
         :param fenetre: fenetre donnant l'accès au methode outil mais aussi au instance de la fenetre
         :param numero: numero du train
         '''
         super().__init__()
         self.largeur_param = 270
         self.num = numero
-        self._train = train
+        self.reducteur = reducteur
+        self._train = reducteur.listeTrain[numero - 1]
         self.fenetre = fenetre
         self._zone_text_train = self.genere_widget_train()
         layout = self.genere_layout_train()
@@ -424,7 +425,7 @@ class Frame_Train(qtw.QFrame):
         """
         # met a jour l'objet train
         sous_obj.description[value_name] = nouvelle_valeur
-        self.fenetre._methode_train.calculer_parametres(value_name)
+        self.reducteur.calculer_systeme_complet()
         # met a jour la fenetre
         for global_key in  self._zone_text_train:
             for key in self._zone_text_train[global_key]['variable']:
