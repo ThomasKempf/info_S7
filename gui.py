@@ -67,15 +67,15 @@ class Projet():
         self.fenetre_menu = FenetreMenu(MENU, self)
         self.fenetre_creation = FenetreCreationProjet()
         # Surveille la femerture de la fenetre_creation
-        self.watcher = CloseWatcher(self.ouvre_projet_lors_fermeture)
+        self.watcher = CloseWatcher(self._ouvre_projet_lors_fermeture)
         self.fenetre_creation.installEventFilter(self.watcher)
         # lie le bouton créer projet à la mise en avant de fenetre_creation
-        self.fenetre_menu.buttons['creer_projet'].clicked.connect(lambda checked=False: self.next_fenetre(self.fenetre_menu, self.fenetre_creation)) 
+        self.fenetre_menu.buttons['creer_projet'].clicked.connect(lambda checked=False: self._next_fenetre(self.fenetre_menu, self.fenetre_creation)) 
         self.fenetre_menu.show()
         sys.exit(self.app.exec())
 
 
-    def next_fenetre(self,fenetre_depart: qtw.QWidget, fenetre_suivante: qtw.QWidget) -> None:
+    def _next_fenetre(self,fenetre_depart: qtw.QWidget, fenetre_suivante: qtw.QWidget) -> None:
         """
         Ferme la fenêtre de départ et affiche la fenêtre suivante.
 
@@ -86,7 +86,7 @@ class Projet():
         fenetre_suivante.show()
 
 
-    def ouvre_projet_lors_fermeture(self,fenetre: qtw.QWidget) -> None:
+    def _ouvre_projet_lors_fermeture(self,fenetre: qtw.QWidget) -> None:
         """
         Cette fonction sera appelée *avant* que la fenêtre soit détruite.
         Tente de récupérer des attributs spécifiques de la fenêtre et
@@ -117,13 +117,13 @@ class FenetreMenu(Fenetre):
             'labels': ['titre'],
             'buttons': ['creer_projet', 'ouvrir_projet', 'exit']
         })
-        self.adapt_composant()
-        self.add_left()
-        self.add_right()
-        self.add_main()
+        self._adapt_composant()
+        self._add_left()
+        self._add_right()
+        self._add_main()
 
 
-    def adapt_composant(self) -> None:
+    def _adapt_composant(self) -> None:
         """
         Crée et adapte les composants de la fenêtre (titres, boutons, widgets).
         """
@@ -134,7 +134,7 @@ class FenetreMenu(Fenetre):
         self._generer_icone_engrenage(self.widgets['engrenages'])
 
 
-    def add_left(self) -> None:
+    def _add_left(self) -> None:
         """
         Ajoute les elements du layout de gauche contenant les boutons creer projet et ouvrir projet
         """
@@ -143,7 +143,7 @@ class FenetreMenu(Fenetre):
         self.layouts['left'].addStretch()
 
 
-    def add_right(self) -> None:
+    def _add_right(self) -> None:
         """
         Ajoute les element du layoute de droite contenant les engrenages et le bouton exite
         """
@@ -152,7 +152,7 @@ class FenetreMenu(Fenetre):
         self.layouts['right'].addWidget(self.buttons['exit'])
 
 
-    def add_main(self) -> None:
+    def _add_main(self) -> None:
         """
         Compose le layout principal à partir des sous-layouts gauche et droit.
         """
@@ -195,15 +195,13 @@ class FenetreMenu(Fenetre):
             os.path.expanduser("~"),
             "Fichier Excel (*.xlsx);;Tous les fichiers (*)"
         )
-        print(path)
-        fichier_xslx = xlsx.ProjetXlsx(path)
+        fichier_xslx = xlsx.XlsxReducteur(path)
         fichier_xslx.ouverture_espace_existant()
         mes_etages = fichier_xslx.lire_fichier()
         if len(mes_etages) == 0:
             fenetre_erreur = FenetreFichierInvalide()
             fenetre_erreur.exec()
             return
-        print(mes_etages)
         reducteur = mod.Reducteur(mes_etages)
         fenetre_projet = FenetreProjet(reducteur, self.project)
         fenetre_projet.setWindowTitle(str(path))

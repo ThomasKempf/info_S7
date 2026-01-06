@@ -158,13 +158,13 @@ class FenetreCreationProjet(Fenetre):
             'stack':['stack']
         }
         super().__init__(CREATION_PROJET,elements)
-        self.generer_widget_page(nbr_page=2)
+        self._generer_widget_page(nbr_page=2)
         self.layouts['button'].insertStretch(0, 1)
-        self.generer_bouton_next_precedent(self.layouts['button'])
-        self.ajoute_composants()
+        self._generer_bouton_next_precedent(self.layouts['button'])
+        self._ajoute_composants()
 
 
-    def generer_widget_page(self, nbr_page:int) -> None:
+    def _generer_widget_page(self, nbr_page:int) -> None:
         '''
         creer un objet pour chaque page avec la bonne classe et ajoute le au stack permetant le defilement
         
@@ -181,7 +181,7 @@ class FenetreCreationProjet(Fenetre):
 
 
 
-    def generer_bouton_next_precedent(self, layout:qtw.QHBoxLayout) -> None:
+    def _generer_bouton_next_precedent(self, layout:qtw.QHBoxLayout) -> None:
         '''
         adapte les boutons et les lie au fonction a appeler
         
@@ -198,7 +198,7 @@ class FenetreCreationProjet(Fenetre):
         self.buttons['precedent'].hide()
 
 
-    def ajoute_composants(self) -> None:
+    def _ajoute_composants(self) -> None:
         '''
         ajoute les composants de la page constituer des boutons et du stack permetant le changement de page
         
@@ -479,7 +479,7 @@ class Page_1():
         '''
         # genere premiere ligne
         self._lignes =[]
-        self._lignes.append(Ligne_train(self._fenetre,1))
+        self._lignes.append(LigneTrain(self._fenetre,1))
         self.widgets['premiere_ligne'] = self._lignes[0].widget
         # adapte et ajoute widget des lignes suivante qui n'existe pas encore
         self.layouts['ligne_vertical'].setSpacing(15)
@@ -521,7 +521,7 @@ class Page_1():
 
         :param num: numero de la nouvelle ligne de train dans la liste
         '''
-        self._lignes.append(Ligne_train(self._fenetre,num+1))
+        self._lignes.append(LigneTrain(self._fenetre,num+1))
         self.layouts['ligne_vertical'].addWidget(self._lignes[num].widget)
 
     
@@ -581,7 +581,7 @@ class Page_1():
         return page
 
 
-class Ligne_train():
+class LigneTrain():
     def __init__(self,fenetre,numero) -> None:
         '''
         genere un widget avec tout les elements necessaire à la partie droite d'un train
@@ -596,7 +596,7 @@ class Ligne_train():
     
 
     @property
-    def variables(self):
+    def variables(self) -> dict[str]:
         '''
         au varaibles 
         '''
@@ -607,7 +607,7 @@ class Ligne_train():
 
 
     @property
-    def widget(self):
+    def widget(self) -> qtw.QWidget:
         '''
         acces au widget du module entier
         '''
@@ -689,11 +689,11 @@ class FenetreAttenteCreation(Fenetre):
             'labels':['texte','points'],
         }
         super().__init__(ATTENTE_CREATION,elements)
-        self.genere_fenetre()
-        self.genere_changement_dynamique()
+        self._genere_fenetre()
+        self._genere_changement_dynamique()
 
 
-    def genere_fenetre(self) -> None:
+    def _genere_fenetre(self) -> None:
         '''
         adapte le style du laout main et y ajoute le label texte et celui des points dynamoique
         pour ensuite ajouter le main à la fenetre
@@ -709,7 +709,7 @@ class FenetreAttenteCreation(Fenetre):
         self.setLayout(main)
 
 
-    def genere_changement_dynamique(self) -> None:
+    def _genere_changement_dynamique(self) -> None:
         '''
         creer un timer pour appeler de maniere cyclique self.clignoter
 
@@ -720,11 +720,11 @@ class FenetreAttenteCreation(Fenetre):
         self._index = 0
         # Timer pour l’animation
         self.timer = qtc.QTimer()
-        self.timer.timeout.connect(self.clignoter)
+        self.timer.timeout.connect(self._clignoter)
         self.timer.start(400)  # toutes les 400 ms
 
 
-    def clignoter(self) -> None:
+    def _clignoter(self) -> None:
         '''
         Permet le chamgement du text tu label a chaque appel
 

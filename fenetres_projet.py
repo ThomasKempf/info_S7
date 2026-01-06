@@ -75,15 +75,15 @@ class FenetreProjet(Fenetre):
         self.projet = projet
         self.liste_train = reducteur.listeTrain
         self.setStyleSheet(self._param['styleSheet'])
-        self.genere_toolbars()
+        self._genere_toolbars()
         self.layouts['main'].addWidget(self.widgets['toolbar'])
         # genere les trains
         self.frames_train = []
         for i in range(len(self.liste_train)):
-            self.frames_train.append(Frame_Train(self.liste_train[i],self,i+1))
+            self.frames_train.append(FrameTrain(self.liste_train[i],self,i+1))
         self.ajoute(self.layouts['train'],self.frames_train)
-        self.ajoute_bp_moins()
-        self.ajoute_bp_plus()
+        self._ajoute_bp_moins()
+        self._ajoute_bp_plus()
         if len(self.frames_train) >= 7:
             self.bouton_plus.hide()
         self.layouts['train'].addStretch() 
@@ -98,7 +98,7 @@ class FenetreProjet(Fenetre):
         self.setLayout(self.layouts['main'])
 
     
-    def genere_toolbars(self) -> None:
+    def _genere_toolbars(self) -> None:
         '''
         genere une bande en haut de la page avec des boutons à droite
         inspirer par la meme bande que l'ont peut trouver sur word ou exel
@@ -122,7 +122,7 @@ class FenetreProjet(Fenetre):
         self._create_backstage()
     
 
-    def supprime_frame_train(self):
+    def _supprime_frame_train(self) -> None:
         '''
         supprime le dernier fram de train à droite, tout en reduisant aussi la liste le contenant
         
@@ -130,41 +130,41 @@ class FenetreProjet(Fenetre):
         self.frames_train[len(self.frames_train) - 1].deleteLater()
         self.frames_train.pop()
         if len(self.frames_train) > 1: 
-            self.ajoute_bp_moins()
+            self._ajoute_bp_moins()
         if len(self.frames_train) < 7:
             self.bouton_plus.show()
 
     
-    def ajoute_frame_train(self):
+    def _ajoute_frame_train(self) -> None:
         '''
         ajoute un fram de train à droite, tout en augmentant aussi la liste le contenant
         
         '''
         self.frames_train[len(self.frames_train)-1].bp_moins.hide()
-        self.frames_train.append(Frame_Train(self._train,self,len(self.frames_train)+1))
+        self.frames_train.append(FrameTrain(self._train,self,len(self.frames_train)+1))
         self.layouts['train'].insertWidget(len(self.frames_train)-1, self.frames_train[len(self.frames_train)-1])
-        self.ajoute_bp_moins()
+        self._ajoute_bp_moins()
         if len(self.frames_train) >= 7:
             self.bouton_plus.hide()
         
 
 
-    def ajoute_bp_moins(self):
+    def _ajoute_bp_moins(self) -> None:
         '''
         ajoute le bouton mois qui permet de supprimer un fram de train
         '''
         self.frames_train[len(self.frames_train)-1].bp_moins.show()
         self.frames_train[len(self.frames_train)-1].bp_moins.setFixedSize(30, 6)
-        self.frames_train[len(self.frames_train)-1].bp_moins.clicked.connect(self.supprime_frame_train)
+        self.frames_train[len(self.frames_train)-1].bp_moins.clicked.connect(self._supprime_frame_train)
 
 
-    def ajoute_bp_plus(self):
+    def _ajoute_bp_plus(self) -> None:
         '''
         ajoute le bouton plus qui permet d'ajouter un fram de train
         '''
         self.bouton_plus = qtw.QPushButton('+')
         self.bouton_plus.setObjectName('bp_plus')
-        self.bouton_plus.clicked.connect(self.ajoute_frame_train)
+        self.bouton_plus.clicked.connect(self._ajoute_frame_train)
         self.layouts['train'].addWidget(self.bouton_plus)
 
 
@@ -173,7 +173,20 @@ class FenetreProjet(Fenetre):
         fonction ratachée au bouton fichier, son nom permet de le lier autotmatique
         ne pas modifier la structure nie le nom de la methode
         '''
-        self.backstage.ouvrir_liste()
+        self.backstage.ouvrir_list()
+
+
+    def creer_nouveau_projet(self) -> None:
+        '''
+        genere un nouveau objet projet et ouvre directement la fenetre de creation de projet
+        '''
+        self.projet.fenetre_creation.showNormal()
+
+
+    def ouvrir(self) -> None:
+        ''' fonction test'''
+        print('hello')
+        self.projet.fenetre_menu._ouvrir_projet()
 
 
     def _enregistrer(self) -> None:
@@ -188,43 +201,6 @@ class FenetreProjet(Fenetre):
             self.xlsx_file.save()
         else:
             self.save_as()
-
-
-    def creer_nouveau_projet(self) -> None:
-        '''
-        genere un nouveau objet projet et ouvre directement la fenetre de creation de projet
-        '''
-        self.projet.fenetre_creation.showNormal()
-
-
-    def compens(self) -> None:
-        ''' fonction test'''
-        print('hello')
-        self.projet.fenetre_menu._ouvrir_projet()
-
-
-    def _create_backstage(self) -> None:
-        '''
-        ratache les methode au key des boutons de la liste, pour ensuite la créer à l'aide de la classse appropriee
-        '''
-        callbacks={
-            "new": self.creer_nouveau_projet,
-            "open": self.compens,
-            "save": self._enregistrer,
-            "save_as": self.save_as,
-        }
-        self.backstage = BackstagePopup(self,callbacks,self.buttons['fichier'])
-
-
-    def resizeEvent(self, event: qtg.QResizeEvent) -> None:
-        '''
-        permet de rattacher l'évenement de modifier la taille de la page, au faite de deplacer la liste
-        la methode est automatiquement appeler a l'aide de son entete predefinit dans la super classe
-        '''
-        super().resizeEvent(event)
-        event.size()
-        if hasattr(self, 'backstage') and self.backstage is not None:
-            self.backstage.positionner_list(self)
 
 
     def save_as(self):
@@ -246,10 +222,34 @@ class FenetreProjet(Fenetre):
         if not path.lower().endswith(".xlsx"):
             path += ".xlsx"
         self.setWindowTitle(str(path))
-        return self.genere_xlsx(path)
+        return self._genere_xlsx(path)
+
+
+    def _create_backstage(self) -> None:
+        '''
+        ratache les methode au key des boutons de la liste, pour ensuite la créer à l'aide de la classse appropriee
+        '''
+        callbacks={
+            "new": self.creer_nouveau_projet,
+            "open": self.ouvrir,
+            "save": self._enregistrer,
+            "save_as": self.save_as,
+        }
+        self.backstage = BackstagePopup(self,callbacks,self.buttons['fichier'])
+
+
+    def resizeEvent(self, event: qtg.QResizeEvent) -> None:
+        '''
+        permet de rattacher l'évenement de modifier la taille de la page, au faite de deplacer la liste
+        la methode est automatiquement appeler a l'aide de son entete predefinit dans la super classe
+        '''
+        super().resizeEvent(event)
+        event.size()
+        if hasattr(self, 'backstage') and self.backstage is not None:
+            self.backstage.positionner_list(self)
 
     
-    def genere_xlsx(self,path) -> None:
+    def _genere_xlsx(self,path) -> None:
         '''
         genere les differents instance utilisant la classe xlsx.
         xlsx_param est une liste contenant tout les parametres du projet
@@ -264,14 +264,14 @@ class FenetreProjet(Fenetre):
         - ``self._description_global`` doit etre un objet train
         '''
         # creation du fichier
-        self.xlsx_file = xlsx.ProjetXlsx(path)
+        self.xlsx_file = xlsx.XlsxReducteur(path)
         self.xlsx_file.creation_espace_travail()
         for i in range(len(self.liste_train)):
             self.xlsx_file.ecrire_description_ogjet_multiple(self.liste_train[i], i + 1)
         self.xlsx_file.save()
 
 
-class Frame_Train(qtw.QFrame):
+class FrameTrain(qtw.QFrame):
     def __init__(self,train:md.Train_simple,fenetre:FenetreProjet,numero:int):
         '''
         creer un frame contenant la representation d'un train
@@ -285,13 +285,13 @@ class Frame_Train(qtw.QFrame):
         self.num = numero
         self._train = train
         self.fenetre = fenetre
-        self._zone_text_train = self.genere_widget_train()
-        layout = self.genere_layout_train()
+        self._zone_text_train = self._genere_widget_train()
+        layout = self._genere_layout_train()
         self.setLayout(layout)
         self.setFixedWidth(300)
     
 
-    def genere_layout_train(self) -> qtw.QVBoxLayout:
+    def _genere_layout_train(self) -> qtw.QVBoxLayout:
         """
         genere le layout vertical principal du train en y ajoutant les labels et widgets
 
@@ -302,8 +302,8 @@ class Frame_Train(qtw.QFrame):
         """
         main_layout = qtw.QVBoxLayout()
         main_layout.addStretch()
-        main_layout.addWidget(self.genere_type_train()) 
-        main_layout.addWidget(self.genere_image_train(), alignment=qtc.Qt.AlignCenter)
+        main_layout.addWidget(self._genere_type_train()) 
+        main_layout.addWidget(self._genere_image_train(), alignment=qtc.Qt.AlignCenter)
         main_layout.addStretch()
         for key in self._zone_text_train:
             container = qtw.QFrame()
@@ -316,7 +316,7 @@ class Frame_Train(qtw.QFrame):
         return main_layout
 
 
-    def genere_widget_train(self) -> dict[qtw.QWidget,qtw.QLineEdit]:
+    def _genere_widget_train(self) -> dict[qtw.QWidget,qtw.QLineEdit]:
         """
         genere un widget et une variable associée à la valeur pour chaque paramatre du train 
         en ce basant sur les key du xlsx
@@ -330,11 +330,11 @@ class Frame_Train(qtw.QFrame):
             sous_obj['objet'] = description_train[global_key]
             for i, (key, value) in enumerate(sous_obj['objet'].description.items()):
                 unitee  = sous_obj['objet'].unitee[i]   
-                train_gui[global_key] = self.genere_un_parametre(sous_obj,key,value,unitee)
+                train_gui[global_key] = self._genere_un_parametre(sous_obj,key,value,unitee)
         return train_gui
     
 
-    def genere_type_train(self) -> None:
+    def _genere_type_train(self) -> None:
         '''
         créer une liste deroulante pour le choix du type de train 
         '''
@@ -347,7 +347,7 @@ class Frame_Train(qtw.QFrame):
         return combobox
     
 
-    def genere_image_train(self):
+    def _genere_image_train(self):
         """
         Génère un widget contenant l'image et un label supplémentaire avec un nombre.
         """
@@ -373,7 +373,7 @@ class Frame_Train(qtw.QFrame):
         return container
 
 
-    def genere_un_parametre(self,sous_obj,key,value,unitee):
+    def _genere_un_parametre(self,sous_obj,key,value,unitee):
         '''
         genere un parametre, les labels et le linedit sont integrer dans un widget
 
@@ -390,13 +390,13 @@ class Frame_Train(qtw.QFrame):
             sous_obj['variable'][key].setReadOnly(True)
         else:
             sous_obj['variable'][key].editingFinished.connect(lambda k=key, variable=sous_obj['variable'][key], obj=sous_obj['objet']:
-                self.modifie_parametre(float(variable.text()), k,obj)) # self._zone_text_train n'existe pas encore
+                self._modifie_parametre(float(variable.text()), k,obj)) # self._zone_text_train n'existe pas encore
             sous_obj['variable'][key].setValidator(validator)
         sous_obj['variable'][key].setFixedWidth(60)
         return sous_obj
     
 
-    def modifie_parametre(self, nouvelle_valeur:int, value_name:str, sous_obj:md.Global) -> None:
+    def _modifie_parametre(self, nouvelle_valeur:int, value_name:str, sous_obj:md.Global) -> None:
         """
         Met à jour un paramètre de l'objet train, puis synchronise les modifications
         dans le fichier Excel et l'interface graphique.

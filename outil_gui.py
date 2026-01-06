@@ -367,7 +367,7 @@ class BackstagePopup(qtw.QWidget):
             layout.addWidget(btn)
 
 
-    def ouvrir_liste(self) -> None:
+    def ouvrir_list(self) -> None:
         '''
         rend la liste visible et connecte la methode permetant de la fermer
 
@@ -377,10 +377,10 @@ class BackstagePopup(qtw.QWidget):
         self.adjustSize()
         self.show()
         self.button.clicked.disconnect()
-        self.button.clicked.connect(self._fermer_liste)
+        self.button.clicked.connect(self._fermer_list)
 
 
-    def _fermer_liste(self) -> None:
+    def _fermer_list(self) -> None:
         '''
         ferme cache la liste et connecte la methode permetant de l'ouvrir a nouveau
 
@@ -388,7 +388,7 @@ class BackstagePopup(qtw.QWidget):
         - ``self.button`` doit rediriger vers les un bouton
         '''
         self.button.clicked.disconnect()
-        self.button.clicked.connect(self.ouvrir_liste)
+        self.button.clicked.connect(self.ouvrir_list)
         self.hide()
 
 
