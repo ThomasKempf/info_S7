@@ -1,199 +1,131 @@
-#♦ New file for being able to modify every single parameters
 import math 
 
 class Calcule_train:
-    """Classe de base pour les trains d'Calcule_Engrenages."""
-    def __init__(self,Train_1):
-        # Initialisation par défaut, nécessaire pour la sous-classe
+    """Classe de base pour les calculs physiques des trains d'engrenages."""
+    
+    def __init__(self, Train_1):
         self.train_1 = Train_1
         self._rapport_reduction: float = 0.0 
         self.error = 0
 
         self._param_global = self.train_1.description['global'].description
-        self._param_pignon = self.train_1.description['pignon'].description
-        self._param_roue = self.train_1.description['roue'].description
+        
+        # Gestion  des dictionnaires (pour éviter le crash si pas de satellite)
+        obj_pignon = self.train_1.description.get('pignon')
+        self._param_pignon = obj_pignon.description if obj_pignon else {}
 
-    def calculer_rapport_reduction(self):
-        """La méthode 'calculer_rapport' doit être implémentée par la sous-classe."""
-        raise NotImplementedError("La methode 'calculer_rapport' doit être implementee par la sous-classe.")
-    
+        obj_roue = self.train_1.description.get('roue')
+        self._param_roue = obj_roue.description if obj_roue else {}
+
+        obj_satelite = self.train_1.description.get('satelite')
+        self._param_satelite = obj_satelite.description if obj_satelite else {}
+
+        obj_couronne = self.train_1.description.get('couronne')
+        self._param_couronne = obj_couronne.description if obj_couronne else {}
+
     def calculer_mise_a_jour_complete(self):
-        """Recalcule toute la physique (Couple -> Force -> Module -> Diamètre) 
-           basé sur les vitesses d'entrée/sortie imposées."""
-        self.calculer_rapport_reduction() # Recalcul simple i = Ve/Vs
-        self.calculer_couple_entree()     # C = P/w
+        """Met à jour tout le système."""
+        self.calculer_vitesse_sortie()
+        self.calculer_rapport_reduction()
+        self.calculer_couple_entree()
         self.calculer_force_tangentielle()
         self.calculer_module()
-        self.calculer_diametre()
+        self.calculer_diametres_specifiques()
 
-    @property
-    def rapport_reduction(self) -> float:
-        """Propriété  (getter) du rapport de reduction."""
-        return self._rapport_reduction
+    # --- Méthodes Physiques (Avec param=None pour compatibilité) ---
 
-    
-    def calculer_parametres(self,param=None):
-            '''
-            :param: permet de donner en arg le parametre qui a été modifié
-            '''
-            self.calculer_vitesse_sortie(param)
-            self.calculer_couple_entree(param)
-            self.calculer_force_tangentielle(param)
-            self.calculer_module(param)
-            self.calculer_rapport_reduction(param)
-            self.calculer_diametre(param)
-
-
-
-    def calculer_vitesse_sortie(self,param:str = None):
+    def calculer_parametres(self, param=None):
         """
-        Calcule la vitesse de sortie en tr/min à partir de la puissance (P) et du couple de sortie (Cs).
-        Formule utilisée : V_out [tr/min] = (P / Cs) * (60 / 2*pi).
-        Cette formule suppose un rendement de 1 (idéal) et que P est en Watts, Cs en Nm.
-        :param param: param est le nom du parametre changée, l'info permet de vérifier si le recalcule est necessaire,
-                        si param = None cela veux dire qu'il faut faire le calcule par defaut
+        Ancienne méthode principale. 
+        On ignore 'param', mais on garde l'argument pour ne pas casser l'appli externe.
         """
-        # verifie si le calcul est nécessaire
-        parametres = ['puissance_entree','couple_sortie'] # param necessaire au calcul
-        if param not in parametres and param != None:
-            return
-        
+        self.calculer_mise_a_jour_complete()
+
+    def calculer_vitesse_sortie(self, param=None):
         P_entree = self._param_global['puissance_entree']
         Couple_sortie = self._param_global['couple_sortie']
+        
         if Couple_sortie <= 0:
-            print("Erreur : Le couple de sortie doit être positif.")
-            self.train_1.error = 1 # exemple comment utiliser error
             vitesse_sortie = 0.0
         else: 
-            # Calcul : (P_entree / Couple_sortie) donne la vitesse en rad/s (omega)
-            #           ... * (60 / 2*pi) convertit de rad/s à tr/min
             vitesse_sortie = (P_entree / Couple_sortie) * (60 / (2 * math.pi))
-            
-        # Mise à jour du dictionnaire 'description'
         self._param_global['_vitesse_sortie'] = vitesse_sortie
-        #commm test
 
+    def calculer_couple_entree(self, param=None):
+        P_entree = self._param_global['puissance_entree']
+        V_entree = self._param_global['vitesse_entree']
         
-######################################################################################################################################
-
-    def calculer_couple_entree(self,param:str = None):
-            '''
-            :param param: param est le nom du parametre changée, l'info permet de vérifier si le recalcule est necessaire,
-                        si param = None cela veux dire qu'il faut faire le calcule par defaut
-            '''
-            # verifie si le calcule est néccessaire
-            parametres = ['puissance_entree','vitesse_entree'] 
-            if param not in parametres and param != None:
-                return
-            # Calcule le couple d'entrée à partir de la puissance et de la vitesse d'entrée
-            P_entree = self._param_global['puissance_entree']
-            V_entree = self._param_global['vitesse_entree']
-
-            self._param_global['_couple_entree'] = P_entree / (V_entree * (2 * math.pi / 60))  # Convertir tr/min en rad/s
-    
-######################################################################################################################################
-
-    def calculer_force_tangentielle(self,param:str = None):
-        '''
-        :param param: param est le nom du parametre changée, l'info permet de vérifier si le recalcule est necessaire,
-                        si param = None cela veux dire qu'il faut faire le calcule par defaut
-        '''
-        # verifie si le calcule est néccessaire
-        parametres = ['_couple_entree','entraxe','alpha'] 
-        if param not in parametres and param != None:
-            return
-        # Calcule la force tangentielle à partir du couple de sortie et de l'entraxe
-        Ce = self._param_global['_couple_entree']
-        r = self._param_global['entraxe']  # En mètres
-        a = self._param_global['alpha']
-
-        if r <= 0:
-            print("Erreur : L'entraxe doit être positif.")
-            force_tangentielle = 0.0
+        if V_entree > 0:
+            self._param_global['_couple_entree'] = P_entree / (V_entree * (2 * math.pi / 60))
         else:
-            force_tangentielle = Ce / (r *math.cos(a)) 
+            self._param_global['_couple_entree'] = 0
 
-        self._param_global['_force_tangentielle'] = force_tangentielle
+    def calculer_rapport_reduction(self, param=None):
+        v_out = self._param_global['_vitesse_sortie']
+        v_in = self._param_global['vitesse_entree']
+        if v_out > 0:
+            self._param_global['_rapport_reduction'] = v_in / v_out
+        else:
+            self._param_global['_rapport_reduction'] = 0
 
-######################################################################################################################################
+    def calculer_force_tangentielle(self, param=None):
+        Ce = self._param_global['_couple_entree']
+        r = self._param_global['entraxe'] 
+        alpha_deg = self._param_global.get('alpha', 20)
+        a_rad = math.radians(alpha_deg) 
 
-    # Calcul du module du système
+        if r > 0:
+            self._param_global['_force_tangentielle'] = Ce / (r * math.cos(a_rad))
+        else:
+            self._param_global['_force_tangentielle'] = 0
 
-    def calculer_module(self,param:str = None):
-        '''
-        :param param: param est le nom du parametre changée, l'info permet de vérifier si le recalcule est necessaire,
-                        si param = None cela veux dire qu'il faut faire le calcule par defaut
-        '''
-        # verifie si le calcule est néccessaire
-        parametres = ['_force_tangentielle','resistance_elastique'] 
-        if param not in parametres and param != None:
-            return
+    def calculer_module(self, param=None):
         FT = self._param_global['_force_tangentielle']
-        RES = self._param_global['resistance_elastique'] # il n'est pas le meme pour les deux engrenages?
+        RES = self._param_global['resistance_elastique']
+        if RES > 0:
+            self._param_global['_module'] = 2.34 * math.sqrt(FT / (RES * 10))
+        else:
+             self._param_global['_module'] = 0
 
-        self._param_global['_module'] = 2.34 * math.sqrt(FT / (RES*10))
+    def calculer_diametre(self, param=None):
+        # Redirection vers la nouvelle méthode spécifique
+        self.calculer_diametres_specifiques()
+
+    def get_puissance_sortie_reelle(self):
+        eta = self._param_global.get('rendement', 1.0) 
+        return self._param_global['puissance_entree'] * eta
+
+    def calculer_diametres_specifiques(self):
+        raise NotImplementedError("Surchargé par les enfants")
+
+
+# --- Classes Spécifiques ---
+
+class Calcule_train_simple(Calcule_train):
     
-
-
-######################################################################################################################################
-
-
-        # Calcul des diamètres primitifs
-
-    def calculer_diametre(self,param:str = None):
-        '''
-        :param param: param est le nom du parametre changée, l'info permet de vérifier si le recalcule est necessaire,
-                        si param = None cela veux dire qu'il faut faire le calcule par defaut
-        '''
-        # verifie si le calcule est néccessaire
-        parametres = ['entraxe','_rapport_reduction'] 
-        if param not in parametres and param != None:
-            return
+    def calculer_diametres_specifiques(self):
         e = self._param_global['entraxe']
         r = self._param_global['_rapport_reduction']
-        D1 = (2 * e) / (1 + r)
-        D2 = r * D1         
-
-        self._param_pignon['_diametre'] = D1
-        self._param_roue['_diametre'] = D2
         
+        if r > 0 and e > 0:
+            D1 = (2 * e) / (1 + r)
+            D2 = r * D1         
+            self._param_pignon['_diametre'] = D1
+            self._param_roue['_diametre'] = D2
 
-    ######################################################################################################################################
 
-    # Implémentation requise de la classe Train
-    def calculer_rapport_reduction(self,param:str = None) -> float:
-        """
-        Calcule le rapport de réduction i = V_entree / V_sortie.
-        Nécessite que V_entree et V_sortie soient dans les MÊMES unités (ici tr/min).
+class Calcule_train_epi(Calcule_train):
+    
+    def calculer_diametres_specifiques(self):
+        r_red = self._param_global['_rapport_reduction']
+        entraxe = self._param_global['entraxe']
         
-        :param param: param est le nom du parametre changée, l'info permet de vérifier si le recalcule est necessaire,
-                        si param = None cela veux dire qu'il faut faire le calcule par defaut
-        """
-        # verifie si le calcule est néccessaire
-        parametres = ['_vitesse_sortie','vitesse_entree'] 
-        if param not in parametres and param != None:
-            return
-        vitesse_sortie = self._param_global['_vitesse_sortie']
-        if vitesse_sortie is None:
-            # S'assurer que la vitesse de sortie est calculée
-            self.calculer_vitesse_sortie()
+        if r_red > 1 and entraxe > 0:
+            k = r_red - 1 
+            D_solaire = (4 * entraxe) / (k + 1)
+            D_couronne = k * D_solaire
+            D_satellite = (D_couronne - D_solaire) / 2
             
-        if vitesse_sortie == 0:
-            print("Erreur : La vitesse de sortie calculée est nulle.")
-            rapport_reduction = 0.0
-        else:
-            # i = V_entree / V_sortie
-            vitesse_entree = self._param_global['vitesse_entree']
-            rapport_reduction = vitesse_entree / vitesse_sortie
-        
-        self._param_global['_rapport_reduction'] = rapport_reduction
-
-    ###########################################################################################
-
-    
-
-
-
-    
-    
-
+            if self._param_pignon: self._param_pignon['_diametre'] = D_solaire
+            if self._param_couronne: self._param_couronne['_diametre'] = D_couronne
+            if self._param_satelite: self._param_satelite['_diametre'] = D_satellite
