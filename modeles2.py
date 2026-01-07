@@ -182,7 +182,7 @@ class Reducteur():
             new_train = Train_simple(num)
         
         # Initialisation avec des valeurs par défaut cohérentes avec le précédent
-        new_train.description['global'].description['entraxe'] = 0.1
+        new_train.description['global'].description['entraxe'] = 100
         new_train.description['global'].description['resistance_elastique'] = 340
         new_train.description['global'].description['rendement'] = 0.95
         

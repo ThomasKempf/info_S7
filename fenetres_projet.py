@@ -128,7 +128,9 @@ class FenetreProjet(Fenetre):
         supprime le dernier fram de train à droite, tout en reduisant aussi la liste le contenant
         
         '''
+        self.reducteur.supprimer_dernier_train()
         self.frames_train[len(self.frames_train) - 1].deleteLater()
+        self.met_a_jour_parametre_fenetre_entiere()
         self.frames_train.pop()
         if len(self.frames_train) > 1: 
             self.ajoute_bp_moins()
@@ -146,8 +148,23 @@ class FenetreProjet(Fenetre):
         self.frames_train.append(Frame_Train(self.reducteur,self,len(self.frames_train)))
         self.layouts['train'].insertWidget(len(self.frames_train)-1, self.frames_train[len(self.frames_train)-1])
         self.ajoute_bp_moins()
+        self.met_a_jour_parametre_fenetre_entiere()
         if len(self.frames_train) >= 7:
             self.bouton_plus.hide()
+
+
+    def met_a_jour_parametre_fenetre_entiere(self, num:int = None, value_name:str = None) -> None:
+        '''
+        met a jour tout les parametre de la fenetre
+
+        :param num: numero du train qui vient d'etre modifier
+        :param value_name: nom du parametre qui vient d'etre modifier
+        '''
+        for i, frame in enumerate(self.frames_train):
+            if i == num:
+                frame.met_a_jour_parametre(value_name)
+            else:
+                frame.met_a_jour_parametre()
         
 
 
@@ -169,6 +186,7 @@ class FenetreProjet(Fenetre):
         self.bouton_plus.clicked.connect(self._ajoute_frame_train)
         self.layouts['train'].addWidget(self.bouton_plus)
         self.bouton_plus.show()
+
 
     def _fichier(self) -> None:
         '''
@@ -417,7 +435,17 @@ class Frame_Train(qtw.QFrame):
         sous_obj.description[value_name] = nouvelle_valeur
         self.reducteur.calculer_systeme_complet()
         # met a jour la fenetre
+        self.fenetre.met_a_jour_parametre_fenetre_entiere(self.num,value_name)
+
+
+    def met_a_jour_parametre(self,value_name:str = None) -> None:
+        '''
+        met a jour les parametre de la fenetre en excluant celui qui vient d'etre modifier s'il y en a un
+        
+        :param value_name: nom du parametre qui vient d'être modifié, que l'ont as pas besoin de remettre à jour
+        '''
         for global_key in  self._zone_text_train:
             for key in self._zone_text_train[global_key]['variable']:
                 if key != value_name:
                     self._zone_text_train[global_key]['variable'][key].setText(str(round(self._train.description[global_key].description[key],4)))
+        
