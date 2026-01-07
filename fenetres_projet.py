@@ -205,7 +205,6 @@ class FenetreProjet(Fenetre):
 
     def ouvrir(self) -> None:
         ''' fonction test'''
-        print('hello')
         self.projet.fenetre_menu._ouvrir_projet()
 
 
@@ -322,11 +321,10 @@ class Frame_Train(qtw.QFrame):
         - ``self._zone_text_train`` doit être valide et contenir la key widget
         """
         main_layout = qtw.QVBoxLayout()
-        main_layout.addStretch()
         main_layout.addWidget(self._genere_type_train()) 
         main_layout.addWidget(self._genere_image_train(), alignment=qtc.Qt.AlignCenter)
-        main_layout.addStretch()
         self._genere_layoute_parametre(main_layout)
+        main_layout.addStretch()
         self.main_layout = main_layout
         return main_layout
 
@@ -358,7 +356,6 @@ class Frame_Train(qtw.QFrame):
         """
         train_gui = {}
         description_train = self._train.description
-        print(description_train)
         for global_key in description_train: 
             if global_key.startswith('_'): # parametre interne a ne pas traiter: exemple _nb_satellites
                 continue
@@ -392,19 +389,29 @@ class Frame_Train(qtw.QFrame):
     
 
     def _change_type_train(self) -> None:
+        '''
+        change le type de train en fonction de la selection dans la combobox
+        '''
+        # supprime les ancien containers
+        for i in range(len(self.param_containers)):
+            container = self.param_containers[i]
+            self.main_layout.removeWidget(container)  # enlever du layout
+            container.setParent(None)            # détacher du parent
+            container.deleteLater()
+        # change le type de train
         index = self.combobox.currentIndex()
         if index == 0: # train simple
-            pass
+            self.reducteur.changer_type_train(self.num, 'simple')
         elif index == 1: # train epi
-            self.reducteur.changer_type_train(self.num, 'epi') # +1 parce que num peut etre 0 or le num de train commence a 1
-            self._train = self.reducteur.listeTrain[self.num]
-            for i in range(len(self.param_containers)):
-                container = self.param_containers[i]
-                self.main_layout.removeWidget(container)  # enlever du layout
-                container.setParent(None)            # détacher du parent
-                container.deleteLater()
-            self._zone_text_train = self._genere_widget_train()
-            self._genere_layoute_parametre(self.main_layout)
+            self.reducteur.changer_type_train(self.num, 'epi')
+        # genere les nouveau containers et ajoute au main layout
+        self._train = self.reducteur.listeTrain[self.num]
+        self._zone_text_train = self._genere_widget_train()
+        self._genere_layoute_parametre(self.main_layout)
+        self._defini_image_a_utiliser()        
+        # met a jour les parametre de la fenetre et change l'image
+        self.fenetre.met_a_jour_parametre_fenetre_entiere()
+        
 
 
     def _genere_image_train(self):
@@ -416,21 +423,33 @@ class Frame_Train(qtw.QFrame):
         container.setObjectName("monContainer")
         container.setFixedSize(self.largeur_param, 230)  # Taille du conteneu
         # Label pour l'image
-        label_image = self.fenetre._genere_lable_image('./epicicloïdale.png')
-        label_image.setParent(container)
-        label_image.setFixedSize(210, 210)
-        label_image.setScaledContents(True)
+        self.label_image = self.fenetre._genere_lable_image('./epicicloïdale.png')
+        self._defini_image_a_utiliser()
+        self.label_image.setParent(container)
+        self.label_image.setFixedSize(210, 210)
+        self.label_image.setScaledContents(True)
         # Label pour le nombre
         label_nombre = qtw.QLabel(str(self.num), container)  # Exemple : nombre à afficher
         label_nombre.setStyleSheet('font-size: 20px; font-weight: bold; color: black; padding-left: 5px;')
         # Label - pour supprimer le train
         self.bp_moins = qtw.QPushButton(container)  # Exemple : nombre à afficher
         self.bp_moins.setObjectName('bp_moins')
-        label_image.move(30, 10)
+        self.label_image.move(30, 10)
         label_nombre.move(10, 5)
         self.bp_moins.move(220, 15)
         self.bp_moins.hide()
         return container
+    
+
+    def _defini_image_a_utiliser(self) -> None:
+        '''
+        defini l'image a utiliser en fonction du type de train
+        '''
+        if self._train.titre.startswith('train_simple_'):
+            image = './simple.png'
+        elif self._train.titre.startswith('train_epi_'):
+            image = './epicicloïdale.png'
+        self.label_image.setPixmap(qtg.QPixmap(image))
 
 
     def _genere_un_parametre(self,sous_obj,key,value,unitee):

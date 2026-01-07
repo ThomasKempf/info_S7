@@ -58,11 +58,11 @@ class Train_epi(Global):
         super().__init__()
         self.titre = f'train_epi_{num}'
         self.description =  {
+            '_mode_blocage':'couronne', 
             'global': Train_global(),
             'pignon': Engrenage(0), # Solaire = planétaire
             'satelite': Engrenage(1),
             'couronne': Engrenage(2)
-            #'mode_blocage':'couronne' 
         }
         # change les titres des sous-objets
         self.description['pignon'].titre = 'solaire'
