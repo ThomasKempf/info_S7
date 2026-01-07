@@ -61,13 +61,16 @@ class Train_epi(Global):
             'global': Train_global(),
             'pignon': Engrenage(0), # Solaire = planétaire
             'satelite': Engrenage(1),
-            'couronne': Engrenage(2),
-            '_nb_satelite':3,
-            'mode_blocage':'couronne' 
+            'couronne': Engrenage(2)
+            #'mode_blocage':'couronne' 
         }
+        # change les titres des sous-objets
         self.description['pignon'].titre = 'solaire'
         self.description['satelite'].titre = 'satellite'
         self.description['couronne'].titre = 'couronne'
+        # ajoute le nombre de satellite par defaut a la description global
+        self.description['global'].description = {**{'nb_satelite':3}, **self.description['global'].description}
+        self.description['global'].unitee.insert(0, ' ') # ajoute l'unitee pour le nombre de satellite
         self.unitee = None
 
 # --- Classe Principale Réducteur ---

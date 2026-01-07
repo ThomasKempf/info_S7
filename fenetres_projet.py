@@ -326,6 +326,18 @@ class Frame_Train(qtw.QFrame):
         main_layout.addWidget(self._genere_type_train()) 
         main_layout.addWidget(self._genere_image_train(), alignment=qtc.Qt.AlignCenter)
         main_layout.addStretch()
+        self._genere_layoute_parametre(main_layout)
+        self.main_layout = main_layout
+        return main_layout
+
+
+    def _genere_layoute_parametre(self,main_layout:qtw.QVBoxLayout) -> None:
+        '''
+        genere le layout des parametre du train en y ajoutant les labels et widgets
+        
+        :param main_layout: layout principal du train auquel on ajoute les parametre
+        '''
+        self.param_containers = []
         for key in self._zone_text_train:
             container = qtw.QFrame()
             container.setFixedWidth(self.largeur_param)
@@ -334,7 +346,7 @@ class Frame_Train(qtw.QFrame):
             widget_list = [qtw.QLabel(key)] + list(self._zone_text_train[key]['widget'].values()) # titre + param
             self.fenetre.ajoute(layout, widget_list)
             main_layout.addWidget(container, alignment=qtc.Qt.AlignHCenter)
-        return main_layout
+            self.param_containers.append(container)
 
 
     def _genere_widget_train(self) -> dict[qtw.QWidget,qtw.QLineEdit]:
@@ -346,7 +358,10 @@ class Frame_Train(qtw.QFrame):
         """
         train_gui = {}
         description_train = self._train.description
+        print(description_train)
         for global_key in description_train: 
+            if global_key.startswith('_'): # parametre interne a ne pas traiter: exemple _nb_satellites
+                continue
             sous_obj = {'widget':{},'variable':{}}
             sous_obj['objet'] = description_train[global_key]
             for i, (key, value) in enumerate(sous_obj['objet'].description.items()):
@@ -358,6 +373,8 @@ class Frame_Train(qtw.QFrame):
     def _genere_type_train(self) -> None:
         '''
         créer une liste deroulante pour le choix du type de train 
+
+        :return: retourne la combobox pour directment l'ajouter au layout
         '''
         combobox = qtw.QComboBox()
         items = ['Train Simple', 'Train Epicicloïdal']
@@ -365,8 +382,30 @@ class Frame_Train(qtw.QFrame):
             combobox.addItem(item)
             index = combobox.count() - 1
             combobox.setItemData(index, qtc.Qt.AlignCenter, qtc.Qt.TextAlignmentRole)
+        combobox.currentTextChanged.connect(self._change_type_train)
+        if self._train.titre.startswith('train_simple_'):
+            combobox.setCurrentIndex(0)
+        elif self._train.titre.startswith('train_epi_'):
+            combobox.setCurrentIndex(1)
+        self.combobox = combobox
         return combobox
     
+
+    def _change_type_train(self) -> None:
+        index = self.combobox.currentIndex()
+        if index == 0: # train simple
+            pass
+        elif index == 1: # train epi
+            self.reducteur.changer_type_train(self.num, 'epi') # +1 parce que num peut etre 0 or le num de train commence a 1
+            self._train = self.reducteur.listeTrain[self.num]
+            for i in range(len(self.param_containers)):
+                container = self.param_containers[i]
+                self.main_layout.removeWidget(container)  # enlever du layout
+                container.setParent(None)            # détacher du parent
+                container.deleteLater()
+            self._zone_text_train = self._genere_widget_train()
+            self._genere_layoute_parametre(self.main_layout)
+
 
     def _genere_image_train(self):
         """
