@@ -285,7 +285,11 @@ class Fenetre(qtw.QWidget):
         :param lineedits: objet lineedits a modifier
         :param nouvelle_valeur: nouvelle valeur correcte à lui assignée
         '''
-        if all(ch == '0' for ch in lineedits.text()):
+        value = lineedits.text()
+        if '.' in value:  # vérifier qu'il y a un point
+            partie_entière, partie_decimale = value.split('.', 1)  # ne sépare qu'au premier point
+            value = partie_entière + partie_decimale
+        if all(ch == '0' for ch in value):
             if nouvelle_valeur == None:
                 nouvelle_valeur = self.valeur_precedente[str(lineedits)]
             self.signaler_lineedits_erreur(lineedits,nouvelle_valeur)
@@ -353,8 +357,7 @@ class BackstagePopup(qtw.QWidget):
             ("Nouveau", "new"),
             ("Ouvrir...", "open"),
             ("Enregistrer", "save"),
-            ("Enregistrer sous...", "save_as"),
-            ("Imprimer...", "print"),
+            ("Enregistrer sous...", "save_as")
         ]
         # creer et ajoute chaque bouton au layoute
         layout = qtw.QVBoxLayout(self)
@@ -364,7 +367,7 @@ class BackstagePopup(qtw.QWidget):
             layout.addWidget(btn)
 
 
-    def ouvrir_liste(self) -> None:
+    def ouvrir_list(self) -> None:
         '''
         rend la liste visible et connecte la methode permetant de la fermer
 
@@ -374,10 +377,10 @@ class BackstagePopup(qtw.QWidget):
         self.adjustSize()
         self.show()
         self.button.clicked.disconnect()
-        self.button.clicked.connect(self._fermer_liste)
+        self.button.clicked.connect(self._fermer_list)
 
 
-    def _fermer_liste(self) -> None:
+    def _fermer_list(self) -> None:
         '''
         ferme cache la liste et connecte la methode permetant de l'ouvrir a nouveau
 
@@ -385,7 +388,7 @@ class BackstagePopup(qtw.QWidget):
         - ``self.button`` doit rediriger vers les un bouton
         '''
         self.button.clicked.disconnect()
-        self.button.clicked.connect(self.ouvrir_liste)
+        self.button.clicked.connect(self.ouvrir_list)
         self.hide()
 
 

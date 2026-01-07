@@ -21,6 +21,9 @@ from PySide6 import (
     QtCore as qtc
 )
 
+# validator pour les float
+validator = qtg.QDoubleValidator()
+validator.setLocale(qtc.QLocale(qtc.QLocale.C))
 
 CREATION_PROJET = {
     'buttons':['Précedent','Next'],
@@ -48,9 +51,9 @@ CREATION_PROJET = {
 
 PAGE_0 = {
     'labels_unitee':{
-                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','validator':qtg.QDoubleValidator(0.0, 10000.0, 6),'parent':'block_gauche'},
-                'Puissance':{'unitee':'W','valeur_defaut':'1500','validator':qtg.QDoubleValidator(0.0, 10000.0, 6),'parent':'block_gauche'},
-                'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':qtg.QDoubleValidator(0.0, 10000.0, 6),'parent':'block_droit'}
+                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','validator':validator,'parent':'block_gauche'},
+                'Puissance':{'unitee':'W','valeur_defaut':'1500','validator':validator,'parent':'block_gauche'},
+                'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':validator,'parent':'block_droit'}
             },
     'labels':['Reducteur','Choix Parametre Global'],
     'styleSheet': '''
@@ -96,8 +99,8 @@ PAGE_1 = {
 
 LIGNE_TRAIN = {
     'labels_unitee':{
-                'entraxe':{'unitee':'mm','valeur_defaut':'400','validator':qtg.QIntValidator(0, 10000)},
-                'σ_max':{'unitee':'Mpa','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000)},
+                'entraxe':{'unitee':'mm','valeur_defaut':'400','validator':validator},
+                'σ_max':{'unitee':'Mpa','valeur_defaut':'1500','validator':validator},
             },
     'labels':['1'],
     'comboboxes':{'type_engrenage':['  Engrenage droit', '  Engrenage hélicoïdal'],
@@ -155,13 +158,13 @@ class FenetreCreationProjet(Fenetre):
             'stack':['stack']
         }
         super().__init__(CREATION_PROJET,elements)
-        self.generer_widget_page(nbr_page=2)
+        self._generer_widget_page(nbr_page=2)
         self.layouts['button'].insertStretch(0, 1)
-        self.generer_bouton_next_precedent(self.layouts['button'])
-        self.ajoute_composants()
+        self._generer_bouton_next_precedent(self.layouts['button'])
+        self._ajoute_composants()
 
 
-    def generer_widget_page(self, nbr_page:int) -> None:
+    def _generer_widget_page(self, nbr_page:int) -> None:
         '''
         creer un objet pour chaque page avec la bonne classe et ajoute le au stack permetant le defilement
         
@@ -178,7 +181,7 @@ class FenetreCreationProjet(Fenetre):
 
 
 
-    def generer_bouton_next_precedent(self, layout:qtw.QHBoxLayout) -> None:
+    def _generer_bouton_next_precedent(self, layout:qtw.QHBoxLayout) -> None:
         '''
         adapte les boutons et les lie au fonction a appeler
         
@@ -195,7 +198,7 @@ class FenetreCreationProjet(Fenetre):
         self.buttons['precedent'].hide()
 
 
-    def ajoute_composants(self) -> None:
+    def _ajoute_composants(self) -> None:
         '''
         ajoute les composants de la page constituer des boutons et du stack permetant le changement de page
         
@@ -245,6 +248,7 @@ class FenetreCreationProjet(Fenetre):
             self.genere_projet()
             fenetre_attente.close()
             self.close()
+            self.precedente_page()
 
 
     def genere_projet(self) -> None:
@@ -260,7 +264,7 @@ class FenetreCreationProjet(Fenetre):
         description_global =  self._page[0].variables
         variables_lignes = self._page[1].variables_lignes
         # lis des données des linedits et des differentes variables
-        values_global = [int(val) for val in description_global.values()]
+        values_global = [float(val) for val in description_global.values()]
         mes_etages = []
         for num_train in range(len(variables_lignes)):
             values_train = []
@@ -270,12 +274,14 @@ class FenetreCreationProjet(Fenetre):
                 mes_etages.append(mod.Train_simple(num_train + 1))
             elif variables_train['type_train'] == '  Train Epicicloïdal':
                 mes_etages.append(mod.Train_epi(num_train + 1))
+            if variables_train['type_engrenage'] == '  Engrenage hélicoïdal':
+                mes_etages[num_train].description['global'].description['beta'] = 20 # angle d'hélice par defaut
             # incorporation des valeur
             for key in variables_train:
                 if isinstance(variables_train[key],str):
                     values_train.append(variables_train[key]) # cas des combobox
                 else:
-                    values_train.append(int(variables_train[key].text())) # cas des linedits
+                    values_train.append(float(variables_train[key].text())) # cas des linedits
             mes_etages[num_train].description['global'].description['entraxe'] = values_train[0]
             mes_etages[num_train].description['global'].description['resistance_elastique'] = values_train[1]
         # ajout des parametres globals
@@ -473,7 +479,7 @@ class Page_1():
         '''
         # genere premiere ligne
         self._lignes =[]
-        self._lignes.append(Ligne_train(self._fenetre,1))
+        self._lignes.append(LigneTrain(self._fenetre,1))
         self.widgets['premiere_ligne'] = self._lignes[0].widget
         # adapte et ajoute widget des lignes suivante qui n'existe pas encore
         self.layouts['ligne_vertical'].setSpacing(15)
@@ -515,7 +521,7 @@ class Page_1():
 
         :param num: numero de la nouvelle ligne de train dans la liste
         '''
-        self._lignes.append(Ligne_train(self._fenetre,num+1))
+        self._lignes.append(LigneTrain(self._fenetre,num+1))
         self.layouts['ligne_vertical'].addWidget(self._lignes[num].widget)
 
     
@@ -575,7 +581,7 @@ class Page_1():
         return page
 
 
-class Ligne_train():
+class LigneTrain():
     def __init__(self,fenetre,numero) -> None:
         '''
         genere un widget avec tout les elements necessaire à la partie droite d'un train
@@ -590,7 +596,7 @@ class Ligne_train():
     
 
     @property
-    def variables(self):
+    def variables(self) -> dict[str]:
         '''
         au varaibles 
         '''
@@ -601,7 +607,7 @@ class Ligne_train():
 
 
     @property
-    def widget(self):
+    def widget(self) -> qtw.QWidget:
         '''
         acces au widget du module entier
         '''
@@ -683,11 +689,11 @@ class FenetreAttenteCreation(Fenetre):
             'labels':['texte','points'],
         }
         super().__init__(ATTENTE_CREATION,elements)
-        self.genere_fenetre()
-        self.genere_changement_dynamique()
+        self._genere_fenetre()
+        self._genere_changement_dynamique()
 
 
-    def genere_fenetre(self) -> None:
+    def _genere_fenetre(self) -> None:
         '''
         adapte le style du laout main et y ajoute le label texte et celui des points dynamoique
         pour ensuite ajouter le main à la fenetre
@@ -703,7 +709,7 @@ class FenetreAttenteCreation(Fenetre):
         self.setLayout(main)
 
 
-    def genere_changement_dynamique(self) -> None:
+    def _genere_changement_dynamique(self) -> None:
         '''
         creer un timer pour appeler de maniere cyclique self.clignoter
 
@@ -714,11 +720,11 @@ class FenetreAttenteCreation(Fenetre):
         self._index = 0
         # Timer pour l’animation
         self.timer = qtc.QTimer()
-        self.timer.timeout.connect(self.clignoter)
+        self.timer.timeout.connect(self._clignoter)
         self.timer.start(400)  # toutes les 400 ms
 
 
-    def clignoter(self) -> None:
+    def _clignoter(self) -> None:
         '''
         Permet le chamgement du text tu label a chaque appel
 

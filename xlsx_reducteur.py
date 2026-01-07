@@ -11,7 +11,6 @@
     La classe ProjetXlsx utilise les description des objet de type Global pour pouvoir structurer l'ecriture des cellules
 """
 
-import os
 import copy
 from openpyxl import Workbook,load_workbook
 from openpyxl.utils import get_column_letter
@@ -26,7 +25,7 @@ NBR_COLONNE_TRAIN = 3 # nombre de colonne pris par un train
 
 
 
-class Xlsx_file():
+class XlsxFile():
     def __init__(self,path) -> None:
         """
         contient les methode permetant d'ecrire dans un fichir xlsx
@@ -121,7 +120,7 @@ class Xlsx_file():
         return self._ws.cell(row=ligne, column=colonne).value
 
 
-class ProjetXlsx(Xlsx_file):
+class XlsxReducteur(XlsxFile):
     def __init__(self,path) -> None:
         """
         créer un fichier xlsx en y écrivant les parametre global
@@ -225,7 +224,7 @@ class ProjetXlsx(Xlsx_file):
         COLONNE_DEPART = 2 # numero de colonne de la premiere valeur
         NBR_COLONNE_SEPRARATION = 1 # nombre de colonne separant les train
         NBR_COLONNE_TRAIN = 3 # nombre de colonne pris par un train
-        self._param = [0]
+        self._param = []
         colonne = COLONNE_DEPART
         while True:
             # lire le titre principale pour savoir quel type de train il s'agit
@@ -258,7 +257,7 @@ if __name__ == '__main__':
 
     param_global = Global()
     param_global.description['vitesse_entree'] = 3
-    test = ProjetXlsx(param_global)
+    test = XlsxReducteur(param_global)
     test.creation_espace_travail()
     train_1 = Train(1)
     test.ecrire_description_simple(train_1,1)

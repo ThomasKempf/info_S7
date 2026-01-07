@@ -70,7 +70,7 @@ class Calcule_train:
 
     def calculer_force_tangentielle(self, param=None):
         Ce = self._param_global['_couple_entree']
-        r = self._param_global['entraxe'] 
+        r = self._param_global['entraxe']/1000 
         alpha_deg = self._param_global.get('alpha', 20)
         a_rad = math.radians(alpha_deg) 
 
@@ -104,21 +104,21 @@ class Calcule_train:
 class Calcule_train_simple(Calcule_train):
     
     def calculer_diametres_specifiques(self):
-        e = self._param_global['entraxe']
+        e = self._param_global['entraxe']/1000
         r = self._param_global['_rapport_reduction']
         
         if r > 0 and e > 0:
             D1 = (2 * e) / (1 + r)
             D2 = r * D1         
-            self._param_pignon['_diametre'] = D1
-            self._param_roue['_diametre'] = D2
+            self._param_pignon['_diametre'] = D1*1000
+            self._param_roue['_diametre'] = D2*1000
 
 
 class Calcule_train_epi(Calcule_train):
     
     def calculer_diametres_specifiques(self):
         r_red = self._param_global['_rapport_reduction']
-        entraxe = self._param_global['entraxe']
+        entraxe = self._param_global['entraxe']/1000
         
         if r_red > 1 and entraxe > 0:
             k = r_red - 1 
@@ -126,6 +126,6 @@ class Calcule_train_epi(Calcule_train):
             D_couronne = k * D_solaire
             D_satellite = (D_couronne - D_solaire) / 2
             
-            if self._param_pignon: self._param_pignon['_diametre'] = D_solaire
-            if self._param_couronne: self._param_couronne['_diametre'] = D_couronne
-            if self._param_satelite: self._param_satelite['_diametre'] = D_satellite
+            if self._param_pignon: self._param_pignon['_diametre'] = D_solaire*1000
+            if self._param_couronne: self._param_couronne['_diametre'] = D_couronne*1000
+            if self._param_satelite: self._param_satelite['_diametre'] = D_satellite*1000

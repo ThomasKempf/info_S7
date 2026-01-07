@@ -16,7 +16,7 @@ class Engrenage(Global):
         super().__init__()
         self.titre = f'engrenage {num}'
         self.description = {'_diametre' : 0}
-        self.unitee = ['m']
+        self.unitee = ['mm']
 
 class Train_global(Global):
     def __init__(self) -> None:
@@ -38,7 +38,7 @@ class Train_global(Global):
             'rendement': 0.95 # NOUVEAU : Rendement par défaut (95%)
         }
         # Unités correspondantes (simplifiées pour l'affichage)
-        self.unitee = ['RPM', 'W', 'Nm', 'Nm', 'm', 'RPM', 'N', ' ', 'mm', '°', '°', 'MPa', '%']
+        self.unitee = ['RPM', 'W', 'Nm', 'Nm', 'mm', 'RPM', 'N', ' ', 'mm', '°', '°', 'MPa', '%']
 
 class Train_simple(Global):
     def __init__(self,num:int) -> None:
@@ -225,10 +225,10 @@ class Reducteur():
 if __name__ == '__main__':
     # Initialisation
     t1 = Train_simple(1)
-    t1.description['global'].description.update({'entraxe': 0.08, 'resistance_elastique': 500, 'vitesse_entree': 1500, 'puissance_entree': 5000})
+    t1.description['global'].description.update({'entraxe': 80, 'resistance_elastique': 500, 'vitesse_entree': 1500, 'puissance_entree': 5000})
     
     t2 = Train_simple(2)
-    t2.description['global'].description.update({'entraxe': 0.10, 'resistance_elastique': 500, 'couple_sortie': 200}) # Cible finale
+    t2.description['global'].description.update({'entraxe': 100, 'resistance_elastique': 500, 'couple_sortie': 200}) # Cible finale
 
     reducteur = Reducteur([t1, t2])
 
@@ -239,9 +239,9 @@ if __name__ == '__main__':
             type_t = "EPI" if isinstance(train, Train_epi) else "SIMPLE"
             print(f"ETAGE {i+1} ({type_t}) | In: {g['vitesse_entree']:.0f}rpm | Out: {g['_vitesse_sortie']:.0f}rpm | Ratio: {g['_rapport_reduction']:.2f} | Couple In: {g['_couple_entree']:.1f}Nm")
             if type_t == "EPI":
-                print(f"   >>> D_Solaire: {train.description['pignon'].description['_diametre']*1000:.1f}mm | D_Couronne: {train.description['couronne'].description['_diametre']*1000:.1f}mm")
+                print(f"   >>> D_Solaire: {train.description['pignon'].description['_diametre']:.1f}mm | D_Couronne: {train.description['couronne'].description['_diametre']*1000:.1f}mm")
             else:
-                print(f"   >>> D_Pignon: {train.description['pignon'].description['_diametre']*1000:.1f}mm")
+                print(f"   >>> D_Pignon: {train.description['pignon'].description['_diametre']:.1f}mm")
         print("-"*50)
 
     afficher_resultats(reducteur)
@@ -253,7 +253,7 @@ if __name__ == '__main__':
     # TEST 2 : Changement de type (Passer l'étage 2 en Épicycloïdal)
     reducteur.changer_type_train(1, 'epi')
     # Pour un épi, il faut souvent un entraxe plus grand pour caser les satellites si le rapport est grand, ajustons-le
-    reducteur.modifier_parametre(1, 'global', 'entraxe', 0.15) 
+    reducteur.modifier_parametre(1, 'global', 'entraxe', 150) 
     afficher_resultats(reducteur)
 
     # TEST 3 : Ajout d'un train
