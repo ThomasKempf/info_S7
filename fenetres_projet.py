@@ -174,7 +174,6 @@ class FenetreProjet(Fenetre):
         '''
         self.frames_train[len(self.frames_train)-1].bp_moins.show()
         self.frames_train[len(self.frames_train)-1].bp_moins.setFixedSize(30, 6)
-        self.frames_train[len(self.frames_train)-1].bp_moins.clicked.connect(self._supprime_frame_train)
 
 
     def ajoute_bp_plus(self) -> None:
@@ -182,8 +181,8 @@ class FenetreProjet(Fenetre):
         ajoute le bouton plus qui permet d'ajouter un fram de train
         '''
         self.bouton_plus = qtw.QPushButton('+')
-        self.bouton_plus.setObjectName('bp_plus')
         self.bouton_plus.clicked.connect(self._ajoute_frame_train)
+        self.bouton_plus.setObjectName('bp_plus')
         self.layouts['train'].addWidget(self.bouton_plus)
         self.bouton_plus.show()
 
@@ -437,6 +436,7 @@ class Frame_Train(qtw.QFrame):
         # Label - pour supprimer le train
         self.bp_moins = qtw.QPushButton(container)  # Exemple : nombre à afficher
         self.bp_moins.setObjectName('bp_moins')
+        self.bp_moins.clicked.connect(self.fenetre._supprime_frame_train)
         self.label_image.move(30, 10)
         label_nombre.move(10, 5)
         self.bp_moins.move(220, 15)
