@@ -152,13 +152,14 @@ class Fenetre(qtw.QWidget):
                 layout.addWidget(list_element[i])
 
 
-    def _ajout_nom_zone_texte_unitee(self,nom:str,unitee:str,text_defaut:str) -> tuple[qtw.QWidget, qtw.QLineEdit]:
+    def _ajout_nom_zone_texte_unitee(self,nom:str,unitee:str,text_defaut:str,gras:bool=False) -> tuple[qtw.QWidget, qtw.QLineEdit]:
         '''
         genere un widget avec deux label et un qtw.QLineEdit, un pour le nom un pour l'unitee et une zone de texte,
         
         :param nom: nom de la variable
         :param unitee: unitee associée au parametre
         :param test_defaut: texte par defaut ecris dans la zone de texte
+        :param gras: si le nom doit etre en gras ou non spéciatlement bricolé pour la fenetre de projet
         :return: retourne un widgets contenant la structure et une variable contenant l'objet  qtw.QLineEdit
         '''
         layout = qtw.QHBoxLayout()
@@ -179,6 +180,9 @@ class Fenetre(qtw.QWidget):
         # ajoute le layout principale au widget principale
         widget = qtw.QWidget()
         widget.setLayout(layout)
+        if gras:
+            lbl_nom.setStyleSheet("font-weight: bold;")
+            lbl_unitee.setStyleSheet("font-weight: bold;")
         return widget,variable
     
     

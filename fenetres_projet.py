@@ -339,7 +339,9 @@ class Frame_Train(qtw.QFrame):
             container.setFixedWidth(self.largeur_param)
             layout = qtw.QVBoxLayout(container)
             container.setObjectName("monContainer")
-            widget_list = [qtw.QLabel(key)] + list(self._zone_text_train[key]['widget'].values()) # titre + param
+            titre = qtw.QLabel(key)
+            titre.setStyleSheet("font-weight: bold;")
+            widget_list = [titre] + list(self._zone_text_train[key]['widget'].values()) # titre + param
             self.fenetre.ajoute(layout, widget_list)
             main_layout.addWidget(container, alignment=qtc.Qt.AlignHCenter)
             self.param_containers.append(container)
@@ -351,7 +353,7 @@ class Frame_Train(qtw.QFrame):
     def _genere_widget_train(self) -> dict[qtw.QWidget,qtw.QLineEdit]:
         """
         genere un widget et une variable associée à la valeur pour chaque paramatre du train 
-        en ce basant sur les key du xlsx
+        en ce basant sur les keys de la description du train
 
         :return: dict avec le widget et la variable liée a chaque parametre de chaque sous obj
         """
@@ -467,7 +469,16 @@ class Frame_Train(qtw.QFrame):
         '''
         validator = qtg.QDoubleValidator()# validator pour forcer l'entrée de nombre flottant avec point decimal
         validator.setLocale(qtc.QLocale(qtc.QLocale.C))
-        sous_obj['widget'][key],sous_obj['variable'][key] = self.fenetre._ajout_nom_zone_texte_unitee(key,unitee,str(round(value,4)))
+        # supprime le _ pour les parametre interne
+        if key.startswith('_'):
+            nom = key[1:]
+            gras = False
+        else:
+            nom = key
+            gras = True
+        print(nom,key)
+        # genere le widget et la variable associée
+        sous_obj['widget'][key],sous_obj['variable'][key] = self.fenetre._ajout_nom_zone_texte_unitee(nom,unitee,str(round(value,4)),gras)
         if key.startswith('_'):
             sous_obj['variable'][key].setReadOnly(True)
         else:
