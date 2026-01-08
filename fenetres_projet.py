@@ -324,7 +324,6 @@ class Frame_Train(qtw.QFrame):
         main_layout.addWidget(self._genere_type_train()) 
         main_layout.addWidget(self._genere_image_train(), alignment=qtc.Qt.AlignCenter)
         self._genere_layoute_parametre(main_layout)
-        main_layout.addStretch()
         self.main_layout = main_layout
         return main_layout
 
@@ -345,6 +344,9 @@ class Frame_Train(qtw.QFrame):
             self.fenetre.ajoute(layout, widget_list)
             main_layout.addWidget(container, alignment=qtc.Qt.AlignHCenter)
             self.param_containers.append(container)
+            
+        self.stretch_bas = qtw.QSpacerItem(0, 0, qtw.QSizePolicy.Minimum, qtw.QSizePolicy.Expanding)
+        main_layout.addItem(self.stretch_bas)
 
 
     def _genere_widget_train(self) -> dict[qtw.QWidget,qtw.QLineEdit]:
@@ -392,12 +394,13 @@ class Frame_Train(qtw.QFrame):
         '''
         change le type de train en fonction de la selection dans la combobox
         '''
-        # supprime les ancien containers
+        # supprime les ancien containers et stretch
         for i in range(len(self.param_containers)):
             container = self.param_containers[i]
             self.main_layout.removeWidget(container)  # enlever du layout
             container.setParent(None)            # détacher du parent
             container.deleteLater()
+        self.main_layout.removeItem(self.stretch_bas)
         # change le type de train
         index = self.combobox.currentIndex()
         if index == 0: # train simple
