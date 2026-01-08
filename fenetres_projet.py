@@ -476,9 +476,14 @@ class Frame_Train(qtw.QFrame):
         else:
             nom = key
             gras = True
-        print(nom,key)
+        # cas particulier pour le couple beta qui peut etre nul
+        if key == 'beta':
+            controle_0 = False
+        else:
+            controle_0 = True
         # genere le widget et la variable associée
-        sous_obj['widget'][key],sous_obj['variable'][key] = self.fenetre._ajout_nom_zone_texte_unitee(nom,unitee,str(round(value,4)),gras)
+        new_value = self.arrondie_et_convertie_en_str(value)
+        sous_obj['widget'][key],sous_obj['variable'][key] = self.fenetre._ajout_nom_zone_texte_unitee(nom,unitee,new_value,controle_0,gras)
         if key.startswith('_'):
             sous_obj['variable'][key].setReadOnly(True)
         else:
@@ -519,5 +524,23 @@ class Frame_Train(qtw.QFrame):
         for global_key in  self._zone_text_train:
             for key in self._zone_text_train[global_key]['variable']:
                 if key != value_name:
-                    self._zone_text_train[global_key]['variable'][key].setText(str(round(self._train.description[global_key].description[key],4)))
+                    new_value = self._train.description[global_key].description[key]
+                    new_value = self.arrondie_et_convertie_en_str(new_value)
+                    self._zone_text_train[global_key]['variable'][key].setText(new_value)
+
+    
+    def arrondie_et_convertie_en_str(self,valeur) -> str:
+        '''
+        arrondie une valeur a 3 chiffre apres la virgule et la convertie en str
+        
+        :param valeur: valeur a arrondir
+        :return: retourne la valeur arrondie en str
+        '''
+        new_value = round(valeur,3)
+        new_value = str(new_value)
+        # supprime les 0 superflus
+        val = new_value.rstrip("0").rstrip(".")
+        new_value = val if val != "" else "0"
+        return new_value
+
         

@@ -152,13 +152,14 @@ class Fenetre(qtw.QWidget):
                 layout.addWidget(list_element[i])
 
 
-    def _ajout_nom_zone_texte_unitee(self,nom:str,unitee:str,text_defaut:str,gras:bool=False) -> tuple[qtw.QWidget, qtw.QLineEdit]:
+    def _ajout_nom_zone_texte_unitee(self,nom:str,unitee:str,text_defaut:str,control_0:bool=True,gras:bool=False) -> tuple[qtw.QWidget, qtw.QLineEdit]:
         '''
         genere un widget avec deux label et un qtw.QLineEdit, un pour le nom un pour l'unitee et une zone de texte,
         
         :param nom: nom de la variable
         :param unitee: unitee associée au parametre
         :param test_defaut: texte par defaut ecris dans la zone de texte
+        :param control_0: si le parametre doit etre controler pour ne pas etre égal à 0, bricolage special pour les fenetre de projet
         :param gras: si le nom doit etre en gras ou non spéciatlement bricolé pour la fenetre de projet
         :return: retourne un widgets contenant la structure et une variable contenant l'objet  qtw.QLineEdit
         '''
@@ -172,7 +173,8 @@ class Fenetre(qtw.QWidget):
         self.valeur_precedente[str(variable)] = text_defaut
         variable.setStyleSheet('QLineEdit {border: 1px solid #222; border-radius: 3px;}')
         variable.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
-        variable.editingFinished.connect(lambda w=variable : self.control_0(w))
+        if control_0:
+            variable.editingFinished.connect(lambda w=variable : self.control_0(w))
         layout.addWidget(variable)
         # ajoute le label de l'unitee
         lbl_unitee = qtw.QLabel(unitee)
