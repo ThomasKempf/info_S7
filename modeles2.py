@@ -1,4 +1,3 @@
-# Fichier: modeles.py
 from Parametres_dyna import Calcule_train_simple, Calcule_train_epi
 import math
 
@@ -15,8 +14,9 @@ class Engrenage(Global):
     def __init__(self,num:int) -> None:
         super().__init__()
         self.titre = f'engrenage {num}'
-        self.description = {'_diametre' : 0}
-        self.unitee = ['mm']
+        # AJOUT : _nbr_dents
+        self.description = {'_diametre' : 0, '_nbr_dents': 0}
+        self.unitee = ['mm', ' ']
 
 class Train_global(Global):
     def __init__(self) -> None:
@@ -35,10 +35,12 @@ class Train_global(Global):
             'alpha': 20,
             'beta':0,
             'resistance_elastique': 0,
-            'rendement': 0.95 # NOUVEAU : Rendement par défaut (95%)
+            'rendement': 0.95,
+            # AJOUT : Diamètres des arbres (Entrée et Sortie du train)
+            '_diametre_arbre_entree': 0,
+            '_diametre_arbre_sortie': 0
         }
-        # Unités correspondantes (simplifiées pour l'affichage)
-        self.unitee = ['RPM', 'W', 'Nm', 'Nm', 'mm', 'RPM', 'N', ' ', 'mm', '°', '°', 'MPa', '%']
+        self.unitee = ['RPM', 'W', 'Nm', 'Nm', 'mm', 'RPM', 'N', ' ', 'mm', '°', '°', 'MPa', '%', 'mm', 'mm']
 
 class Train_simple(Global):
     def __init__(self,num:int) -> None:
@@ -60,17 +62,15 @@ class Train_epi(Global):
         self.description =  {
             '_mode_blocage':'couronne', 
             'global': Train_global(),
-            'pignon': Engrenage(0), # Solaire = planétaire
+            'pignon': Engrenage(0),
             'satelite': Engrenage(1),
             'couronne': Engrenage(2)
         }
-        # change les titres des sous-objets
         self.description['pignon'].titre = 'solaire'
         self.description['satelite'].titre = 'satellite'
         self.description['couronne'].titre = 'couronne'
-        # ajoute le nombre de satellite par defaut a la description global
         self.description['global'].description = {**{'nb_satelite':3}, **self.description['global'].description}
-        self.description['global'].unitee.insert(0, ' ') # ajoute l'unitee pour le nombre de satellite
+        self.description['global'].unitee.insert(0, ' ') 
         self.unitee = None
 
 # --- Classe Principale Réducteur ---
@@ -79,67 +79,44 @@ class Reducteur():
     def __init__(self, listeTrain: list) -> None:
         self.titre = 'reducteur'
         self.listeTrain = listeTrain
-        self.calc_objects = [] # Stocke les objets calculateurs
-        
-        # Initialisation du premier calcul
+        self.calc_objects = [] 
         if len(self.listeTrain) > 0:
             self.calculer_systeme_complet()
 
     def calculer_RR_global_vise(self):
-        """Calcule le rapport total visé basé sur les entrées/sorties du système."""
         if not self.listeTrain: return 1
-        
         P_in = self.listeTrain[0].description['global'].description['puissance_entree']
         V_in = self.listeTrain[0].description['global'].description['vitesse_entree']
         C_out_desire = self.listeTrain[-1].description['global'].description['couple_sortie']
-        
-        if C_out_desire == 0: return 1 # On return 1 mais on peut return ce qu'on veut ici
-        
+        if C_out_desire == 0: return 1 
         omega_in = V_in * 2 * math.pi / 60
-        # Estimation grossière du omega_out idéal (sans rendement global pour le ciblage géométrique)
         omega_out = P_in / C_out_desire 
-        
-        if omega_out == 0: return 0 ###
+        if omega_out == 0: return 0 
         return omega_in / omega_out
 
     def calculer_systeme_complet(self):
-        """Méthode principale qui met à jour toute la chaîne."""
         n = len(self.listeTrain)
         if n == 0: return
-
-        #  Récupération des conditions initiales du premier étage
         P_actuelle = self.listeTrain[0].description['global'].description['puissance_entree']
         V_actuelle = self.listeTrain[0].description['global'].description['vitesse_entree']
         
-        #  Calcul du ratio équilibré par étage ( tous les étages ont le même ratio, me dire si tu veux u truc plus optimisé)
         rr_total = self.calculer_RR_global_vise()
         if rr_total > 0:
             r_etage_target = rr_total ** (1/n)
         else:
             r_etage_target = 1
-
-        self.calc_objects = [] # Reset des calculateurs
-
-        #  Boucle 
+        
+        self.calc_objects = [] 
         for i, train in enumerate(self.listeTrain):
-            
-            # Mise à jour des entrées de l'étage i
             train.description['global'].description['puissance_entree'] = P_actuelle
             train.description['global'].description['vitesse_entree'] = V_actuelle
             
-            # Injection du ratio cible (Sera recalibré par la physique ensuite si besoin)
-            # Pour un dimensionnement, on fixe la sortie désirée virtuelle pour calculer la géométrie
             C_out_local_estime = (P_actuelle / (V_actuelle/r_etage_target)) / (2*math.pi/60)
-            
-            # Si c'est le dernier étage, on respecte impérativement le couple de sortie demandé par l'utilisateur
-            # (Ca forcera le ratio de ce dernier étage à s'adapter)
             if i == n - 1:
-                # On garde le couple_sortie défini manuellement par l'utilisateur pour le dernier étage
                 pass 
             else:
                 train.description['global'].description['couple_sortie'] = C_out_local_estime
 
-            # Création du calculateur approprié
             if isinstance(train, Train_simple):
                 calc = Calcule_train_simple(train)
             elif isinstance(train, Train_epi):
@@ -148,23 +125,13 @@ class Reducteur():
                 continue
             
             self.calc_objects.append(calc)
-            
-            # Lancement du calcul physique de l'étage
             calc.calculer_mise_a_jour_complete()
             
-            # Préparation pour l'étage suivant
             V_actuelle = train.description['global'].description['_vitesse_sortie']
-            # La puissance diminue à cause du rendement !
             P_actuelle = calc.get_puissance_sortie_reelle()
 
-
-    # --- Méthodes de Modification Dynamique ---
-
     def modifier_parametre(self, index_train, sous_objet, cle, valeur):
-        """
-        Modifie un paramètr spécifique et relance le calcul.
-        Ex: modifier_parametre(0, 'global', 'vitesse_entree', 2000)
-        """
+        if index_train < 0: index_train = len(self.listeTrain) + index_train
         if 0 <= index_train < len(self.listeTrain):
             train = self.listeTrain[index_train]
             if sous_objet in train.description:
@@ -172,104 +139,107 @@ class Reducteur():
                     print(f">> Modification Train {index_train+1} [{sous_objet}][{cle}] = {valeur}")
                     train.description[sous_objet].description[cle] = valeur
                     self.calculer_systeme_complet()
-                else:
-                    print(f"Erreur: Clé {cle} introuvable.")
-            else:
-                print(f"Erreur: Sous-objet {sous_objet} introuvable.")
+                else: print(f"Erreur: Clé {cle} introuvable.")
+            else: print(f"Erreur: Sous-objet {sous_objet} introuvable.")
 
     def ajouter_train(self, type_train='simple'):
-        num = len(self.listeTrain) + 1
-        if type_train == 'epi':
-            new_train = Train_epi(num)
-        else:
-            new_train = Train_simple(num)
+        couple_cible = 100 
+        if len(self.listeTrain) > 0:
+            couple_cible = self.listeTrain[-1].description['global'].description['couple_sortie']
         
-        # Initialisation avec des valeurs par défaut cohérentes avec le précédent
+        num = len(self.listeTrain) + 1
+        if type_train == 'epi': new_train = Train_epi(num)
+        else: new_train = Train_simple(num)
+        
         new_train.description['global'].description['entraxe'] = 100
         new_train.description['global'].description['resistance_elastique'] = 340
         new_train.description['global'].description['rendement'] = 0.95
+        new_train.description['global'].description['couple_sortie'] = couple_cible # Transfert de la cible
         
         self.listeTrain.append(new_train)
-        print(f">> Train {type_train} ajouté.")
+        print(f">> Train {type_train} ajouté. Cible maintenue à {couple_cible} Nm")
         self.calculer_systeme_complet()
 
     def supprimer_dernier_train(self):
         if len(self.listeTrain) > 0:
+            couple_cible = self.listeTrain[-1].description['global'].description['couple_sortie']
             self.listeTrain.pop()
             print(">> Dernier train supprimé.")
+            if len(self.listeTrain) > 0:
+                self.listeTrain[-1].description['global'].description['couple_sortie'] = couple_cible # Transfert de la cible
+                print(f">> Cible de {couple_cible} Nm transférée au train précédent.")
             self.calculer_systeme_complet()
 
     def changer_type_train(self, index, nouveau_type):
         if 0 <= index < len(self.listeTrain):
             old_train = self.listeTrain[index]
-            
-            # Création du nouveau train
-            if nouveau_type == 'epi':
-                new_train = Train_epi(index+1)
-            else:
-                new_train = Train_simple(index+1)
-            
-            # On essaie de conserver les paramètres globaux communs (Entraxe, Résistance, Rendement)
+            if nouveau_type == 'epi': new_train = Train_epi(index+1)
+            else: new_train = Train_simple(index+1)
             for key in ['entraxe', 'resistance_elastique', 'rendement', 'couple_sortie']:
                 val = old_train.description['global'].description.get(key)
                 new_train.description['global'].description[key] = val
-            
-            # Si c'est le train 0, on garde les inputs
             if index == 0:
                 new_train.description['global'].description['vitesse_entree'] = old_train.description['global'].description['vitesse_entree']
                 new_train.description['global'].description['puissance_entree'] = old_train.description['global'].description['puissance_entree']
-
             self.listeTrain[index] = new_train
             print(f">> Train {index+1} changé en type {nouveau_type}.")
             self.calculer_systeme_complet()
 
-# --- Zone de Test ---
+
+# --- Zone de Test Complète ---
 
 if __name__ == '__main__':
-    # Initialisation
+    print("=== INITIALISATION DU TEST COMPLET ===")
     t1 = Train_simple(1)
     t1.description['global'].description.update({'entraxe': 80, 'resistance_elastique': 500, 'vitesse_entree': 1500, 'puissance_entree': 5000})
     
     t2 = Train_simple(2)
-    t2.description['global'].description.update({'entraxe': 80, 'resistance_elastique': 500})
+    # CIBLE INITIALE : 250 Nm
+    t2.description['global'].description.update({'entraxe': 100, 'resistance_elastique': 500, 'couple_sortie': 250}) 
 
-    t3 = Train_simple(3)
-    t3.description['global'].description.update({'entraxe': 80, 'resistance_elastique': 500})
+    reducteur = Reducteur([t1, t2])
 
-    t4 = Train_simple(4)
-    t4.description['global'].description.update({'entraxe': 100, 'resistance_elastique': 500, 'couple_sortie': 202}) # Cible finale
-
-    reducteur = Reducteur([t1, t2, t3, t4])
-
-    def afficher_resultats(r):
-        print("\n" + "-"*50)
+    def afficher_resultats(r, titre=""):
+        print(f"\n--- {titre} ---")
         for i, train in enumerate(r.listeTrain):
             g = train.description['global'].description
-            type_t = "EPI" if isinstance(train, Train_epi) else "SIMPLE"
-            print(f"ETAGE {i+1} ({type_t}) | In: {g['vitesse_entree']:.0f}rpm | Out: {g['_vitesse_sortie']:.0f}rpm | Ratio: {g['_rapport_reduction']:.2f} | Couple In: {g['_couple_entree']:.1f}Nm | Couple Iut: {g['couple_sortie']:.1f}Nm")
-            if type_t == "EPI":
-                print(f"   >>> D_Solaire: {train.description['pignon'].description['_diametre']:.1f}mm | D_Couronne: {train.description['couronne'].description['_diametre']*1000:.1f}mm")
+            type_t = "EPI   " if isinstance(train, Train_epi) else "SIMPLE"
+            
+            # Données Clés
+            c_out = g.get('couple_sortie', 0)
+            ratio = g.get('_rapport_reduction', 0)
+            d_arb_in = g.get('_diametre_arbre_entree', 0)
+            
+            # 1. On affiche le Couple Cible (Test de robustesse)
+            print(f"ETAGE {i+1} ({type_t}) | Ratio: {ratio:.2f} | CIBLE: {c_out:.1f} Nm")
+            
+            # 2. On affiche les nouvelles données (Arbre & Dents)
+            print(f"    > Arbre Entrée min: {d_arb_in:.1f} mm")
+            
+            if type_t == "EPI   ":
+                d_s = train.description['pignon'].description['_diametre']
+                z_s = train.description['pignon'].description['_nbr_dents']
+                d_c = train.description['couronne'].description['_diametre']
+                z_c = train.description['couronne'].description['_nbr_dents']
+                print(f"    > Solaire : {d_s:.1f}mm ({z_s} dents) | Couronne : {d_c:.1f}mm ({z_c} dents)")
             else:
-                print(f"   >>> D_Pignon: {train.description['pignon'].description['_diametre']:.1f}mm")
-        print("-"*50)
+                d_p = train.description['pignon'].description['_diametre']
+                z_p = train.description['pignon'].description['_nbr_dents']
+                d_r = train.description['roue'].description['_diametre']
+                z_r = train.description['roue'].description['_nbr_dents']
+                print(f"    > Pignon : {d_p:.1f}mm ({z_p} dents) | Roue : {d_r:.1f}mm ({z_r} dents)")
+        print("-" * 40)
 
-    afficher_resultats(reducteur)
+    afficher_resultats(reducteur, "1. État Initial")
 
-    # TEST 1 : Modification paramètre
-    reducteur.modifier_parametre(2, 'global', 'couple_sortie', 200) # modifie t3, 2 parce que la liste commence a 0
-    afficher_resultats(reducteur)
+    # TEST CRITIQUE 1 : AJOUT (Doit garder 250 Nm)
+    reducteur.ajouter_train('epi') 
+    afficher_resultats(reducteur, "2. APRÈS AJOUT (Cible 250 Nm sur Etage 3 ?)")
 
+    # TEST CRITIQUE 2 : SUPPRESSION (Doit garder 250 Nm)
+    reducteur.supprimer_dernier_train()
+    afficher_resultats(reducteur, "3. APRÈS SUPPRESSION (Cible 250 Nm sur Etage 2 ?)")
 
-    '''
-    # TEST 2 : Changement de type (Passer l'étage 2 en Épicycloïdal)
-    reducteur.changer_type_train(1, 'epi')
-    # Pour un épi, il faut souvent un entraxe plus grand pour caser les satellites si le rapport est grand, ajustons-le
-    reducteur.modifier_parametre(1, 'global', 'entraxe', 150) 
-    afficher_resultats(reducteur)
-
-    # TEST 3 : Ajout d'un train
-    reducteur.ajouter_train('epi')
-    # On définit le couple de sortie sur le nouveau dernier train
-    reducteur.modifier_parametre(2, 'global', 'couple_sortie', 300) 
-    afficher_resultats(reducteur)
-    '''
+    # TEST 3 : MODIFICATION
+    reducteur.modifier_parametre(0, 'global', 'vitesse_entree', 3000)
+    afficher_resultats(reducteur, "4. APRÈS CHANGEMENT VITESSE (Recalcul complet)")

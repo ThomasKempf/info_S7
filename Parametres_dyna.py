@@ -1,3 +1,4 @@
+# Fichier: Parametres_dyna.py
 import math 
 
 class Calcule_train:
@@ -10,7 +11,7 @@ class Calcule_train:
 
         self._param_global = self.train_1.description['global'].description
         
-        # Gestion  des dictionnaires (pour éviter le crash si pas de satellite)
+        # Gestion sécurisée des dictionnaires
         obj_pignon = self.train_1.description.get('pignon')
         self._param_pignon = obj_pignon.description if obj_pignon else {}
 
@@ -30,21 +31,14 @@ class Calcule_train:
         self.calculer_couple_entree()
         self.calculer_force_tangentielle()
         self.calculer_module()
-        self.calculer_diametres_specifiques()
+        self.calculer_diametres_specifiques() # Calcule diamètres primitifs ET nombre de dents
+        self.calculer_arbres() # NOUVEAU : Calcule les diamètres des arbres
 
-    # --- Méthodes Physiques (Avec param=None pour compatibilité) ---
-
-    def calculer_parametres(self, param=None):
-        """
-        Ancienne méthode principale. 
-        On ignore 'param', mais on garde l'argument pour ne pas casser l'appli externe.
-        """
-        self.calculer_mise_a_jour_complete()
+    # --- Méthodes Physiques ---
 
     def calculer_vitesse_sortie(self, param=None):
         P_entree = self._param_global['puissance_entree']
         Couple_sortie = self._param_global['couple_sortie']
-        
         if Couple_sortie <= 0:
             vitesse_sortie = 0.0
         else: 
@@ -54,7 +48,6 @@ class Calcule_train:
     def calculer_couple_entree(self, param=None):
         P_entree = self._param_global['puissance_entree']
         V_entree = self._param_global['vitesse_entree']
-        
         if V_entree > 0:
             self._param_global['_couple_entree'] = P_entree / (V_entree * (2 * math.pi / 60))
         else:
@@ -73,7 +66,6 @@ class Calcule_train:
         r = self._param_global['entraxe']/1000 
         alpha_deg = self._param_global.get('alpha', 20)
         a_rad = math.radians(alpha_deg) 
-
         if r > 0:
             self._param_global['_force_tangentielle'] = Ce / (r * math.cos(a_rad))
         else:
@@ -87,9 +79,33 @@ class Calcule_train:
         else:
              self._param_global['_module'] = 0
 
-    def calculer_diametre(self, param=None):
-        # Redirection vers la nouvelle méthode spécifique
-        self.calculer_diametres_specifiques()
+    def calculer_arbres(self):
+        """
+        NOUVEAU : Calcule le diamètre minimal des arbres d'entrée et de sortie
+        Basé sur la torsion : d = (16 * C / (pi * Rpg))^(1/3)
+        Avec Rpg (Resistance glissement) approx Re / 2
+        """
+        Re = self._param_global.get('resistance_elastique', 0)
+        if Re <= 0: 
+            self._param_global['_diametre_arbre_entree'] = 0
+            self._param_global['_diametre_arbre_sortie'] = 0
+            return
+
+        Rpg = Re * 0.5 # Approximation courante pour l'acier (cisaillement)
+        
+        # Couple en Nm, Re en MPa (N/mm²). 
+        # Formule homogène en mm : d = (16 * C*1000 / (pi * Rpg))^(1/3)
+        
+        C_in = self._param_global.get('_couple_entree', 0)
+        C_out = self._param_global.get('couple_sortie', 0)
+
+        if C_in > 0:
+            d_in = (16 * C_in * 1000 / (math.pi * Rpg))**(1/3)
+            self._param_global['_diametre_arbre_entree'] = d_in
+        
+        if C_out > 0:
+            d_out = (16 * C_out * 1000 / (math.pi * Rpg))**(1/3)
+            self._param_global['_diametre_arbre_sortie'] = d_out
 
     def get_puissance_sortie_reelle(self):
         eta = self._param_global.get('rendement', 1.0) 
@@ -97,6 +113,10 @@ class Calcule_train:
 
     def calculer_diametres_specifiques(self):
         raise NotImplementedError("Surchargé par les enfants")
+    
+    # Méthodes de compatibilité (param=None)
+    def calculer_parametres(self, param=None): self.calculer_mise_a_jour_complete()
+    def calculer_diametre(self, param=None): self.calculer_diametres_specifiques()
 
 
 # --- Classes Spécifiques ---
@@ -104,14 +124,25 @@ class Calcule_train:
 class Calcule_train_simple(Calcule_train):
     
     def calculer_diametres_specifiques(self):
-        e = self._param_global['entraxe']/1000
+        e = self._param_global['entraxe']/1000 # Converti en m
         r = self._param_global['_rapport_reduction']
-        
+        m = self._param_global['_module']
+
         if r > 0 and e > 0:
             D1 = (2 * e) / (1 + r)
             D2 = r * D1         
-            self._param_pignon['_diametre'] = D1*1000
-            self._param_roue['_diametre'] = D2*1000
+            
+            # Stockage Diamètres (en mm pour affichage standard dans l'objet engrenage)
+            self._param_pignon['_diametre'] = D1 * 1000
+            self._param_roue['_diametre'] = D2 * 1000
+
+            # CALCUL NBR DENTS (NOUVEAU) : Z = D / m
+            if m > 0:
+                self._param_pignon['_nbr_dents'] = int(round((D1 * 1000) / m))
+                self._param_roue['_nbr_dents'] = int(round((D2 * 1000) / m))
+            else:
+                self._param_pignon['_nbr_dents'] = 0
+                self._param_roue['_nbr_dents'] = 0
 
 
 class Calcule_train_epi(Calcule_train):
@@ -119,13 +150,21 @@ class Calcule_train_epi(Calcule_train):
     def calculer_diametres_specifiques(self):
         r_red = self._param_global['_rapport_reduction']
         entraxe = self._param_global['entraxe']/1000
-        
+        m = self._param_global['_module']
+
         if r_red > 1 and entraxe > 0:
             k = r_red - 1 
             D_solaire = (4 * entraxe) / (k + 1)
             D_couronne = k * D_solaire
             D_satellite = (D_couronne - D_solaire) / 2
             
+            # Stockage Diamètres (mm)
             if self._param_pignon: self._param_pignon['_diametre'] = D_solaire*1000
             if self._param_couronne: self._param_couronne['_diametre'] = D_couronne*1000
             if self._param_satelite: self._param_satelite['_diametre'] = D_satellite*1000
+
+            # CALCUL NBR DENTS (NOUVEAU)
+            if m > 0:
+                if self._param_pignon: self._param_pignon['_nbr_dents'] = int(round((D_solaire*1000)/m))
+                if self._param_couronne: self._param_couronne['_nbr_dents'] = int(round((D_couronne*1000)/m))
+                if self._param_satelite: self._param_satelite['_nbr_dents'] = int(round((D_satellite*1000)/m))
