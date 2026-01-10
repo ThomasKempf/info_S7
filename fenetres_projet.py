@@ -466,7 +466,10 @@ class Frame_Train(qtw.QFrame):
         :param unitee: unitee du parametre
         :return: retourne le sous objet avec l'ajout de la variable linedit et du widget principale
         '''
-        validator = qtg.QDoubleValidator()# validator pour forcer l'entrée de nombre flottant avec point decimal
+        if key == 'nbr_satellites':
+            validator = qtg.QIntValidator() # cas particulier pour le nombre de satellite
+        else:
+            validator = qtg.QDoubleValidator()# validator pour forcer l'entrée de nombre flottant avec point decimal
         validator.setLocale(qtc.QLocale(qtc.QLocale.C))
         # supprime le _ pour les parametre interne
         if key.startswith('_') and not((key == '_vitesse_entree' or key == '_puissance_entree') and self.num == 0): # ajoute le cas particulier du _vitesse_entree et puissance_entree du premier train
@@ -475,8 +478,8 @@ class Frame_Train(qtw.QFrame):
         else:
             nom = key
             gras = True
-        # cas particulier pour le couple beta qui peut etre nul
-        if key == 'beta':
+        # cas particulier pour le couple beta qui peut etre nul ou nbr de satellite ou un interval de 3 a 12 est vérifié, deux vérification entraine une erreur
+        if key == 'beta' or key == 'nbr_satellites':
             controle_0 = False
         else:
             controle_0 = True
@@ -490,6 +493,9 @@ class Frame_Train(qtw.QFrame):
                 self._modifie_parametre(float(variable.text()), k,obj)) # self._zone_text_train n'existe pas encore
             sous_obj['variable'][key].setValidator(validator)
         sous_obj['variable'][key].setFixedWidth(60)
+        if key == 'nbr_satellites':
+            print('valeur_precedente',self.fenetre.valeur_precedente[str(sous_obj['variable'][key])])
+            sous_obj['variable'][key].editingFinished.connect(lambda w=sous_obj['variable'][key] : self.fenetre.control_interval(w,12,3))
         return sous_obj
     
 

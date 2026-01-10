@@ -283,6 +283,24 @@ class Fenetre(qtw.QWidget):
            frames[key].setFixedSize(*taille[i])
 
 
+    def control_interval(self,lineedits:qtw.QLineEdit,max,min,nouvelle_valeur = None):
+        '''
+        controle si la valeur du lineedits est dans l'interval donné
+        
+        :param lineedits: objet lineedits a modifier
+        :param max: valeur maximale de l'interval
+        :param min: valeur minimale de l'interval
+        :param nouvelle_valeur: nouvelle valeur correcte à lui assignée
+        '''
+        value = float(lineedits.text())
+        if not(max >= value >= min):
+            if nouvelle_valeur == None:
+                nouvelle_valeur = self.valeur_precedente[str(lineedits)]
+            self.signaler_lineedits_erreur(lineedits,nouvelle_valeur)
+            return
+        self.valeur_precedente[str(lineedits)] = lineedits.text()
+
+
     def control_0(self,lineedits:qtw.QLineEdit,nouvelle_valeur = None) -> None:
         '''
         controle si la valeur du lineedits n'est pas egal a 0,
@@ -301,7 +319,6 @@ class Fenetre(qtw.QWidget):
             self.signaler_lineedits_erreur(lineedits,nouvelle_valeur)
             return
         self.valeur_precedente[str(lineedits)] = lineedits.text()
-        
 
     def signaler_lineedits_erreur(self,lineedits:qtw.QLineEdit,nouvelle_valeur:str) -> None:
         '''

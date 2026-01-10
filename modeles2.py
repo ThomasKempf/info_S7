@@ -69,7 +69,7 @@ class Train_epi(Global):
         self.description['pignon'].titre = 'solaire'
         self.description['satelite'].titre = 'satellite'
         self.description['couronne'].titre = 'couronne'
-        self.description['global'].description = {**{'nb_satelite':3}, **self.description['global'].description}
+        self.description['global'].description = {**{'nbr_satellites':3}, **self.description['global'].description}
         self.description['global'].unitee.insert(0, ' ') 
         self.unitee = None
 
