@@ -99,8 +99,8 @@ PAGE_1 = {
 
 LIGNE_TRAIN = {
     'labels_unitee':{
-                'entraxe':{'unitee':'mm','valeur_defaut':'400','validator':validator},
-                'σ_max':{'unitee':'Mpa','valeur_defaut':'1500','validator':validator},
+                'entraxe':{'unitee':'mm','valeur_defaut':'100','validator':validator},
+                'σ_max':{'unitee':'Mpa','valeur_defaut':'500','validator':validator},
             },
     'labels':['1'],
     'comboboxes':{'type_engrenage':['  Engrenage droit', '  Engrenage hélicoïdal'],
@@ -285,8 +285,8 @@ class FenetreCreationProjet(Fenetre):
             mes_etages[num_train].description['global'].description['entraxe'] = values_train[0]
             mes_etages[num_train].description['global'].description['resistance_elastique'] = values_train[1]
         # ajout des parametres globals
-        mes_etages[0].description['global'].description['vitesse_entree'] = values_global[0]
-        mes_etages[0].description['global'].description['puissance_entree'] = values_global[1]
+        mes_etages[0].description['global'].description['_vitesse_entree'] = values_global[0]
+        mes_etages[0].description['global'].description['_puissance_entree'] = values_global[1]
         mes_etages[-1].description['global'].description['couple_sortie'] = values_global[2]
         self._reducteur = mod.Reducteur(mes_etages)
 

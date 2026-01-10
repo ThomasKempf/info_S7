@@ -469,7 +469,7 @@ class Frame_Train(qtw.QFrame):
         validator = qtg.QDoubleValidator()# validator pour forcer l'entrée de nombre flottant avec point decimal
         validator.setLocale(qtc.QLocale(qtc.QLocale.C))
         # supprime le _ pour les parametre interne
-        if key.startswith('_'):
+        if key.startswith('_') and not((key == '_vitesse_entree' or key == '_puissance_entree') and self.num == 0): # ajoute le cas particulier du _vitesse_entree et puissance_entree du premier train
             nom = key[1:]
             gras = False
         else:

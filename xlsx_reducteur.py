@@ -256,12 +256,12 @@ class XlsxReducteur(XlsxFile):
 if __name__ == '__main__':
 
     param_global = Global()
-    param_global.description['vitesse_entree'] = 3
+    param_global.description['_vitesse_entree'] = 3
     test = XlsxReducteur(param_global)
     test.creation_espace_travail()
     train_1 = Train(1)
     test.ecrire_description_simple(train_1,1)
-    train_1.description['vitesse_entree'] = 4
+    train_1.description['_vitesse_entree'] = 4
     test.ecrire_description_simple(train_1,1)
     train_2 = Train(2)
     train_2.description['rendement'] = 8

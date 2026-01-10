@@ -6,7 +6,7 @@ import math
 class Global():
     def __init__(self) -> None:
         self.titre = 'parametre globale'
-        self.description = {'vitesse_entree': 0, 'puissance_entree': 0, 'couple_sortie': 0}
+        self.description = {'_vitesse_entree': 0, '_puissance_entree': 0, 'couple_sortie': 0}
         self.unitee = ['RPM','W','Nm']
         self.error = 0
             
@@ -23,8 +23,8 @@ class Train_global(Global):
         super().__init__()
         self.titre = 'train global'
         self.description = {
-            'vitesse_entree': 0,
-            'puissance_entree': 0,
+            '_vitesse_entree': 0,
+            '_puissance_entree': 0,
             'couple_sortie': 100,
             '_couple_entree': 0,
             'entraxe': 0,
@@ -85,8 +85,8 @@ class Reducteur():
 
     def calculer_RR_global_vise(self):
         if not self.listeTrain: return 1
-        P_in = self.listeTrain[0].description['global'].description['puissance_entree']
-        V_in = self.listeTrain[0].description['global'].description['vitesse_entree']
+        P_in = self.listeTrain[0].description['global'].description['_puissance_entree']
+        V_in = self.listeTrain[0].description['global'].description['_vitesse_entree']
         C_out_desire = self.listeTrain[-1].description['global'].description['couple_sortie']
         if C_out_desire == 0: return 1 
         omega_in = V_in * 2 * math.pi / 60
@@ -97,8 +97,8 @@ class Reducteur():
     def calculer_systeme_complet(self):
         n = len(self.listeTrain)
         if n == 0: return
-        P_actuelle = self.listeTrain[0].description['global'].description['puissance_entree']
-        V_actuelle = self.listeTrain[0].description['global'].description['vitesse_entree']
+        P_actuelle = self.listeTrain[0].description['global'].description['_puissance_entree']
+        V_actuelle = self.listeTrain[0].description['global'].description['_vitesse_entree']
         
         rr_total = self.calculer_RR_global_vise()
         if rr_total > 0:
@@ -108,8 +108,8 @@ class Reducteur():
         
         self.calc_objects = [] 
         for i, train in enumerate(self.listeTrain):
-            train.description['global'].description['puissance_entree'] = P_actuelle
-            train.description['global'].description['vitesse_entree'] = V_actuelle
+            train.description['global'].description['_puissance_entree'] = P_actuelle
+            train.description['global'].description['_vitesse_entree'] = V_actuelle
             
             C_out_local_estime = (P_actuelle / (V_actuelle/r_etage_target)) / (2*math.pi/60)
             if i == n - 1:
@@ -179,8 +179,8 @@ class Reducteur():
                 val = old_train.description['global'].description.get(key)
                 new_train.description['global'].description[key] = val
             if index == 0:
-                new_train.description['global'].description['vitesse_entree'] = old_train.description['global'].description['vitesse_entree']
-                new_train.description['global'].description['puissance_entree'] = old_train.description['global'].description['puissance_entree']
+                new_train.description['global'].description['_vitesse_entree'] = old_train.description['global'].description['_vitesse_entree']
+                new_train.description['global'].description['_puissance_entree'] = old_train.description['global'].description['_puissance_entree']
             self.listeTrain[index] = new_train
             print(f">> Train {index+1} changé en type {nouveau_type}.")
             self.calculer_systeme_complet()
@@ -191,7 +191,7 @@ class Reducteur():
 if __name__ == '__main__':
     print("=== INITIALISATION DU TEST COMPLET ===")
     t1 = Train_simple(1)
-    t1.description['global'].description.update({'entraxe': 80, 'resistance_elastique': 500, 'vitesse_entree': 1500, 'puissance_entree': 5000})
+    t1.description['global'].description.update({'entraxe': 80, 'resistance_elastique': 500, '_vitesse_entree': 1500, '_puissance_entree': 5000})
     
     t2 = Train_simple(2)
     # CIBLE INITIALE : 250 Nm
@@ -241,5 +241,5 @@ if __name__ == '__main__':
     afficher_resultats(reducteur, "3. APRÈS SUPPRESSION (Cible 250 Nm sur Etage 2 ?)")
 
     # TEST 3 : MODIFICATION
-    reducteur.modifier_parametre(0, 'global', 'vitesse_entree', 3000)
+    reducteur.modifier_parametre(0, 'global', '_vitesse_entree', 3000)
     afficher_resultats(reducteur, "4. APRÈS CHANGEMENT VITESSE (Recalcul complet)")

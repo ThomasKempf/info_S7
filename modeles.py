@@ -71,8 +71,8 @@ class TrainSimple(Train):
         #Initialisation du dictionnaire et calcul des paramètres 
         self.description = {}
 
-        self.description['vitesse_entree'] = vitesse_entree
-        self.description['puissance_entree'] = puissance_entree  
+        self.description['_vitesse_entree'] = vitesse_entree
+        self.description['_puissance_entree'] = puissance_entree  
         self.description['couple_sortie'] = couple_sortie
         self.description['entraxe'] = entraxe
         self.description['res_elastique'] = res_elastique

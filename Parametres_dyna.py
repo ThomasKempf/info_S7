@@ -37,7 +37,7 @@ class Calcule_train:
     # --- Méthodes Physiques ---
 
     def calculer_vitesse_sortie(self, param=None):
-        P_entree = self._param_global['puissance_entree']
+        P_entree = self._param_global['_puissance_entree']
         Couple_sortie = self._param_global['couple_sortie']
         if Couple_sortie <= 0:
             vitesse_sortie = 0.0
@@ -46,8 +46,8 @@ class Calcule_train:
         self._param_global['_vitesse_sortie'] = vitesse_sortie
 
     def calculer_couple_entree(self, param=None):
-        P_entree = self._param_global['puissance_entree']
-        V_entree = self._param_global['vitesse_entree']
+        P_entree = self._param_global['_puissance_entree']
+        V_entree = self._param_global['_vitesse_entree']
         if V_entree > 0:
             self._param_global['_couple_entree'] = P_entree / (V_entree * (2 * math.pi / 60))
         else:
@@ -55,7 +55,7 @@ class Calcule_train:
 
     def calculer_rapport_reduction(self, param=None):
         v_out = self._param_global['_vitesse_sortie']
-        v_in = self._param_global['vitesse_entree']
+        v_in = self._param_global['_vitesse_entree']
         if v_out > 0:
             self._param_global['_rapport_reduction'] = v_in / v_out
         else:
@@ -122,7 +122,7 @@ class Calcule_train:
 
     def get_puissance_sortie_reelle(self):
         eta = self._param_global.get('rendement', 1.0) 
-        return self._param_global['puissance_entree'] * eta
+        return self._param_global['_puissance_entree'] * eta
 
     def calculer_diametres_specifiques(self):
         raise NotImplementedError("Surchargé par les enfants")
