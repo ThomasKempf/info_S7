@@ -83,7 +83,8 @@ class FenetreProjet(Fenetre):
         for i in range(len(self.liste_train)):
             self.frames_train.append(Frame_Train(reducteur,self,i))
         self.ajoute(self.layouts['train'],self.frames_train)
-        self.ajoute_bp_moins()
+        if len(self.frames_train) > 1:
+            self.ajoute_bp_moins()
         self.ajoute_bp_plus()
         if len(self.frames_train) >= 7:
             self.bouton_plus.hide()
@@ -472,9 +473,12 @@ class Frame_Train(qtw.QFrame):
             validator = qtg.QDoubleValidator()# validator pour forcer l'entrée de nombre flottant avec point decimal
         validator.setLocale(qtc.QLocale(qtc.QLocale.C))
         # supprime le _ pour les parametre interne
-        if key.startswith('_') and not((key == '_vitesse_entree' or key == '_puissance_entree') and self.num == 0): # ajoute le cas particulier du _vitesse_entree et puissance_entree du premier train
+        if key.startswith('_'): 
             nom = key[1:]
-            gras = False
+            if not((key == '_vitesse_entree' or key == '_puissance_entree') and self.num == 0):# ajoute le cas particulier du _vitesse_entree et puissance_entree du premier train
+                gras = False
+            else:
+                gras = True
         else:
             nom = key
             gras = True
@@ -486,7 +490,7 @@ class Frame_Train(qtw.QFrame):
         # genere le widget et la variable associée
         new_value = self.arrondie_et_convertie_en_str(value)
         sous_obj['widget'][key],sous_obj['variable'][key] = self.fenetre._ajout_nom_zone_texte_unitee(nom,unitee,new_value,controle_0,gras)
-        if key.startswith('_'):
+        if key.startswith('_') and not((key == '_vitesse_entree' or key == '_puissance_entree') and self.num == 0):# ajoute le cas particulier du _vitesse_entree et puissance_entree du premier train
             sous_obj['variable'][key].setReadOnly(True)
         else:
             sous_obj['variable'][key].editingFinished.connect(lambda k=key, variable=sous_obj['variable'][key], obj=sous_obj['objet']:
