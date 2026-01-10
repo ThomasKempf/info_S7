@@ -192,12 +192,14 @@ if __name__ == '__main__':
     print("=== INITIALISATION DU TEST COMPLET ===")
     t1 = Train_simple(1)
     t1.description['global'].description.update({'entraxe': 80, 'resistance_elastique': 500, '_vitesse_entree': 1500, '_puissance_entree': 5000})
-    
     t2 = Train_simple(2)
-    # CIBLE INITIALE : 250 Nm
-    t2.description['global'].description.update({'entraxe': 100, 'resistance_elastique': 500, 'couple_sortie': 250}) 
+    t2.description['global'].description.update({'entraxe': 80, 'resistance_elastique': 500})
+    t3 = Train_simple(3)
+    t3.description['global'].description.update({'entraxe': 80, 'resistance_elastique': 500})
+    t4 = Train_simple(4)
+    t4.description['global'].description.update({'entraxe': 100, 'resistance_elastique': 500, 'couple_sortie': 250}) 
 
-    reducteur = Reducteur([t1, t2])
+    reducteur = Reducteur([t1, t2, t3, t4])
 
     def afficher_resultats(r, titre=""):
         print(f"\n--- {titre} ---")
@@ -221,25 +223,17 @@ if __name__ == '__main__':
                 z_s = train.description['pignon'].description['_nbr_dents']
                 d_c = train.description['couronne'].description['_diametre']
                 z_c = train.description['couronne'].description['_nbr_dents']
-                print(f"    > Solaire : {d_s:.1f}mm ({z_s} dents) | Couronne : {d_c:.1f}mm ({z_c} dents)")
+                c_s = train.description['global'].description['couple_sortie']
+                print(f"    > Solaire : {d_s:.1f}mm ({z_s} dents) | Couronne : {d_c:.1f}mm ({z_c} dents) | Couple_sortie : {c_s} ")
             else:
                 d_p = train.description['pignon'].description['_diametre']
                 z_p = train.description['pignon'].description['_nbr_dents']
                 d_r = train.description['roue'].description['_diametre']
                 z_r = train.description['roue'].description['_nbr_dents']
-                print(f"    > Pignon : {d_p:.1f}mm ({z_p} dents) | Roue : {d_r:.1f}mm ({z_r} dents)")
+                c_s = train.description['global'].description['couple_sortie']
+                print(f"    > Pignon : {d_p:.1f}mm ({z_p} dents) | Roue : {d_r:.1f}mm ({z_r} dents) | Couple_sortie : {c_s}")
         print("-" * 40)
 
     afficher_resultats(reducteur, "1. État Initial")
-
-    # TEST CRITIQUE 1 : AJOUT (Doit garder 250 Nm)
-    reducteur.ajouter_train('epi') 
-    afficher_resultats(reducteur, "2. APRÈS AJOUT (Cible 250 Nm sur Etage 3 ?)")
-
-    # TEST CRITIQUE 2 : SUPPRESSION (Doit garder 250 Nm)
-    reducteur.supprimer_dernier_train()
-    afficher_resultats(reducteur, "3. APRÈS SUPPRESSION (Cible 250 Nm sur Etage 2 ?)")
-
-    # TEST 3 : MODIFICATION
-    reducteur.modifier_parametre(0, 'global', '_vitesse_entree', 3000)
-    afficher_resultats(reducteur, "4. APRÈS CHANGEMENT VITESSE (Recalcul complet)")
+    reducteur.modifier_parametre(2, 'global', 'couple_sortie', 200) # Modification du couple de sortie du 3ème train
+    afficher_resultats(reducteur, "2. APRÈS CHANGEMENT couple_sortie du 3ème train à 200 Nm")
