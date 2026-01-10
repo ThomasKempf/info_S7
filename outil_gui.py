@@ -161,7 +161,7 @@ class Fenetre(qtw.QWidget):
         :param test_defaut: texte par defaut ecris dans la zone de texte
         :param control_0: si le parametre doit etre controler pour ne pas etre égal à 0, bricolage special pour les fenetre de projet
         :param gras: si le nom doit etre en gras ou non spéciatlement bricolé pour la fenetre de projet
-        :return: retourne un widgets contenant la structure et une variable contenant l'objet  qtw.QLineEdit
+        :return: retourne un widgets contenant la structure et une variable contenant l'objet  qtw.QLineEdit et le label du nom
         '''
         layout = qtw.QHBoxLayout()
         # ajoute le label du nom
@@ -185,7 +185,7 @@ class Fenetre(qtw.QWidget):
         if gras:
             lbl_nom.setStyleSheet("font-weight: bold;")
             lbl_unitee.setStyleSheet("font-weight: bold;")
-        return widget,variable
+        return widget,variable,lbl_nom
     
     
 
@@ -205,7 +205,7 @@ class Fenetre(qtw.QWidget):
         for key in (param_labels_unitee):
             param = param_labels_unitee[key]
             # genere les variables contenant les linedit et les widget associee
-            widgets[key],variables[key] = self._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
+            widgets[key],variables[key],lbl_nom = self._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
             # ajoute un validator qui permet de restraindre les possiblitee d'ecriture dans la zone de texte
             variables[key].setValidator(param['validator'])
             # modifie leurs taille

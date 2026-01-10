@@ -358,16 +358,25 @@ class Frame_Train(qtw.QFrame):
 
         :return: dict avec le widget et la variable liée a chaque parametre de chaque sous obj
         """
+        taille_max = 0
         train_gui = {}
         description_train = self._train.description
         for global_key in description_train: 
             if global_key.startswith('_'): # parametre interne a ne pas traiter: exemple _nb_satellites
                 continue
-            sous_obj = {'widget':{},'variable':{}}
+            sous_obj = {'widget':{},'variable':{},'lbl_nom':{}}
             sous_obj['objet'] = description_train[global_key]
             for i, (key, value) in enumerate(sous_obj['objet'].description.items()):
                 unitee  = sous_obj['objet'].unitee[i]   
                 train_gui[global_key] = self._genere_un_parametre(sous_obj,key,value,unitee)
+                print(sous_obj['lbl_nom'][key].sizeHint().width())
+                if sous_obj['lbl_nom'][key].sizeHint().width() > taille_max:
+                    taille_max = sous_obj['lbl_nom'][key].sizeHint().width()
+        # ajuste la largeur des widgets
+        for global_key in train_gui:
+            for key in train_gui[global_key]['lbl_nom']:
+                train_gui[global_key]['lbl_nom'][key].setFixedWidth(taille_max)
+                pass
         return train_gui
     
 
@@ -489,7 +498,7 @@ class Frame_Train(qtw.QFrame):
             controle_0 = True
         # genere le widget et la variable associée
         new_value = self.arrondie_et_convertie_en_str(value)
-        sous_obj['widget'][key],sous_obj['variable'][key] = self.fenetre._ajout_nom_zone_texte_unitee(nom,unitee,new_value,controle_0,gras)
+        sous_obj['widget'][key],sous_obj['variable'][key],sous_obj['lbl_nom'][key] = self.fenetre._ajout_nom_zone_texte_unitee(nom,unitee,new_value,controle_0,gras)
         if key.startswith('_') and not((key == '_vitesse_entree' or key == '_puissance_entree') and self.num == 0):# ajoute le cas particulier du _vitesse_entree et puissance_entree du premier train
             sous_obj['variable'][key].setReadOnly(True)
         else:
