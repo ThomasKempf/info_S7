@@ -231,16 +231,22 @@ if __name__ == '__main__':
     t1.description['global'].description.update({'entraxe': 80, 'resistance_elastique': 500, 'vitesse_entree': 1500, 'puissance_entree': 5000})
     
     t2 = Train_simple(2)
-    t2.description['global'].description.update({'entraxe': 100, 'resistance_elastique': 500, 'couple_sortie': 200}) # Cible finale
+    t2.description['global'].description.update({'entraxe': 80, 'resistance_elastique': 500})
 
-    reducteur = Reducteur([t1, t2])
+    t3 = Train_simple(3)
+    t3.description['global'].description.update({'entraxe': 80, 'resistance_elastique': 500})
+
+    t4 = Train_simple(4)
+    t4.description['global'].description.update({'entraxe': 100, 'resistance_elastique': 500, 'couple_sortie': 202}) # Cible finale
+
+    reducteur = Reducteur([t1, t2, t3, t4])
 
     def afficher_resultats(r):
         print("\n" + "-"*50)
         for i, train in enumerate(r.listeTrain):
             g = train.description['global'].description
             type_t = "EPI" if isinstance(train, Train_epi) else "SIMPLE"
-            print(f"ETAGE {i+1} ({type_t}) | In: {g['vitesse_entree']:.0f}rpm | Out: {g['_vitesse_sortie']:.0f}rpm | Ratio: {g['_rapport_reduction']:.2f} | Couple In: {g['_couple_entree']:.1f}Nm")
+            print(f"ETAGE {i+1} ({type_t}) | In: {g['vitesse_entree']:.0f}rpm | Out: {g['_vitesse_sortie']:.0f}rpm | Ratio: {g['_rapport_reduction']:.2f} | Couple In: {g['_couple_entree']:.1f}Nm | Couple Iut: {g['couple_sortie']:.1f}Nm")
             if type_t == "EPI":
                 print(f"   >>> D_Solaire: {train.description['pignon'].description['_diametre']:.1f}mm | D_Couronne: {train.description['couronne'].description['_diametre']*1000:.1f}mm")
             else:
@@ -250,9 +256,11 @@ if __name__ == '__main__':
     afficher_resultats(reducteur)
 
     # TEST 1 : Modification paramètre
-    reducteur.modifier_parametre(0, 'global', 'vitesse_entree', 3000)
+    reducteur.modifier_parametre(2, 'global', 'couple_sortie', 200) # modifie t3, 2 parce que la liste commence a 0
     afficher_resultats(reducteur)
 
+
+    '''
     # TEST 2 : Changement de type (Passer l'étage 2 en Épicycloïdal)
     reducteur.changer_type_train(1, 'epi')
     # Pour un épi, il faut souvent un entraxe plus grand pour caser les satellites si le rapport est grand, ajustons-le
@@ -264,3 +272,4 @@ if __name__ == '__main__':
     # On définit le couple de sortie sur le nouveau dernier train
     reducteur.modifier_parametre(2, 'global', 'couple_sortie', 300) 
     afficher_resultats(reducteur)
+    '''

@@ -382,14 +382,13 @@ class Frame_Train(qtw.QFrame):
             combobox.addItem(item)
             index = combobox.count() - 1
             combobox.setItemData(index, qtc.Qt.AlignCenter, qtc.Qt.TextAlignmentRole)
-        combobox.currentTextChanged.connect(self._change_type_train)
         if self._train.titre.startswith('train_simple_'):
             combobox.setCurrentIndex(0)
         elif self._train.titre.startswith('train_epi_'):
             combobox.setCurrentIndex(1)
+        combobox.currentTextChanged.connect(self._change_type_train)
         self.combobox = combobox
         return combobox
-    
 
     def _change_type_train(self) -> None:
         '''
@@ -511,6 +510,7 @@ class Frame_Train(qtw.QFrame):
         # met a jour l'objet train
         sous_obj.description[value_name] = nouvelle_valeur
         self.reducteur.calculer_systeme_complet()
+        print(f"Paramètre '{value_name}' mis à jour à {nouvelle_valeur} pour le train {self.num}.")
         # met a jour la fenetre
         self.fenetre.met_a_jour_parametre_fenetre_entiere(self.num,value_name)
 
