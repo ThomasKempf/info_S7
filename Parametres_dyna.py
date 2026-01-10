@@ -74,10 +74,23 @@ class Calcule_train:
     def calculer_module(self, param=None):
         FT = self._param_global['_force_tangentielle']
         RES = self._param_global['resistance_elastique']
+        entraxe = self._param_global['entraxe'] # On récupère l'entraxe en mm
+        
+        # 1. Calcul basé sur la résistance des matériaux (RM)
+        module_rm = 0
         if RES > 0:
-            self._param_global['_module'] = 2.34 * math.sqrt(FT / (RES * 10))
-        else:
-             self._param_global['_module'] = 0
+            module_rm = 2.34 * math.sqrt(FT / (RES * 10))
+            
+        # 2. Calcul basé sur la géométrie (Pour avoir des dents de taille cohérente)
+        # Règle empirique : On évite d'avoir plus de ~60-80 dents sur le pignon
+        # Module min ~ Entraxe / 45
+        module_geo = 0
+        if entraxe > 0:
+            module_geo = entraxe / 45.0 
+            
+        # 3. On prend le plus grand des deux (Sécurité ou Esthétique)
+        # Et on assure un minimum absolu de 1.0 mm
+        self._param_global['_module'] = max(module_rm, module_geo, 1.0)
 
     def calculer_arbres(self):
         """
