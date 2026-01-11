@@ -6,7 +6,7 @@ import math
 class Global():
     def __init__(self) -> None:
         self.titre = 'parametre globale'
-        self.description = {'_vitesse_entree': 0, '_puissance_entree': 0, 'couple_sortie': 0}
+        self.description = {'vitesse_entree': 0, 'puissance_entree': 0, 'couple_sortie': 0}
         self.unitee = ['RPM','W','Nm']
         self.error = 0
             
@@ -14,7 +14,7 @@ class Engrenage(Global):
     def __init__(self,num:int) -> None:
         super().__init__()
         self.titre = f'engrenage {num}'
-        # AJOUT : _nbr_dents
+        # Données : Diamètre primitif + Nombre de dents calculé
         self.description = {'_diametre' : 0, '_nbr_dents': 0}
         self.unitee = ['mm', ' ']
 
@@ -23,24 +23,31 @@ class Train_global(Global):
         super().__init__()
         self.titre = 'train global'
         self.description = {
-            '_vitesse_entree': 0,
-            '_puissance_entree': 0,
+            'vitesse_entree': 0,
+            'puissance_entree': 0,
             'couple_sortie': 100,
             '_couple_entree': 0,
-            'entraxe': 0,
+            
+            'entraxe': 100,            # Valeur par défaut : 100 mm
+            'resistance_elastique': 500, # Valeur par défaut : 500 MPa
+            
             '_vitesse_sortie': 0,
             '_force_tangentielle': 0,
             '_rapport_reduction':0,
+            
+            'ratio_fixe': 0,           # 0 = Mode Auto, >0 = Ratio imposé
+            
             '_module': 0,
             'alpha': 20,
             'beta':0,
-            'resistance_elastique': 0,
             'rendement': 0.95,
-            # AJOUT : Diamètres des arbres (Entrée et Sortie du train)
+            
+            # Résultats dimensionnement Arbres
             '_diametre_arbre_entree': 0,
             '_diametre_arbre_sortie': 0
         }
-        self.unitee = ['RPM', 'W', 'Nm', 'Nm', 'mm', 'RPM', 'N', ' ', 'mm', '°', '°', 'MPa', '%', 'mm', 'mm']
+        # Unités alignées (ratio_fixe inséré)
+        self.unitee = ['RPM', 'W', 'Nm', 'Nm', 'mm', 'MPa', 'RPM', 'N', ' ', ' ', 'mm', '°', '°', '%', 'mm', 'mm']
 
 class Train_simple(Global):
     def __init__(self,num:int) -> None:
@@ -69,7 +76,7 @@ class Train_epi(Global):
         self.description['pignon'].titre = 'solaire'
         self.description['satelite'].titre = 'satellite'
         self.description['couronne'].titre = 'couronne'
-        self.description['global'].description = {**{'nbr_satellites':3}, **self.description['global'].description}
+        self.description['global'].description = {**{'nb_satelite':3}, **self.description['global'].description}
         self.description['global'].unitee.insert(0, ' ') 
         self.unitee = None
 
@@ -85,8 +92,8 @@ class Reducteur():
 
     def calculer_RR_global_vise(self):
         if not self.listeTrain: return 1
-        P_in = self.listeTrain[0].description['global'].description['_puissance_entree']
-        V_in = self.listeTrain[0].description['global'].description['_vitesse_entree']
+        P_in = self.listeTrain[0].description['global'].description['puissance_entree']
+        V_in = self.listeTrain[0].description['global'].description['vitesse_entree']
         C_out_desire = self.listeTrain[-1].description['global'].description['couple_sortie']
         if C_out_desire == 0: return 1 
         omega_in = V_in * 2 * math.pi / 60
@@ -97,26 +104,66 @@ class Reducteur():
     def calculer_systeme_complet(self):
         n = len(self.listeTrain)
         if n == 0: return
-        P_actuelle = self.listeTrain[0].description['global'].description['_puissance_entree']
-        V_actuelle = self.listeTrain[0].description['global'].description['_vitesse_entree']
         
-        rr_total = self.calculer_RR_global_vise()
-        if rr_total > 0:
-            r_etage_target = rr_total ** (1/n)
-        else:
-            r_etage_target = 1
+        P_actuelle = self.listeTrain[0].description['global'].description['puissance_entree']
+        V_actuelle = self.listeTrain[0].description['global'].description['vitesse_entree']
         
+        # 1. Calcul du besoin global théorique
+        rr_global_vise = self.calculer_RR_global_vise()
+        if rr_global_vise <= 0: rr_global_vise = 1
+
+        # 2. Séparation : Qui est fixe ? Qui est auto ?
+        produit_fixes = 1.0
+        nb_auto = 0
+        
+        for train in self.listeTrain:
+            rf = train.description['global'].description.get('ratio_fixe', 0)
+            if rf > 0:
+                produit_fixes *= rf
+            else:
+                nb_auto += 1
+        
+        # 3. Calcul du ratio restant pour les étages automatiques
+        if produit_fixes == 0: produit_fixes = 1
+        rr_restant = rr_global_vise / produit_fixes
+        
+        r_auto_target = 1
+        if nb_auto > 0:
+            if rr_restant > 0:
+                r_auto_target = rr_restant ** (1 / nb_auto)
+            else:
+                r_auto_target = 1
+
         self.calc_objects = [] 
+
         for i, train in enumerate(self.listeTrain):
-            train.description['global'].description['_puissance_entree'] = P_actuelle
-            train.description['global'].description['_vitesse_entree'] = V_actuelle
+            train.description['global'].description['puissance_entree'] = P_actuelle
+            train.description['global'].description['vitesse_entree'] = V_actuelle
             
-            C_out_local_estime = (P_actuelle / (V_actuelle/r_etage_target)) / (2*math.pi/60)
-            if i == n - 1:
+            # --- CHOIX DU RATIO LOCAL ---
+            r_fixe = train.description['global'].description.get('ratio_fixe', 0)
+            if r_fixe > 0:
+                ratio_a_appliquer = r_fixe
+            else:
+                ratio_a_appliquer = r_auto_target
+            
+            # Calcul du couple cible intermédiaire théorique
+            if ratio_a_appliquer > 0 and V_actuelle > 0:
+                V_out_prevue = V_actuelle / ratio_a_appliquer
+                C_out_local_estime = P_actuelle / (V_out_prevue * (2*math.pi/60))
+            else:
+                C_out_local_estime = 0
+
+            # --- APPLICATION DU COUPLE ---
+            # Si c'est le dernier étage ET qu'il est en mode AUTO :
+            # On respecte impérativement la demande utilisateur (couple_sortie).
+            # Sinon (étage intermédiaire OU ratio fixé), on impose le couple calculé par la géométrie.
+            if i == n - 1 and r_fixe == 0:
                 pass 
             else:
                 train.description['global'].description['couple_sortie'] = C_out_local_estime
 
+            # Lancement calcul physique
             if isinstance(train, Train_simple):
                 calc = Calcule_train_simple(train)
             elif isinstance(train, Train_epi):
@@ -127,6 +174,7 @@ class Reducteur():
             self.calc_objects.append(calc)
             calc.calculer_mise_a_jour_complete()
             
+            # Préparation étage suivant
             V_actuelle = train.description['global'].description['_vitesse_sortie']
             P_actuelle = calc.get_puissance_sortie_reelle()
 
@@ -151,10 +199,11 @@ class Reducteur():
         if type_train == 'epi': new_train = Train_epi(num)
         else: new_train = Train_simple(num)
         
+        # Initialisation avec valeurs par défaut "Standard"
         new_train.description['global'].description['entraxe'] = 100
-        new_train.description['global'].description['resistance_elastique'] = 340
+        new_train.description['global'].description['resistance_elastique'] = 500
         new_train.description['global'].description['rendement'] = 0.95
-        new_train.description['global'].description['couple_sortie'] = couple_cible # Transfert de la cible
+        new_train.description['global'].description['couple_sortie'] = couple_cible
         
         self.listeTrain.append(new_train)
         print(f">> Train {type_train} ajouté. Cible maintenue à {couple_cible} Nm")
@@ -166,7 +215,7 @@ class Reducteur():
             self.listeTrain.pop()
             print(">> Dernier train supprimé.")
             if len(self.listeTrain) > 0:
-                self.listeTrain[-1].description['global'].description['couple_sortie'] = couple_cible # Transfert de la cible
+                self.listeTrain[-1].description['global'].description['couple_sortie'] = couple_cible
                 print(f">> Cible de {couple_cible} Nm transférée au train précédent.")
             self.calculer_systeme_complet()
 
@@ -175,65 +224,66 @@ class Reducteur():
             old_train = self.listeTrain[index]
             if nouveau_type == 'epi': new_train = Train_epi(index+1)
             else: new_train = Train_simple(index+1)
-            for key in ['entraxe', 'resistance_elastique', 'rendement', 'couple_sortie']:
-                val = old_train.description['global'].description.get(key)
-                new_train.description['global'].description[key] = val
+            
+            # On conserve les paramètres importants
+            for key in ['entraxe', 'resistance_elastique', 'rendement', 'couple_sortie', 'ratio_fixe']:
+                if key in old_train.description['global'].description:
+                    val = old_train.description['global'].description.get(key)
+                    new_train.description['global'].description[key] = val
+            
             if index == 0:
-                new_train.description['global'].description['_vitesse_entree'] = old_train.description['global'].description['_vitesse_entree']
-                new_train.description['global'].description['_puissance_entree'] = old_train.description['global'].description['_puissance_entree']
+                new_train.description['global'].description['vitesse_entree'] = old_train.description['global'].description['vitesse_entree']
+                new_train.description['global'].description['puissance_entree'] = old_train.description['global'].description['puissance_entree']
             self.listeTrain[index] = new_train
             print(f">> Train {index+1} changé en type {nouveau_type}.")
             self.calculer_systeme_complet()
 
 
-# --- Zone de Test Complète ---
+# --- Zone de Test de Validation (Scenario Mixte) ---
 
 if __name__ == '__main__':
-    print("=== INITIALISATION DU TEST COMPLET ===")
+    print("=== TEST : SCÉNARIO MIXTE (Fixe + Auto + Fixe) ===")
+    
+    # Objectif : Ratio Total ~20
+    # T1 Fixé à 2.0
+    # T3 Fixé à 2.5
+    # T2 (Auto) doit trouver 4.0 tout seul (car 2 * 4 * 2.5 = 20)
+    
     t1 = Train_simple(1)
-    t1.description['global'].description.update({'entraxe': 80, 'resistance_elastique': 500, '_vitesse_entree': 1500, '_puissance_entree': 5000})
+    t1.description['global'].description.update({
+        'vitesse_entree': 2000, 
+        'puissance_entree': 5000,
+        'ratio_fixe': 2.0   # <--- FIXÉ
+    })
+    
     t2 = Train_simple(2)
-    t2.description['global'].description.update({'entraxe': 80, 'resistance_elastique': 500})
+    # T2 est en AUTO (ratio_fixe = 0 par défaut)
+    
     t3 = Train_simple(3)
-    t3.description['global'].description.update({'entraxe': 80, 'resistance_elastique': 500})
-    t4 = Train_simple(4)
-    t4.description['global'].description.update({'entraxe': 100, 'resistance_elastique': 500, 'couple_sortie': 250}) 
+    t3.description['global'].description.update({
+        'ratio_fixe': 2.5,  # <--- FIXÉ
+        'couple_sortie': 477 # Cible pour obtenir ~100 rpm (Ratio total ~20)
+    })
 
-    reducteur = Reducteur([t1, t2, t3, t4])
+    reducteur = Reducteur([t1, t2, t3])
 
-    def afficher_resultats(r, titre=""):
-        print(f"\n--- {titre} ---")
-        for i, train in enumerate(r.listeTrain):
-            g = train.description['global'].description
-            type_t = "EPI   " if isinstance(train, Train_epi) else "SIMPLE"
-            
-            # Données Clés
-            c_out = g.get('couple_sortie', 0)
-            ratio = g.get('_rapport_reduction', 0)
-            d_arb_in = g.get('_diametre_arbre_entree', 0)
-            
-            # 1. On affiche le Couple Cible (Test de robustesse)
-            print(f"ETAGE {i+1} ({type_t}) | Ratio: {ratio:.2f} | CIBLE: {c_out:.1f} Nm")
-            
-            # 2. On affiche les nouvelles données (Arbre & Dents)
-            print(f"    > Arbre Entrée min: {d_arb_in:.1f} mm")
-            
-            if type_t == "EPI   ":
-                d_s = train.description['pignon'].description['_diametre']
-                z_s = train.description['pignon'].description['_nbr_dents']
-                d_c = train.description['couronne'].description['_diametre']
-                z_c = train.description['couronne'].description['_nbr_dents']
-                c_s = train.description['global'].description['couple_sortie']
-                print(f"    > Solaire : {d_s:.1f}mm ({z_s} dents) | Couronne : {d_c:.1f}mm ({z_c} dents) | Couple_sortie : {c_s} ")
-            else:
-                d_p = train.description['pignon'].description['_diametre']
-                z_p = train.description['pignon'].description['_nbr_dents']
-                d_r = train.description['roue'].description['_diametre']
-                z_r = train.description['roue'].description['_nbr_dents']
-                c_s = train.description['global'].description['couple_sortie']
-                print(f"    > Pignon : {d_p:.1f}mm ({z_p} dents) | Roue : {d_r:.1f}mm ({z_r} dents) | Couple_sortie : {c_s}")
-        print("-" * 40)
+    print("-" * 60)
+    for i, train in enumerate(reducteur.listeTrain):
+        g = train.description['global'].description
+        
+        # Détection du mode pour l'affichage
+        is_fixe = g.get('ratio_fixe', 0) > 0
+        mode_str = "[FIXÉ]" if is_fixe else "[AUTO]"
+        
+        ratio = g['_rapport_reduction']
+        
+        print(f"ETAGE {i+1} {mode_str} : Ratio = {ratio:.2f}")
 
-    afficher_resultats(reducteur, "1. État Initial")
-    reducteur.modifier_parametre(2, 'global', 'couple_sortie', 200) # Modification du couple de sortie du 3ème train
-    afficher_resultats(reducteur, "2. APRÈS CHANGEMENT couple_sortie du 3ème train à 200 Nm")
+    print("-" * 60)
+    
+    # Vérification automatique
+    r2 = reducteur.listeTrain[1].description['global'].description['_rapport_reduction']
+    if 3.9 < r2 < 4.1:
+        print("SUCCÈS : L'étage 2 (Auto) a bien comblé le trou en se mettant à 4.0 !")
+    else:
+        print(f" ÉCHEC : L'étage 2 a calculé {r2:.2f} au lieu de 4.0")
