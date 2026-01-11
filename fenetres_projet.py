@@ -369,7 +369,6 @@ class Frame_Train(qtw.QFrame):
             for i, (key, value) in enumerate(sous_obj['objet'].description.items()):
                 unitee  = sous_obj['objet'].unitee[i]   
                 train_gui[global_key] = self._genere_un_parametre(sous_obj,key,value,unitee)
-                print(sous_obj['lbl_nom'][key].sizeHint().width())
                 if sous_obj['lbl_nom'][key].sizeHint().width() > taille_max:
                     taille_max = sous_obj['lbl_nom'][key].sizeHint().width()
         # ajuste la largeur des widgets
