@@ -219,21 +219,23 @@ if __name__ == '__main__':
             print(f"    > Arbre Entrée min: {d_arb_in:.1f} mm")
             
             if type_t == "EPI   ":
+                rr = train.description['global'].description['_rapport_reduction']
                 d_s = train.description['pignon'].description['_diametre']
                 z_s = train.description['pignon'].description['_nbr_dents']
                 d_c = train.description['couronne'].description['_diametre']
                 z_c = train.description['couronne'].description['_nbr_dents']
                 c_s = train.description['global'].description['couple_sortie']
-                print(f"    > Solaire : {d_s:.1f}mm ({z_s} dents) | Couronne : {d_c:.1f}mm ({z_c} dents) | Couple_sortie : {c_s} ")
+                print(f" rr: {rr}   > Solaire : {d_s:.1f}mm ({z_s} dents) | Couronne : {d_c:.1f}mm ({z_c} dents) | Couple_sortie : {c_s} ")
             else:
+                rr = train.description['global'].description['_rapport_reduction']
                 d_p = train.description['pignon'].description['_diametre']
                 z_p = train.description['pignon'].description['_nbr_dents']
                 d_r = train.description['roue'].description['_diametre']
                 z_r = train.description['roue'].description['_nbr_dents']
                 c_s = train.description['global'].description['couple_sortie']
-                print(f"    > Pignon : {d_p:.1f}mm ({z_p} dents) | Roue : {d_r:.1f}mm ({z_r} dents) | Couple_sortie : {c_s}")
+                print(f"  rr: {rr}   > Pignon : {d_p:.1f}mm ({z_p} dents) | Roue : {d_r:.1f}mm ({z_r} dents) | Couple_sortie : {c_s}")
         print("-" * 40)
 
     afficher_resultats(reducteur, "1. État Initial")
-    reducteur.modifier_parametre(2, 'global', 'couple_sortie', 200) # Modification du couple de sortie du 3ème train
+    reducteur.modifier_parametre(2, 'global', '_rapport_reduction', 3) # Modification du couple de sortie du 3ème train
     afficher_resultats(reducteur, "2. APRÈS CHANGEMENT couple_sortie du 3ème train à 200 Nm")
