@@ -22,32 +22,51 @@ class Train_global(Global):
     def __init__(self) -> None:
         super().__init__()
         self.titre = 'train global'
+        
+        # 16 PARAMÈTRES
         self.description = {
             'vitesse_entree': 0,
             'puissance_entree': 0,
             'couple_sortie': 100,
             '_couple_entree': 0,
             
-            'entraxe': 100,            # Valeur par défaut : 100 mm
-            'resistance_elastique': 500, # Valeur par défaut : 500 MPa
+            'entraxe': 100,
+            'resistance_elastique': 500,
             
             '_vitesse_sortie': 0,
             '_force_tangentielle': 0,
             '_rapport_reduction':0,
             
-            'ratio_fixe': 0,           # 0 = Mode Auto, >0 = Ratio imposé
+            'ratio_fixe': 0,             # <--- Paramètre 10
             
             '_module': 0,
             'alpha': 20,
             'beta':0,
             'rendement': 0.95,
             
-            # Résultats dimensionnement Arbres
             '_diametre_arbre_entree': 0,
             '_diametre_arbre_sortie': 0
         }
-        # Unités alignées (ratio_fixe inséré)
-        self.unitee = ['RPM', 'W', 'Nm', 'Nm', 'mm', 'MPa', 'RPM', 'N', ' ', ' ', 'mm', '°', '°', '%', 'mm', 'mm']
+        
+        # (L'ordre doit être STRICTEMENT identique aux clés ci-dessus)
+        self.unitee = [
+            'RPM',  # vitesse_entree
+            'W',    # puissance_entree
+            'Nm',   # couple_sortie
+            'Nm',   # _couple_entree
+            'mm',   # entraxe
+            'MPa',  # resistance_elastique
+            'RPM',  # _vitesse_sortie
+            'N',    # _force_tangentielle
+            ' ',    # _rapport_reduction
+            ' ',    # ratio_fixe (C'est celle-ci qui manquait probablement !)
+            'mm',   # _module
+            '°',    # alpha
+            '°',    # beta
+            '%',    # rendement
+            'mm',   # _diametre_arbre_entree
+            'mm'    # _diametre_arbre_sortie
+        ]
 
 class Train_simple(Global):
     def __init__(self,num:int) -> None:
@@ -284,6 +303,6 @@ if __name__ == '__main__':
     # Vérification automatique
     r2 = reducteur.listeTrain[1].description['global'].description['_rapport_reduction']
     if 3.9 < r2 < 4.1:
-        print("SUCCÈS : L'étage 2 (Auto) a bien comblé le trou en se mettant à 4.0 !")
+        print("L'étage 2 (Auto) a bien comblé le trou en se mettant à 4")
     else:
-        print(f" ÉCHEC : L'étage 2 a calculé {r2:.2f} au lieu de 4.0")
+        print(f"L'étage 2 a calculé {r2:.2f} au lieu de 4")
