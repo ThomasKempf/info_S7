@@ -6,7 +6,7 @@ Elle permet de choisir le nombre de trains, le type de train, ainsi que de modif
 
 ## Authors
 
-Thomas KEMPF
+Thomas KEMPF  
 Lucas STEINER
 
 ## Installation
@@ -28,11 +28,11 @@ Les paramètres en gras sont modifiables, les autres ne le sont pas.
 En appuyant sur Entrée, les nouveaux paramètres sont mis à jour.
 Il est également possible de supprimer ou d’ajouter des trains :
 – pour supprimer, cliquer sur le signe « – » en haut du dernier train ;
-– pour ajouter, cliquer sur le signe « + » à droite de celui-ci.
+– pour ajouter, cliquer sur le signe « + » à droite de celui-ci.  
 
 Dans la barre supérieure, on trouve deux boutons :
 Celui de droite permet d’enregistrer le projet dans un fichier .xlsx.
-Le second ouvre un menu proposant plusieurs options : créer un nouveau projet (qui ouvre une nouvelle fenêtre de dimensionnement), ouvrir un projet existant, enregistrer ou enregistrer sous.
+Le second ouvre un menu proposant plusieurs options : créer un nouveau projet (qui ouvre une nouvelle fenêtre de dimensionnement), ouvrir un projet existant, enregistrer ou enregistrer sous.  
 
 Une fois le projet enregistré, on peut l’ouvrir soit via le bouton Ouvrir, soit au lancement du programme en sélectionnant Ouvrir un projet au lieu de Créer.
 
