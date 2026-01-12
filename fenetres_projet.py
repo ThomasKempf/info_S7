@@ -364,7 +364,7 @@ class Frame_Train(qtw.QFrame):
         for global_key in description_train: 
             if global_key.startswith('_'): # parametre interne a ne pas traiter: exemple _nb_satellites
                 continue
-            sous_obj = {'widget':{},'variable':{},'lbl_nom':{}}
+            sous_obj = {'widget':{},'variable':{},'lbl_nom':{},'lbl_unitee':{}}
             sous_obj['objet'] = description_train[global_key]
             for i, (key, value) in enumerate(sous_obj['objet'].description.items()):
                 unitee  = sous_obj['objet'].unitee[i]   
@@ -483,10 +483,12 @@ class Frame_Train(qtw.QFrame):
         # supprime le _ pour les parametre interne
         if key.startswith('_'): 
             nom = key[1:]
-            if not((key == '_vitesse_entree' or key == '_puissance_entree') and self.num == 0):# ajoute le cas particulier du _vitesse_entree et puissance_entree du premier train
-                gras = False
-            else:
+            print(self.num,len(self.reducteur.listeTrain))
+            if (((key == '_vitesse_entree' or key == '_puissance_entree') and self.num == 0)
+                or (key == '_couple_sortie' and self.num + 1 == len(self.reducteur.listeTrain))):# ajoute le cas particulier du _vitesse_entree et puissance_entree du premier train
                 gras = True
+            else:
+                gras = False
         else:
             nom = key
             gras = True
@@ -497,8 +499,9 @@ class Frame_Train(qtw.QFrame):
             controle_0 = True
         # genere le widget et la variable associée
         new_value = self.arrondie_et_convertie_en_str(value)
-        sous_obj['widget'][key],sous_obj['variable'][key],sous_obj['lbl_nom'][key] = self.fenetre._ajout_nom_zone_texte_unitee(nom,unitee,new_value,controle_0,gras)
-        if key.startswith('_') and not((key == '_vitesse_entree' or key == '_puissance_entree') and self.num == 0):# ajoute le cas particulier du _vitesse_entree et puissance_entree du premier train
+        sous_obj['widget'][key],sous_obj['variable'][key],sous_obj['lbl_nom'][key],sous_obj['lbl_unitee'][key] = self.fenetre._ajout_nom_zone_texte_unitee(nom,unitee,new_value,controle_0,gras)
+        if key.startswith('_') and not(((key == '_vitesse_entree' or key == '_puissance_entree') and self.num == 0)
+                                       or (key == '_couple_sortie' and self.num + 1 == len(self.reducteur.listeTrain))):# ajoute le cas particulier du _vitesse_entree et puissance_entree du premier train
             sous_obj['variable'][key].setReadOnly(True)
         else:
             sous_obj['variable'][key].editingFinished.connect(lambda k=key, variable=sous_obj['variable'][key], obj=sous_obj['objet']:
@@ -547,9 +550,17 @@ class Frame_Train(qtw.QFrame):
                     new_value = self._train.description[global_key].description[key]
                     new_value = self.arrondie_et_convertie_en_str(new_value)
                     self._zone_text_train[global_key]['variable'][key].setText(new_value)
-                    # cas particuler pour le rapport de reducution
-
-
+                    # cas particuler pour le couple sortie
+                    if key == '_couple_sortie':
+                        if self.num + 1 == len(self.reducteur.listeTrain):
+                            polyce = "font-weight: bold;"
+                            lecture_simple = False
+                        else:
+                            polyce = "font-weight: normal;"
+                            lecture_simple = True
+                        self._zone_text_train[global_key]['variable'][key].setReadOnly(lecture_simple)
+                        for name in ['lbl_nom','lbl_unitee']:
+                            self._zone_text_train[global_key][name][key].setStyleSheet(polyce)
 
 
     def arrondie_et_convertie_en_str(self,valeur) -> str:

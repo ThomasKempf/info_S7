@@ -185,7 +185,7 @@ class Fenetre(qtw.QWidget):
         if gras:
             lbl_nom.setStyleSheet("font-weight: bold;")
             lbl_unitee.setStyleSheet("font-weight: bold;")
-        return widget,variable,lbl_nom
+        return widget,variable,lbl_nom,lbl_unitee
     
     
 
@@ -205,7 +205,7 @@ class Fenetre(qtw.QWidget):
         for key in (param_labels_unitee):
             param = param_labels_unitee[key]
             # genere les variables contenant les linedit et les widget associee
-            widgets[key],variables[key],lbl_nom = self._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
+            widgets[key],variables[key],lbl_nom,lbl_unitee = self._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
             # ajoute un validator qui permet de restraindre les possiblitee d'ecriture dans la zone de texte
             variables[key].setValidator(param['validator'])
             # modifie leurs taille

@@ -6,7 +6,7 @@ import math
 class Global():
     def __init__(self) -> None:
         self.titre = 'parametre globale'
-        self.description = {'_vitesse_entree': 0, '_puissance_entree': 0, 'couple_sortie': 0}
+        self.description = {'_vitesse_entree': 0, '_puissance_entree': 0, '_couple_sortie': 0}
         self.unitee = ['RPM','W','Nm']
         self.error = 0
             
@@ -110,7 +110,7 @@ class Reducteur():
         if not self.listeTrain: return 1
         P_in = self.listeTrain[0].description['global'].description['_puissance_entree']
         V_in = self.listeTrain[0].description['global'].description['_vitesse_entree']
-        C_out_desire = self.listeTrain[-1].description['global'].description['couple_sortie']
+        C_out_desire = self.listeTrain[-1].description['global'].description['_couple_sortie']
         if C_out_desire == 0: return 1 
         omega_in = V_in * 2 * math.pi / 60
         omega_out = P_in / C_out_desire 
@@ -179,7 +179,7 @@ class Reducteur():
             if i == n - 1 and r_fixe == 0:
                 pass 
             else:
-                train.description['global'].description['couple_sortie'] = C_out_local_estime
+                train.description['global'].description['_couple_sortie'] = C_out_local_estime
 
             # Lancement calcul physique
             if isinstance(train, Train_simple):
@@ -211,7 +211,7 @@ class Reducteur():
     def ajouter_train(self, type_train='simple'):
         couple_cible = 100 
         if len(self.listeTrain) > 0:
-            couple_cible = self.listeTrain[-1].description['global'].description['couple_sortie']
+            couple_cible = self.listeTrain[-1].description['global'].description['_couple_sortie']
         
         num = len(self.listeTrain) + 1
         if type_train == 'epi': new_train = Train_epi(num)
@@ -221,7 +221,7 @@ class Reducteur():
         new_train.description['global'].description['entraxe'] = 100
         new_train.description['global'].description['resistance_elastique'] = 500
         new_train.description['global'].description['rendement'] = 0.95
-        new_train.description['global'].description['couple_sortie'] = couple_cible
+        new_train.description['global'].description['_couple_sortie'] = couple_cible
         
         self.listeTrain.append(new_train)
         print(f">> Train {type_train} ajouté. Cible maintenue à {couple_cible} Nm")
@@ -229,11 +229,11 @@ class Reducteur():
 
     def supprimer_dernier_train(self):
         if len(self.listeTrain) > 0:
-            couple_cible = self.listeTrain[-1].description['global'].description['couple_sortie']
+            couple_cible = self.listeTrain[-1].description['global'].description['_couple_sortie']
             self.listeTrain.pop()
             print(">> Dernier train supprimé.")
             if len(self.listeTrain) > 0:
-                self.listeTrain[-1].description['global'].description['couple_sortie'] = couple_cible
+                self.listeTrain[-1].description['global'].description['_couple_sortie'] = couple_cible
                 print(f">> Cible de {couple_cible} Nm transférée au train précédent.")
             self.calculer_systeme_complet()
 
@@ -244,7 +244,7 @@ class Reducteur():
             else: new_train = Train_simple(index+1)
             
             # On conserve les paramètres importants
-            for key in ['entraxe', 'resistance_elastique', 'rendement', 'couple_sortie', 'rapport_reduction']:
+            for key in ['entraxe', 'resistance_elastique', 'rendement', '_couple_sortie', 'rapport_reduction']:
                 if key in old_train.description['global'].description:
                     val = old_train.description['global'].description.get(key)
                     new_train.description['global'].description[key] = val
@@ -281,7 +281,7 @@ if __name__ == '__main__':
     t3 = Train_simple(3)
     t3.description['global'].description.update({
         'rapport_reduction': 2.5,  # <--- FIXÉ
-        'couple_sortie': 477 # Cible pour obtenir ~100 rpm (Ratio total ~20)
+        '_couple_sortie': 477 # Cible pour obtenir ~100 rpm (Ratio total ~20)
     })
     t3.description['global'].ratio_fixe = True  # Indicateur de ratio fixe
 

@@ -287,7 +287,7 @@ class FenetreCreationProjet(Fenetre):
         # ajout des parametres globals
         mes_etages[0].description['global'].description['_vitesse_entree'] = values_global[0]
         mes_etages[0].description['global'].description['_puissance_entree'] = values_global[1]
-        mes_etages[-1].description['global'].description['couple_sortie'] = values_global[2]
+        mes_etages[-1].description['global'].description['_couple_sortie'] = values_global[2]
         self._reducteur = mod.Reducteur(mes_etages)
 
 

@@ -38,7 +38,7 @@ class Calcule_train:
     def calculer_vitesse_sortie(self, param=None):
         # CORRECTION : '_puissance_entree' (pas d'underscore car c'est une saisie user)
         P_entree = self._param_global['_puissance_entree']
-        Couple_sortie = self._param_global['couple_sortie']
+        Couple_sortie = self._param_global['_couple_sortie']
         
         # Sécurité pour éviter la division par zéro
         if Couple_sortie <= 0.001: 
@@ -99,7 +99,7 @@ class Calcule_train:
         Rpg = Re * 0.5 
         
         C_in = self._param_global.get('_couple_entree', 0)
-        C_out = self._param_global.get('couple_sortie', 0)
+        C_out = self._param_global.get('_couple_sortie', 0)
 
         if C_in > 0:
             self._param_global['_diametre_arbre_entree'] = (16 * C_in * 1000 / (math.pi * Rpg))**(1/3)
