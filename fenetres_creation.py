@@ -51,8 +51,8 @@ CREATION_PROJET = {
 
 PAGE_0 = {
     'labels_unitee':{
-                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','validator':validator,'parent':'block_gauche'},
-                'Puissance':{'unitee':'W','valeur_defaut':'1500','validator':validator,'parent':'block_gauche'},
+                'Vitesse':{'unitee':'RPM','valeur_defaut':'1500','validator':validator,'parent':'block_gauche'},
+                'Puissance':{'unitee':'W','valeur_defaut':'4000','validator':validator,'parent':'block_gauche'},
                 'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':validator,'parent':'block_droit'}
             },
     'labels':['Reducteur','Choix Parametre Global'],
