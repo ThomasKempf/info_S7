@@ -27,7 +27,7 @@ class Train_global(Global):
         self.description = {
             '_vitesse_entree': 0,
             '_puissance_entree': 0,
-            'couple_sortie': 100,
+            '_couple_sortie': 100,
             '_couple_entree': 0,
             
             'entraxe': 100,
@@ -36,8 +36,6 @@ class Train_global(Global):
             '_vitesse_sortie': 0,
             '_force_tangentielle': 0,
             'rapport_reduction':0,
-            
-            'ratio_fixe': 0,             # <--- Paramètre 10
             
             '_module': 0,
             'alpha': 20,
@@ -59,7 +57,6 @@ class Train_global(Global):
             'RPM',  # _vitesse_sortie
             'N',    # _force_tangentielle
             ' ',    # _rapport_reduction
-            ' ',    # ratio_fixe (C'est celle-ci qui manquait probablement !)
             'mm',   # _module
             '°',    # alpha
             '°',    # beta
@@ -136,9 +133,10 @@ class Reducteur():
         nb_auto = 0
         
         for train in self.listeTrain:
-            rf = train.description['global'].description.get('ratio_fixe', 0)
-            if rf > 0:
-                produit_fixes *= rf
+            rr = train.description['global'].description['rapport_reduction']
+            rf = train.description['global'].ratio_fixe
+            if rf == True:
+                produit_fixes *= rr
             else:
                 nb_auto += 1
         
@@ -160,9 +158,10 @@ class Reducteur():
             train.description['global'].description['_vitesse_entree'] = V_actuelle
             
             # --- CHOIX DU RATIO LOCAL ---
-            r_fixe = train.description['global'].description.get('ratio_fixe', 0)
-            if r_fixe > 0:
-                ratio_a_appliquer = r_fixe
+            r_reduction = train.description['global'].description['rapport_reduction']
+            r_fixe = train.description['global'].ratio_fixe
+            if r_fixe == True:
+                ratio_a_appliquer = r_reduction
             else:
                 ratio_a_appliquer = r_auto_target
             
@@ -245,7 +244,7 @@ class Reducteur():
             else: new_train = Train_simple(index+1)
             
             # On conserve les paramètres importants
-            for key in ['entraxe', 'resistance_elastique', 'rendement', 'couple_sortie', 'ratio_fixe']:
+            for key in ['entraxe', 'resistance_elastique', 'rendement', 'couple_sortie', 'rapport_reduction']:
                 if key in old_train.description['global'].description:
                     val = old_train.description['global'].description.get(key)
                     new_train.description['global'].description[key] = val
@@ -272,17 +271,19 @@ if __name__ == '__main__':
     t1.description['global'].description.update({
         '_vitesse_entree': 2000, 
         '_puissance_entree': 5000,
-        'ratio_fixe': 2.0   # <--- FIXÉ
+        'rapport_reduction': 2.0   # <--- FIXÉ
     })
+    t1.description['global'].ratio_fixe = True  # Indicateur de ratio fixe
     
     t2 = Train_simple(2)
     # T2 est en AUTO (ratio_fixe = 0 par défaut)
     
     t3 = Train_simple(3)
     t3.description['global'].description.update({
-        'ratio_fixe': 2.5,  # <--- FIXÉ
+        'rapport_reduction': 2.5,  # <--- FIXÉ
         'couple_sortie': 477 # Cible pour obtenir ~100 rpm (Ratio total ~20)
     })
+    t3.description['global'].ratio_fixe = True  # Indicateur de ratio fixe
 
     reducteur = Reducteur([t1, t2, t3])
 
@@ -291,7 +292,7 @@ if __name__ == '__main__':
         g = train.description['global'].description
         
         # Détection du mode pour l'affichage
-        is_fixe = g.get('ratio_fixe', 0) > 0
+        is_fixe = train.description['global'].ratio_fixe
         mode_str = "[FIXÉ]" if is_fixe else "[AUTO]"
         
         ratio = g['rapport_reduction']

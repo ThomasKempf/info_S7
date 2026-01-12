@@ -524,6 +524,9 @@ class Frame_Train(qtw.QFrame):
         - ``self._zone_text_train`` 
           doit être valides et contenir les clés attendues.
         """
+        # cas ou le rapport de reduction est modifier par l'utilisateur et en devient fixe pour les calcules
+        if value_name == 'rapport_reduction':
+            self._train.description['global'].ratio_fixe = True
         # met a jour l'objet train
         sous_obj.description[value_name] = nouvelle_valeur
         self.reducteur.calculer_systeme_complet()
@@ -545,10 +548,6 @@ class Frame_Train(qtw.QFrame):
                     new_value = self.arrondie_et_convertie_en_str(new_value)
                     self._zone_text_train[global_key]['variable'][key].setText(new_value)
                     # cas particuler pour le rapport de reducution
-        # cas ou le rapport de reduction est modifier par l'utilisateur et en devient fixe pour les calcules
-        if value_name == 'rapport_reduction':
-            self._train.ratio_fixe = True
-            print('hello')
 
 
 
