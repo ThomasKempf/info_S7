@@ -157,7 +157,7 @@ class Reducteur():
 
         for i, train in enumerate(self.listeTrain):
             train.description['global'].description['_puissance_entree'] = P_actuelle
-            train.description['global'].description['_puissance_entree'] = V_actuelle
+            train.description['global'].description['_vitesse_entree'] = V_actuelle
             
             # --- CHOIX DU RATIO LOCAL ---
             r_fixe = train.description['global'].description.get('ratio_fixe', 0)
@@ -251,7 +251,7 @@ class Reducteur():
                     new_train.description['global'].description[key] = val
             
             if index == 0:
-                new_train.description['global'].description['_puissance_entree'] = old_train.description['global'].description['_puissance_entree']
+                new_train.description['global'].description['_vitesse_entree'] = old_train.description['global'].description['_vitesse_entree']
                 new_train.description['global'].description['_puissance_entree'] = old_train.description['global'].description['_puissance_entree']
             self.listeTrain[index] = new_train
             print(f">> Train {index+1} changé en type {nouveau_type}.")
@@ -270,7 +270,7 @@ if __name__ == '__main__':
     
     t1 = Train_simple(1)
     t1.description['global'].description.update({
-        '_puissance_entree': 2000, 
+        '_vitesse_entree': 2000, 
         '_puissance_entree': 5000,
         'ratio_fixe': 2.0   # <--- FIXÉ
     })
