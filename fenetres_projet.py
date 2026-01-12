@@ -131,6 +131,7 @@ class FenetreProjet(Fenetre):
         '''
         self.reducteur.supprimer_dernier_train()
         self.frames_train[len(self.frames_train) - 1].deleteLater()
+        self.frames_train[-1]._train.description['global'].ratio_fixe = False
         self.met_a_jour_parametre_fenetre_entiere()
         self.frames_train.pop()
         if len(self.frames_train) > 1: 
@@ -483,7 +484,6 @@ class Frame_Train(qtw.QFrame):
         # supprime le _ pour les parametre interne
         if key.startswith('_'): 
             nom = key[1:]
-            print(self.num,len(self.reducteur.listeTrain))
             if (((key == '_vitesse_entree' or key == '_puissance_entree') and self.num == 0)
                 or (key == '_couple_sortie' and self.num + 1 == len(self.reducteur.listeTrain))):# ajoute le cas particulier du _vitesse_entree et puissance_entree du premier train
                 gras = True
