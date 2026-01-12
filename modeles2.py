@@ -25,44 +25,47 @@ class Train_global(Global):
         
         # 16 PARAMÈTRES
         self.description = {
+            'rapport_reduction':0,
+
             '_vitesse_entree': 0,
             '_puissance_entree': 0,
             '_couple_sortie': 100,
             '_couple_entree': 0,
+            '_vitesse_sortie': 0,
+            'rendement': 0.95,
             
             'entraxe': 100,
             'resistance_elastique': 500,
             
-            '_vitesse_sortie': 0,
             '_force_tangentielle': 0,
-            'rapport_reduction':0,
             
             '_module': 0,
             'alpha': 20,
             'beta':0,
-            'rendement': 0.95,
             
             '_diametre_arbre_entree': 0,
-            '_diametre_arbre_sortie': 0
+            '_diametre_arbre_sortie': 0,
+            '_diametre_arbre_porte_s': 0
         }
         self.ratio_fixe = False
         # (L'ordre doit être STRICTEMENT identique aux clés ci-dessus)
         self.unitee = [
+            ' ',    # _rapport_reduction
             'RPM',  # vitesse_entree
             'W',    # puissance_entree
             'Nm',   # couple_sortie
             'Nm',   # _couple_entree
+            'RPM',  # _vitesse_sortie
+            '%',    # rendement
             'mm',   # entraxe
             'MPa',  # resistance_elastique
-            'RPM',  # _vitesse_sortie
             'N',    # _force_tangentielle
-            ' ',    # _rapport_reduction
             'mm',   # _module
             '°',    # alpha
             '°',    # beta
-            '%',    # rendement
             'mm',   # _diametre_arbre_entree
-            'mm'    # _diametre_arbre_sortie
+            'mm',    # _diametre_arbre_sortie
+            'mm'    # _diametre_arbre_porte_satellites
         ]
 
 class Train_simple(Global):
