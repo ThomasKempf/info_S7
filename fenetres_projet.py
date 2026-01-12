@@ -506,7 +506,6 @@ class Frame_Train(qtw.QFrame):
             sous_obj['variable'][key].setValidator(validator)
         sous_obj['variable'][key].setFixedWidth(60)
         if key == 'nbr_satellites':
-            print('valeur_precedente',self.fenetre.valeur_precedente[str(sous_obj['variable'][key])])
             sous_obj['variable'][key].editingFinished.connect(lambda w=sous_obj['variable'][key] : self.fenetre.control_interval(w,12,3))
         return sous_obj
     
@@ -554,11 +553,17 @@ class Frame_Train(qtw.QFrame):
         :param valeur: valeur a arrondir
         :return: retourne la valeur arrondie en str
         '''
-        new_value = round(valeur,3)
-        new_value = str(new_value)
+        value = round(valeur,3)
+        value = str(value)
+        print('avant traitement:',value)
         # supprime les 0 superflus
-        val = new_value.rstrip("0").rstrip(".")
-        new_value = val if val != "" else "0"
-        return new_value
+        if '.' in value:
+            value = value.rstrip("0").rstrip(".")
+        if value != "":
+            value = value
+        else:
+            value = "0"
+        print('apres traitement:',value)
+        return value
 
         
