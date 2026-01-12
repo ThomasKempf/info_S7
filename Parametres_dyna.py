@@ -63,9 +63,9 @@ class Calcule_train:
         v_in = self._param_global['_vitesse_entree']
         
         if v_out > 0:
-            self._param_global['_rapport_reduction'] = v_in / v_out
+            self._param_global['rapport_reduction'] = v_in / v_out
         else:
-            self._param_global['_rapport_reduction'] = 0
+            self._param_global['rapport_reduction'] = 0
 
     def calculer_force_tangentielle(self, param=None):
         Ce = self._param_global['_couple_entree']
@@ -125,7 +125,7 @@ class Calcule_train_simple(Calcule_train):
     
     def calculer_diametres_specifiques(self):
         e = self._param_global['entraxe']/1000 
-        r = self._param_global['_rapport_reduction']
+        r = self._param_global['rapport_reduction']
         m = self._param_global['_module']
 
         if r > 0 and e > 0:
@@ -146,7 +146,7 @@ class Calcule_train_simple(Calcule_train):
 class Calcule_train_epi(Calcule_train):
     
     def calculer_diametres_specifiques(self):
-        r_red = self._param_global['_rapport_reduction']
+        r_red = self._param_global['rapport_reduction']
         entraxe = self._param_global['entraxe']/1000
         m = self._param_global['_module']
 

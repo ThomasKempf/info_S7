@@ -35,7 +35,7 @@ class Train_global(Global):
             
             '_vitesse_sortie': 0,
             '_force_tangentielle': 0,
-            '_rapport_reduction':0,
+            'rapport_reduction':0,
             
             'ratio_fixe': 0,             # <--- Paramètre 10
             
@@ -47,7 +47,7 @@ class Train_global(Global):
             '_diametre_arbre_entree': 0,
             '_diametre_arbre_sortie': 0
         }
-        
+        self.ratio_fixe = False
         # (L'ordre doit être STRICTEMENT identique aux clés ci-dessus)
         self.unitee = [
             'RPM',  # vitesse_entree
@@ -294,14 +294,14 @@ if __name__ == '__main__':
         is_fixe = g.get('ratio_fixe', 0) > 0
         mode_str = "[FIXÉ]" if is_fixe else "[AUTO]"
         
-        ratio = g['_rapport_reduction']
+        ratio = g['rapport_reduction']
         
         print(f"ETAGE {i+1} {mode_str} : Ratio = {ratio:.2f}")
 
     print("-" * 60)
     
     # Vérification automatique
-    r2 = reducteur.listeTrain[1].description['global'].description['_rapport_reduction']
+    r2 = reducteur.listeTrain[1].description['global'].description['rapport_reduction']
     if 3.9 < r2 < 4.1:
         print("L'étage 2 (Auto) a bien comblé le trou en se mettant à 4")
     else:

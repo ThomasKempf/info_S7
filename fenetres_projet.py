@@ -367,12 +367,10 @@ class Frame_Train(qtw.QFrame):
             sous_obj = {'widget':{},'variable':{},'lbl_nom':{}}
             sous_obj['objet'] = description_train[global_key]
             for i, (key, value) in enumerate(sous_obj['objet'].description.items()):
-                print(key)
                 unitee  = sous_obj['objet'].unitee[i]   
                 train_gui[global_key] = self._genere_un_parametre(sous_obj,key,value,unitee)
                 if sous_obj['lbl_nom'][key].sizeHint().width() > taille_max:
                     taille_max = sous_obj['lbl_nom'][key].sizeHint().width()
-            print()
         # ajuste la largeur des widgets
         for global_key in train_gui:
             for key in train_gui[global_key]['lbl_nom']:
@@ -546,8 +544,15 @@ class Frame_Train(qtw.QFrame):
                     new_value = self._train.description[global_key].description[key]
                     new_value = self.arrondie_et_convertie_en_str(new_value)
                     self._zone_text_train[global_key]['variable'][key].setText(new_value)
+                    # cas particuler pour le rapport de reducution
+        # cas ou le rapport de reduction est modifier par l'utilisateur et en devient fixe pour les calcules
+        if value_name == 'rapport_reduction':
+            self._train.ratio_fixe = True
+            print('hello')
 
-    
+
+
+
     def arrondie_et_convertie_en_str(self,valeur) -> str:
         '''
         arrondie une valeur a 3 chiffre apres la virgule et la convertie en str
