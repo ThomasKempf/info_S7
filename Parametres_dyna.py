@@ -36,8 +36,8 @@ class Calcule_train:
     # --- Méthodes Physiques ---
 
     def calculer_vitesse_sortie(self, param=None):
-        # CORRECTION : 'puissance_entree' (pas d'underscore car c'est une saisie user)
-        P_entree = self._param_global['puissance_entree']
+        # CORRECTION : '_puissance_entree' (pas d'underscore car c'est une saisie user)
+        P_entree = self._param_global['_puissance_entree']
         Couple_sortie = self._param_global['couple_sortie']
         
         # Sécurité pour éviter la division par zéro
@@ -49,8 +49,8 @@ class Calcule_train:
 
     def calculer_couple_entree(self, param=None):
         # CORRECTION : Pas d'underscore sur les entrées
-        P_entree = self._param_global['puissance_entree']
-        V_entree = self._param_global['vitesse_entree']
+        P_entree = self._param_global['_puissance_entree']
+        V_entree = self._param_global['_vitesse_entree']
         
         if V_entree > 0:
             self._param_global['_couple_entree'] = P_entree / (V_entree * (2 * math.pi / 60))
@@ -60,7 +60,7 @@ class Calcule_train:
     def calculer_rapport_reduction(self, param=None):
         v_out = self._param_global['_vitesse_sortie']
         # CORRECTION : Pas d'underscore sur l'entrée
-        v_in = self._param_global['vitesse_entree']
+        v_in = self._param_global['_vitesse_entree']
         
         if v_out > 0:
             self._param_global['_rapport_reduction'] = v_in / v_out
@@ -110,7 +110,7 @@ class Calcule_train:
     def get_puissance_sortie_reelle(self):
         eta = self._param_global.get('rendement', 1.0) 
         # CORRECTION : Pas d'underscore sur l'entrée
-        return self._param_global['puissance_entree'] * eta
+        return self._param_global['_puissance_entree'] * eta
 
     def calculer_diametres_specifiques(self):
         raise NotImplementedError("Surchargé par les enfants")

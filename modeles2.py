@@ -6,7 +6,7 @@ import math
 class Global():
     def __init__(self) -> None:
         self.titre = 'parametre globale'
-        self.description = {'vitesse_entree': 0, 'puissance_entree': 0, 'couple_sortie': 0}
+        self.description = {'_vitesse_entree': 0, '_puissance_entree': 0, 'couple_sortie': 0}
         self.unitee = ['RPM','W','Nm']
         self.error = 0
             
@@ -25,8 +25,8 @@ class Train_global(Global):
         
         # 16 PARAMÈTRES
         self.description = {
-            'vitesse_entree': 0,
-            'puissance_entree': 0,
+            '_vitesse_entree': 0,
+            '_puissance_entree': 0,
             'couple_sortie': 100,
             '_couple_entree': 0,
             
@@ -111,8 +111,8 @@ class Reducteur():
 
     def calculer_RR_global_vise(self):
         if not self.listeTrain: return 1
-        P_in = self.listeTrain[0].description['global'].description['puissance_entree']
-        V_in = self.listeTrain[0].description['global'].description['vitesse_entree']
+        P_in = self.listeTrain[0].description['global'].description['_puissance_entree']
+        V_in = self.listeTrain[0].description['global'].description['_vitesse_entree']
         C_out_desire = self.listeTrain[-1].description['global'].description['couple_sortie']
         if C_out_desire == 0: return 1 
         omega_in = V_in * 2 * math.pi / 60
@@ -124,8 +124,8 @@ class Reducteur():
         n = len(self.listeTrain)
         if n == 0: return
         
-        P_actuelle = self.listeTrain[0].description['global'].description['puissance_entree']
-        V_actuelle = self.listeTrain[0].description['global'].description['vitesse_entree']
+        P_actuelle = self.listeTrain[0].description['global'].description['_puissance_entree']
+        V_actuelle = self.listeTrain[0].description['global'].description['_vitesse_entree']
         
         # 1. Calcul du besoin global théorique
         rr_global_vise = self.calculer_RR_global_vise()
@@ -156,8 +156,8 @@ class Reducteur():
         self.calc_objects = [] 
 
         for i, train in enumerate(self.listeTrain):
-            train.description['global'].description['puissance_entree'] = P_actuelle
-            train.description['global'].description['vitesse_entree'] = V_actuelle
+            train.description['global'].description['_puissance_entree'] = P_actuelle
+            train.description['global'].description['_puissance_entree'] = V_actuelle
             
             # --- CHOIX DU RATIO LOCAL ---
             r_fixe = train.description['global'].description.get('ratio_fixe', 0)
@@ -251,8 +251,8 @@ class Reducteur():
                     new_train.description['global'].description[key] = val
             
             if index == 0:
-                new_train.description['global'].description['vitesse_entree'] = old_train.description['global'].description['vitesse_entree']
-                new_train.description['global'].description['puissance_entree'] = old_train.description['global'].description['puissance_entree']
+                new_train.description['global'].description['_puissance_entree'] = old_train.description['global'].description['_puissance_entree']
+                new_train.description['global'].description['_puissance_entree'] = old_train.description['global'].description['_puissance_entree']
             self.listeTrain[index] = new_train
             print(f">> Train {index+1} changé en type {nouveau_type}.")
             self.calculer_systeme_complet()
@@ -270,8 +270,8 @@ if __name__ == '__main__':
     
     t1 = Train_simple(1)
     t1.description['global'].description.update({
-        'vitesse_entree': 2000, 
-        'puissance_entree': 5000,
+        '_puissance_entree': 2000, 
+        '_puissance_entree': 5000,
         'ratio_fixe': 2.0   # <--- FIXÉ
     })
     

@@ -367,10 +367,12 @@ class Frame_Train(qtw.QFrame):
             sous_obj = {'widget':{},'variable':{},'lbl_nom':{}}
             sous_obj['objet'] = description_train[global_key]
             for i, (key, value) in enumerate(sous_obj['objet'].description.items()):
+                print(key)
                 unitee  = sous_obj['objet'].unitee[i]   
                 train_gui[global_key] = self._genere_un_parametre(sous_obj,key,value,unitee)
                 if sous_obj['lbl_nom'][key].sizeHint().width() > taille_max:
                     taille_max = sous_obj['lbl_nom'][key].sizeHint().width()
+            print()
         # ajuste la largeur des widgets
         for global_key in train_gui:
             for key in train_gui[global_key]['lbl_nom']:
@@ -555,7 +557,6 @@ class Frame_Train(qtw.QFrame):
         '''
         value = round(valeur,3)
         value = str(value)
-        print('avant traitement:',value)
         # supprime les 0 superflus
         if '.' in value:
             value = value.rstrip("0").rstrip(".")
@@ -563,7 +564,6 @@ class Frame_Train(qtw.QFrame):
             value = value
         else:
             value = "0"
-        print('apres traitement:',value)
         return value
 
         
