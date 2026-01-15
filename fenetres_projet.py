@@ -131,7 +131,7 @@ class FenetreProjet(Fenetre):
         '''
         self.reducteur.supprimer_dernier_train()
         self.frames_train[len(self.frames_train) - 1].deleteLater()
-        self.frames_train[-1]._train.description['global'].ratio_fixe = False
+        self.frames_train[-2]._train.description['global'].ratio_fixe = False
         self.met_a_jour_parametre_fenetre_entiere()
         self.frames_train.pop()
         if len(self.frames_train) > 1: 
@@ -489,9 +489,12 @@ class Frame_Train(qtw.QFrame):
                 gras = True
             else:
                 gras = False
-        else:
+        elif not(key == 'rapport_reduction' and self.num + 1 == len(self.reducteur.listeTrain)):
             nom = key
             gras = True
+        else:
+            nom = key[1:]
+            gras = False
         # cas particulier pour le couple beta qui peut etre nul ou nbr de satellite ou un interval de 3 a 12 est vérifié, deux vérification entraine une erreur
         if key == 'beta' or key == 'nbr_satellites':
             controle_0 = False
@@ -551,8 +554,9 @@ class Frame_Train(qtw.QFrame):
                     new_value = self.arrondie_et_convertie_en_str(new_value)
                     self._zone_text_train[global_key]['variable'][key].setText(new_value)
                     # cas particuler pour le couple sortie
-                    if key == '_couple_sortie':
-                        if self.num + 1 == len(self.reducteur.listeTrain):
+                    if key == '_couple_sortie' or key == 'rapport_reduction':
+                        if (key == '_couple_sortie' and self.num + 1 == len(self.reducteur.listeTrain)) or (key == 'rapport_reduction' and not(self.num + 1 == len(self.reducteur.listeTrain))):
+                            print('hello',key)
                             polyce = "font-weight: bold;"
                             lecture_simple = False
                         else:
