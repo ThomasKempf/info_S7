@@ -10,13 +10,21 @@ class Global():
         self.unitee = ['RPM','W','Nm']
         self.error = 0
             
-class Engrenage(Global):
+class RoueDentee(Global):
     def __init__(self,num:int) -> None:
         super().__init__()
-        self.titre = f'engrenage {num}'
+        self.titre = f'roue dentee {num}'
         # Données : Diamètre primitif + Nombre de dents calculé
         self.description = {'_diametre' : 0, '_nbr_dents': 0}
         self.unitee = ['mm', ' ']
+
+class Engrenage(RoueDentee):
+    def __init__(self,num:int) -> None:
+        super().__init__(num)
+        self.titre = f'engrenage {num}'
+        # ajoute diametre arbre
+        self.description['_diametre_arbre'] = 0
+        self.unitee.append('mm')
 
 class Train_global(Global):
     def __init__(self) -> None:
@@ -34,18 +42,14 @@ class Train_global(Global):
             '_vitesse_sortie': 0,
             'rendement': 0.95,
             
-            'entraxe': 100,
-            'resistance_elastique': 500,
             
             '_force_tangentielle': 0,
             
             '_module': 0,
             'alpha': 20,
             'beta':0,
-            
-            '_diametre_arbre_entree': 0,
-            '_diametre_arbre_sortie': 0,
-            '_diametre_arbre_porte_s': 0
+            'entraxe': 100,
+            'resistance_elastique': 500,
         }
         self.ratio_fixe = False
         # (L'ordre doit être STRICTEMENT identique aux clés ci-dessus)
@@ -57,15 +61,12 @@ class Train_global(Global):
             'Nm',   # _couple_entree
             'RPM',  # _vitesse_sortie
             '%',    # rendement
-            'mm',   # entraxe
-            'MPa',  # resistance_elastique
             'N',    # _force_tangentielle
             'mm',   # _module
             '°',    # alpha
             '°',    # beta
-            'mm',   # _diametre_arbre_entree
-            'mm',    # _diametre_arbre_sortie
-            'mm'    # _diametre_arbre_porte_satellites
+            'mm',   # entraxe
+            'MPa'  # resistance_elastique
         ]
 
 class Train_simple(Global):
@@ -90,7 +91,7 @@ class Train_epi(Global):
             'global': Train_global(),
             'pignon': Engrenage(0),
             'satelite': Engrenage(1),
-            'couronne': Engrenage(2)
+            'couronne': RoueDentee(0)
         }
         self.description['pignon'].titre = 'solaire'
         self.description['satelite'].titre = 'satellite'

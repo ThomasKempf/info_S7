@@ -92,20 +92,6 @@ class Calcule_train:
             
         self._param_global['_module'] = max(module_rm, module_geo, 1.0)
 
-    def calculer_arbres(self):
-        Re = self._param_global.get('resistance_elastique', 0)
-        if Re <= 0: return
-
-        Rpg = Re * 0.5 
-        
-        C_in = self._param_global.get('_couple_entree', 0)
-        C_out = self._param_global.get('_couple_sortie', 0)
-
-        if C_in > 0:
-            self._param_global['_diametre_arbre_entree'] = (16 * C_in * 1000 / (math.pi * Rpg))**(1/3)
-        
-        if C_out > 0:
-            self._param_global['_diametre_arbre_sortie'] = (16 * C_out * 1000 / (math.pi * Rpg))**(1/3)
 
     def get_puissance_sortie_reelle(self):
         eta = self._param_global.get('rendement', 1.0) 
@@ -143,6 +129,21 @@ class Calcule_train_simple(Calcule_train):
                 self._param_roue['_nbr_dents'] = 0
 
 
+    def calculer_arbres(self):
+        Re = self._param_global.get('resistance_elastique', 0)
+        if Re <= 0: return
+
+        Rpg = Re * 0.5 
+        
+        C_in = self._param_global.get('_couple_entree', 0)
+        C_out = self._param_global.get('_couple_sortie', 0)
+        if C_in > 0:
+            self._param_pignon['_diametre_arbre'] = (16 * C_in * 1000 / (math.pi * Rpg))**(1/3)
+        
+        if C_out > 0:
+            self._param_roue['_diametre_arbre'] = (16 * C_out * 1000 / (math.pi * Rpg))**(1/3)
+
+
 class Calcule_train_epi(Calcule_train):
     
     def calculer_diametres_specifiques(self):
@@ -164,3 +165,19 @@ class Calcule_train_epi(Calcule_train):
                 if self._param_pignon: self._param_pignon['_nbr_dents'] = int(round((D_solaire*1000)/m))
                 if self._param_couronne: self._param_couronne['_nbr_dents'] = int(round((D_couronne*1000)/m))
                 if self._param_satelite: self._param_satelite['_nbr_dents'] = int(round((D_satellite*1000)/m))
+
+    
+    def calculer_arbres(self):
+        Re = self._param_global.get('resistance_elastique', 0)
+        if Re <= 0: return
+
+        Rpg = Re * 0.5 
+        
+        C_in = self._param_global.get('_couple_entree', 0)
+        C_out = self._param_global.get('_couple_sortie', 0)
+
+        if C_in > 0:
+            self._param_pignon['_diametre_arbre'] = (16 * C_in * 1000 / (math.pi * Rpg))**(1/3)
+
+        if C_out > 0:
+            self._param_satelite['_diametre_arbre'] = (16 * C_out * 1000 / (math.pi * Rpg))**(1/3)

@@ -363,6 +363,7 @@ class Frame_Train(qtw.QFrame):
         train_gui = {}
         description_train = self._train.description
         for global_key in description_train: 
+            print('hello',global_key)
             if global_key.startswith('_'): # parametre interne a ne pas traiter: exemple _nb_satellites
                 continue
             sous_obj = {'widget':{},'variable':{},'lbl_nom':{},'lbl_unitee':{}}
