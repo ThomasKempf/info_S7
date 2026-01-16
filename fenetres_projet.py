@@ -138,6 +138,8 @@ class FenetreProjet(Fenetre):
             self.ajoute_bp_moins()
         if len(self.frames_train) < 7:
             self.bouton_plus.show()
+        if hasattr(self, "xlsx_file"):
+            self.xlsx_file.supprime_dernier_train()
 
     
     def _ajoute_frame_train(self) -> None:
@@ -363,7 +365,6 @@ class Frame_Train(qtw.QFrame):
         train_gui = {}
         description_train = self._train.description
         for global_key in description_train: 
-            print('hello',global_key)
             if global_key.startswith('_'): # parametre interne a ne pas traiter: exemple _nb_satellites
                 continue
             sous_obj = {'widget':{},'variable':{},'lbl_nom':{},'lbl_unitee':{}}
@@ -557,7 +558,6 @@ class Frame_Train(qtw.QFrame):
                     # cas particuler pour le couple sortie
                     if key == '_couple_sortie' or key == 'rapport_reduction':
                         if (key == '_couple_sortie' and self.num + 1 == len(self.reducteur.listeTrain)) or (key == 'rapport_reduction' and not(self.num + 1 == len(self.reducteur.listeTrain))):
-                            print('hello',key)
                             polyce = "font-weight: bold;"
                             lecture_simple = False
                         else:

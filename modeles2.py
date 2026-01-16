@@ -87,11 +87,10 @@ class Train_epi(Global):
         super().__init__()
         self.titre = f'train_epi_{num}'
         self.description =  {
-            '_mode_blocage':'couronne', 
             'global': Train_global(),
             'pignon': Engrenage(0),
             'satelite': Engrenage(1),
-            'couronne': RoueDentee(0)
+            'couronne': RoueDentee(2)
         }
         self.description['pignon'].titre = 'solaire'
         self.description['satelite'].titre = 'satellite'

@@ -79,7 +79,10 @@ class XlsxFile():
         - ``self._ws`` doit etre valide
         """
         for i, valeur in enumerate(liste):
-            self._ws.cell(row=ligne_depart + i, column=colonne, value=valeur)
+            try:
+                self._ws.cell(row=ligne_depart + i, column=colonne, value=valeur)
+            except:
+                pass
 
 
     def _fusionner_cells(self, ligne:int, colonne_depart:int, colonne_fin:int) -> None:
@@ -208,7 +211,6 @@ class XlsxReducteur(XlsxFile):
         liste_globale = [param.titre] + liste_description
         # ecris fichier xlsx
         self._ecrire_liste_colonne(liste_globale,ligne,colonne_description) # ecrit titre + description
-        self._fusionner_cells(ligne,colonne_description,colonne_description+2)
         self._ecrire_liste_colonne(liste_valeur,ligne+1,colonne_description+1)
         self._ecrire_liste_colonne(param.unitee,ligne+1,colonne_description+2)
 
@@ -251,7 +253,23 @@ class XlsxReducteur(XlsxFile):
                 ligne = ligne + 1
             self._param.append( train )
             colonne = colonne + NBR_COLONNE_SEPRARATION + NBR_COLONNE_TRAIN
-        
+
+
+    def supprime_dernier_train(self):
+        '''
+        supprime le dernier train écris dans le xlsx en ce basant sur self.param
+        '''
+        colonne = COLONNE_DEPART + (NBR_COLONNE_SEPRARATION + NBR_COLONNE_TRAIN) * (len(self._param)-2)
+        print(colonne,len(self._param))
+        liste_vide = [' ']
+        for global_key in self._param[-1]:
+            liste_vide.append(' ')
+            for key in self._param[-1][global_key].description:
+                liste_vide.append(' ')
+        for i in range(3):
+            self._ecrire_liste_colonne(liste_vide,LIGNE_TITRE,colonne + i)
+        self._param = self._param[:-1]
+
 
 if __name__ == '__main__':
 
