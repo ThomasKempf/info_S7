@@ -484,19 +484,20 @@ class Frame_Train(qtw.QFrame):
             validator = qtg.QDoubleValidator()# validator pour forcer l'entrée de nombre flottant avec point decimal
         validator.setLocale(qtc.QLocale(qtc.QLocale.C))
         # supprime le _ pour les parametre interne
+        nom = key
+        # cas avec _ donc lecture simple
         if key.startswith('_'): 
             nom = key[1:]
             if (((key == '_vitesse_entree' or key == '_puissance_entree') and self.num == 0)
-                or (key == '_couple_sortie' and self.num + 1 == len(self.reducteur.listeTrain))):# ajoute le cas particulier du _vitesse_entree et puissance_entree du premier train
-                gras = True
+                or (key == '_couple_sortie' and self.num + 1 == len(self.reducteur.listeTrain))):
+                gras = True# cas particulier de _ ou dans sertaine condition la lecture est accepter
             else:
-                gras = False
+                gras = False # cas general
+        # cas sans _ lecture et ecriture
         elif not(key == 'rapport_reduction' and self.num + 1 == len(self.reducteur.listeTrain)):
-            nom = key
-            gras = True
+            gras = True # cas particulier avec parfois que lecture simple
         else:
-            nom = key[1:]
-            gras = False
+            gras = False  # cas general
         # cas particulier pour le couple beta qui peut etre nul ou nbr de satellite ou un interval de 3 a 12 est vérifié, deux vérification entraine une erreur
         if key == 'beta' or key == 'nbr_satellites':
             controle_0 = False
@@ -507,8 +508,10 @@ class Frame_Train(qtw.QFrame):
         sous_obj['widget'][key],sous_obj['variable'][key],sous_obj['lbl_nom'][key],sous_obj['lbl_unitee'][key] = self.fenetre._ajout_nom_zone_texte_unitee(nom,unitee,new_value,controle_0,gras)
         if key.startswith('_') and not(((key == '_vitesse_entree' or key == '_puissance_entree') and self.num == 0)
                                        or (key == '_couple_sortie' and self.num + 1 == len(self.reducteur.listeTrain))):# ajoute le cas particulier du _vitesse_entree et puissance_entree du premier train
-            sous_obj['variable'][key].setReadOnly(True)
+            # cas particulier ou la lecture est simple
+            sous_obj['variable'][key].setReadOnly(True) 
         else:
+            # cas avec lecture et ecriture
             sous_obj['variable'][key].editingFinished.connect(lambda k=key, variable=sous_obj['variable'][key], obj=sous_obj['objet']:
                 self._modifie_parametre(float(variable.text()), k,obj)) # self._zone_text_train n'existe pas encore
             sous_obj['variable'][key].setValidator(validator)
