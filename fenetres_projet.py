@@ -13,7 +13,7 @@
 
 
 from outil_gui import Fenetre,BackstagePopup
-import modeles2 as md
+import gestion_reducteur as md
 import xlsx_reducteur as xlsx
 import os
 from PySide6 import (
@@ -541,7 +541,6 @@ class Frame_Train(qtw.QFrame):
         # met a jour l'objet train
         sous_obj.description[value_name] = nouvelle_valeur
         self.reducteur.calculer_systeme_complet()
-        print(f"Paramètre '{value_name}' mis à jour à {nouvelle_valeur} pour le train {self.num}.")
         # met a jour la fenetre
         self.fenetre.met_a_jour_parametre_fenetre_entiere(self.num,value_name)
 

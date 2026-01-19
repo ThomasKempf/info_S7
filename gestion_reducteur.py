@@ -1,4 +1,4 @@
-from Parametres_dyna import Calcule_train_simple, Calcule_train_epi
+from gestion_calcule_train import Calcule_train_simple, Calcule_train_epi
 import math
 
 # --- Définition des classes de données ---
@@ -205,7 +205,6 @@ class Reducteur():
             train = self.listeTrain[index_train]
             if sous_objet in train.description:
                 if cle in train.description[sous_objet].description:
-                    print(f">> Modification Train {index_train+1} [{sous_objet}][{cle}] = {valeur}")
                     train.description[sous_objet].description[cle] = valeur
                     self.calculer_systeme_complet()
                 else: print(f"Erreur: Clé {cle} introuvable.")
@@ -227,14 +226,12 @@ class Reducteur():
         new_train.description['global'].description['_couple_sortie'] = couple_cible
         
         self.listeTrain.append(new_train)
-        print(f">> Train {type_train} ajouté. Cible maintenue à {couple_cible} Nm")
         self.calculer_systeme_complet()
 
     def supprimer_dernier_train(self):
         if len(self.listeTrain) > 0:
             couple_cible = self.listeTrain[-1].description['global'].description['_couple_sortie']
             self.listeTrain.pop()
-            print(">> Dernier train supprimé.")
             if len(self.listeTrain) > 0:
                 self.listeTrain[-1].description['global'].description['_couple_sortie'] = couple_cible
                 print(f">> Cible de {couple_cible} Nm transférée au train précédent.")
@@ -256,14 +253,12 @@ class Reducteur():
                 new_train.description['global'].description['_vitesse_entree'] = old_train.description['global'].description['_vitesse_entree']
                 new_train.description['global'].description['_puissance_entree'] = old_train.description['global'].description['_puissance_entree']
             self.listeTrain[index] = new_train
-            print(f">> Train {index+1} changé en type {nouveau_type}.")
             self.calculer_systeme_complet()
 
 
 # --- Zone de Test de Validation (Scenario Mixte) ---
 
 if __name__ == '__main__':
-    print("=== TEST : SCÉNARIO MIXTE (Fixe + Auto + Fixe) ===")
     
     # Objectif : Ratio Total ~20
     # T1 Fixé à 2.0
@@ -290,7 +285,6 @@ if __name__ == '__main__':
 
     reducteur = Reducteur([t1, t2, t3])
 
-    print("-" * 60)
     for i, train in enumerate(reducteur.listeTrain):
         g = train.description['global'].description
         
@@ -300,9 +294,6 @@ if __name__ == '__main__':
         
         ratio = g['rapport_reduction']
         
-        print(f"ETAGE {i+1} {mode_str} : Ratio = {ratio:.2f}")
-
-    print("-" * 60)
     
     # Vérification automatique
     r2 = reducteur.listeTrain[1].description['global'].description['rapport_reduction']

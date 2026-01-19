@@ -47,9 +47,9 @@ Une fois le projet enregistré, on peut l’ouvrir soit via le bouton Ouvrir, so
     contient les classes permettant de générer la fenêtre du projet.
 ### outil_gui.py
     contient la super classe des fenêtres, ainsi que d'autres classes utiles de manière générale lors de la programmation d'une fenêtre avec PySide6.
-### modeles2.py
+### gestion_reducteur.py
     contient les classes descriptives des différents composants d'un réducteur, faisant le lien entre la GUI et les classes de calcul.
-### parametres_dyna.py
+### gestion_calcule_train.py
     contient la classe permettant de calculer les différents paramètres d'un train.
 ### xlsx_reducteur.py
     contient les classes permettant de gérer l'enregistrement d'un projet dans un fichier .xlsx.

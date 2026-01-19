@@ -21,7 +21,7 @@ from PySide6 import (
 from outil_gui import (Fenetre,CloseWatcher)
 from fenetres_creation import FenetreCreationProjet
 from fenetres_projet import FenetreProjet
-import modeles2 as mod
+import gestion_reducteur as mod
 
 # parametre specifique a la fenetre menu
 MENU = {

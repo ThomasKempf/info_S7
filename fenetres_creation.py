@@ -12,7 +12,7 @@
     le fichier xlsx et les parametres correspondant
 """
 
-import modeles2 as mod
+import gestion_reducteur as mod
 from outil_gui import Fenetre
 import xlsx_reducteur as xlsx
 from PySide6 import (

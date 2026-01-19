@@ -14,7 +14,7 @@
 import copy
 from openpyxl import Workbook,load_workbook
 from openpyxl.utils import get_column_letter
-from modeles2 import Global, Train_simple, Train_epi
+from gestion_reducteur import Global, Train_simple, Train_epi
 
 NAME = 'reducteur'
 PATH = '.\\' # path dans le quelle on souhaite ecrire le fichier
@@ -260,7 +260,6 @@ class XlsxReducteur(XlsxFile):
         supprime le dernier train écris dans le xlsx en ce basant sur self.param
         '''
         colonne = COLONNE_DEPART + (NBR_COLONNE_SEPRARATION + NBR_COLONNE_TRAIN) * (len(self._param)-2)
-        print(colonne,len(self._param))
         liste_vide = [' ']
         for global_key in self._param[-1]:
             liste_vide.append(' ')
