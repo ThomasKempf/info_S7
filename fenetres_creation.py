@@ -12,7 +12,7 @@
     le fichier xlsx et les parametres correspondant
 """
 
-import gestion_reducteur as mod
+import modeles2 as mod
 from outil_gui import Fenetre
 import xlsx_reducteur as xlsx
 from PySide6 import (
@@ -55,7 +55,7 @@ PAGE_0 = {
                 'Puissance':{'unitee':'W','valeur_defaut':'4000','validator':validator,'parent':'block_gauche'},
                 'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':validator,'parent':'block_droit'}
             },
-    'labels':['Réducteur','Choix Paramètres Globaux'],
+    'labels':['Reducteur','Choix Parametre Global'],
     'styleSheet': '''
                 QWidget {
                     background: #fff;           /* Couleur de fond blanche */
@@ -74,7 +74,7 @@ PAGE_0 = {
 
 
 PAGE_1 = {
-    'labels':['Nombre d’étage(s) :'],
+    'labels':['nombre d’étage :'],
     'styleSheet': '''
                 QWidget {
                     background: #fff; /* Couleur de fond blanche */
@@ -104,7 +104,7 @@ LIGNE_TRAIN = {
             },
     'labels':['1'],
     'comboboxes':{'type_engrenage':['  Engrenage droit', '  Engrenage hélicoïdal'],
-                  'type_train':['  Train Simple', '  Train épicycloïdal']},
+                  'type_train':['  Train simple', '  Train épicycloïdal']},
     'styleSheet': '''
                 QWidget {
                     background: #fff; /* Couleur de fond blanche */
@@ -272,7 +272,7 @@ class FenetreCreationProjet(Fenetre):
             # creation du train
             if variables_train['type_train'] == '  Train Simple':
                 mes_etages.append(mod.Train_simple(num_train + 1))
-            elif variables_train['type_train'] == '  Train épicycloïdal':
+            elif variables_train['type_train'] == '  Train Epicicloïdal':
                 mes_etages.append(mod.Train_epi(num_train + 1))
             if variables_train['type_engrenage'] == '  Engrenage hélicoïdal':
                 mes_etages[num_train].description['global'].description['beta'] = 20 # angle d'hélice par defaut
@@ -558,9 +558,8 @@ class Page_1():
         **Préconditions :**
         - ``self.layouts['premiere_ligne'], self.widgets['bloc_gauche'], self.widgets['bloc_droit'] `` doivent etre valide
         '''
-        self.layouts['premiere_ligne'].addWidget(self.widgets['bloc_gauche'])
-        self.layouts['premiere_ligne'].addSpacing(93)  # Espace fixe entre les deux blocs
-        self.layouts['premiere_ligne'].addWidget(self.widgets['premiere_ligne'])
+        liste = [self.widgets['bloc_gauche'],93,self.widgets['premiere_ligne']]
+        self._fenetre.ajoute(self.layouts['premiere_ligne'],liste)
         self.layouts['premiere_ligne'].addStretch()
 
 
