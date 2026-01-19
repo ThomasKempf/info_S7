@@ -234,7 +234,6 @@ class Reducteur():
             self.listeTrain.pop()
             if len(self.listeTrain) > 0:
                 self.listeTrain[-1].description['global'].description['_couple_sortie'] = couple_cible
-                print(f">> Cible de {couple_cible} Nm transférée au train précédent.")
             self.calculer_systeme_complet()
 
     def changer_type_train(self, index, nouveau_type):
