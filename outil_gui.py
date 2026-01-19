@@ -152,14 +152,16 @@ class Fenetre(qtw.QWidget):
                 layout.addWidget(list_element[i])
 
 
-    def _ajout_nom_zone_texte_unitee(self,nom:str,unitee:str,text_defaut:str) -> tuple[qtw.QWidget, qtw.QLineEdit]:
+    def _ajout_nom_zone_texte_unitee(self,nom:str,unitee:str,text_defaut:str,control_0:bool=True,gras:bool=False) -> tuple[qtw.QWidget, qtw.QLineEdit]:
         '''
         genere un widget avec deux label et un qtw.QLineEdit, un pour le nom un pour l'unitee et une zone de texte,
         
         :param nom: nom de la variable
         :param unitee: unitee associée au parametre
         :param test_defaut: texte par defaut ecris dans la zone de texte
-        :return: retourne un widgets contenant la structure et une variable contenant l'objet  qtw.QLineEdit
+        :param control_0: si le parametre doit etre controler pour ne pas etre égal à 0, bricolage special pour les fenetre de projet
+        :param gras: si le nom doit etre en gras ou non spéciatlement bricolé pour la fenetre de projet
+        :return: retourne un widgets contenant la structure et une variable contenant l'objet  qtw.QLineEdit et le label du nom
         '''
         layout = qtw.QHBoxLayout()
         # ajoute le label du nom
@@ -171,7 +173,8 @@ class Fenetre(qtw.QWidget):
         self.valeur_precedente[str(variable)] = text_defaut
         variable.setStyleSheet('QLineEdit {border: 1px solid #222; border-radius: 3px;}')
         variable.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
-        variable.editingFinished.connect(lambda w=variable : self.control_0(w))
+        if control_0:
+            variable.editingFinished.connect(lambda w=variable : self.control_0(w))
         layout.addWidget(variable)
         # ajoute le label de l'unitee
         lbl_unitee = qtw.QLabel(unitee)
@@ -179,7 +182,11 @@ class Fenetre(qtw.QWidget):
         # ajoute le layout principale au widget principale
         widget = qtw.QWidget()
         widget.setLayout(layout)
-        return widget,variable
+        if gras:
+            lbl_nom.setStyleSheet("font-weight: bold;")
+            lbl_unitee.setStyleSheet("font-weight: bold;")
+        return widget,variable,lbl_nom,lbl_unitee
+    
     
     
 
@@ -199,7 +206,7 @@ class Fenetre(qtw.QWidget):
         for key in (param_labels_unitee):
             param = param_labels_unitee[key]
             # genere les variables contenant les linedit et les widget associee
-            widgets[key],variables[key] = self._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
+            widgets[key],variables[key],lbl_nom,lbl_unitee = self._ajout_nom_zone_texte_unitee(key,param['unitee'],param['valeur_defaut'])
             # ajoute un validator qui permet de restraindre les possiblitee d'ecriture dans la zone de texte
             variables[key].setValidator(param['validator'])
             # modifie leurs taille
@@ -277,6 +284,24 @@ class Fenetre(qtw.QWidget):
            frames[key].setFixedSize(*taille[i])
 
 
+    def control_interval(self,lineedits:qtw.QLineEdit,max,min,nouvelle_valeur = None):
+        '''
+        controle si la valeur du lineedits est dans l'interval donné
+        
+        :param lineedits: objet lineedits a modifier
+        :param max: valeur maximale de l'interval
+        :param min: valeur minimale de l'interval
+        :param nouvelle_valeur: nouvelle valeur correcte à lui assignée
+        '''
+        value = float(lineedits.text())
+        if not(max >= value >= min):
+            if nouvelle_valeur == None:
+                nouvelle_valeur = self.valeur_precedente[str(lineedits)]
+            self.signaler_lineedits_erreur(lineedits,nouvelle_valeur)
+            return
+        self.valeur_precedente[str(lineedits)] = lineedits.text()
+
+
     def control_0(self,lineedits:qtw.QLineEdit,nouvelle_valeur = None) -> None:
         '''
         controle si la valeur du lineedits n'est pas egal a 0,
@@ -285,13 +310,16 @@ class Fenetre(qtw.QWidget):
         :param lineedits: objet lineedits a modifier
         :param nouvelle_valeur: nouvelle valeur correcte à lui assignée
         '''
-        if lineedits.text() == '0':
+        value = lineedits.text()
+        if '.' in value:  # vérifier qu'il y a un point
+            partie_entière, partie_decimale = value.split('.', 1)  # ne sépare qu'au premier point
+            value = partie_entière + partie_decimale
+        if all(ch == '0' for ch in value):
             if nouvelle_valeur == None:
                 nouvelle_valeur = self.valeur_precedente[str(lineedits)]
             self.signaler_lineedits_erreur(lineedits,nouvelle_valeur)
             return
         self.valeur_precedente[str(lineedits)] = lineedits.text()
-        
 
     def signaler_lineedits_erreur(self,lineedits:qtw.QLineEdit,nouvelle_valeur:str) -> None:
         '''
@@ -353,8 +381,7 @@ class BackstagePopup(qtw.QWidget):
             ("Nouveau", "new"),
             ("Ouvrir...", "open"),
             ("Enregistrer", "save"),
-            ("Enregistrer sous...", "save_as"),
-            ("Imprimer...", "print"),
+            ("Enregistrer sous...", "save_as")
         ]
         # creer et ajoute chaque bouton au layoute
         layout = qtw.QVBoxLayout(self)
@@ -364,7 +391,7 @@ class BackstagePopup(qtw.QWidget):
             layout.addWidget(btn)
 
 
-    def ouvrir_liste(self) -> None:
+    def ouvrir_list(self) -> None:
         '''
         rend la liste visible et connecte la methode permetant de la fermer
 
@@ -374,10 +401,10 @@ class BackstagePopup(qtw.QWidget):
         self.adjustSize()
         self.show()
         self.button.clicked.disconnect()
-        self.button.clicked.connect(self._fermer_liste)
+        self.button.clicked.connect(self._fermer_list)
 
 
-    def _fermer_liste(self) -> None:
+    def _fermer_list(self) -> None:
         '''
         ferme cache la liste et connecte la methode permetant de l'ouvrir a nouveau
 
@@ -385,7 +412,7 @@ class BackstagePopup(qtw.QWidget):
         - ``self.button`` doit rediriger vers les un bouton
         '''
         self.button.clicked.disconnect()
-        self.button.clicked.connect(self.ouvrir_liste)
+        self.button.clicked.connect(self.ouvrir_list)
         self.hide()
 
 

@@ -12,6 +12,8 @@
 
 """
 import sys
+import os
+import xlsx_reducteur as xlsx
 from PySide6 import (
     QtWidgets as qtw,
     QtGui as qtg
@@ -19,6 +21,7 @@ from PySide6 import (
 from outil_gui import (Fenetre,CloseWatcher)
 from fenetres_creation import FenetreCreationProjet
 from fenetres_projet import FenetreProjet
+import gestion_reducteur as mod
 
 # parametre specifique a la fenetre menu
 MENU = {
@@ -52,64 +55,86 @@ MENU = {
     '''
 }
 
-def next_fenetre(fenetre_depart: qtw.QWidget, fenetre_suivante: qtw.QWidget) -> None:
-    """
-    Ferme la fenêtre de départ et affiche la fenêtre suivante.
 
-    :param fenetre_depart: fenetre anterieur a fermer
-    :param fenetre_suivante: nouvelle fenetre à mettre en avant
-    """
-    fenetre_depart.close()
-    fenetre_suivante.show()
+class Projet():
+    def __init__(self) -> None:
+        """
+        Classe principale pour lancer l'interface graphique du projet.
+        """
+        # Variable globale pour stocker l'instance de la fenêtre
+        self.app = qtw.QApplication(sys.argv)
+        # Créer les fenetres
+        self.fenetre_menu = FenetreMenu(MENU, self)
+        self.fenetre_creation = FenetreCreationProjet()
+        # Surveille la femerture de la fenetre_creation
+        self.watcher = CloseWatcher(self._ouvre_projet_lors_fermeture)
+        self.fenetre_creation.installEventFilter(self.watcher)
+        # lie le bouton créer projet à la mise en avant de fenetre_creation
+        self.fenetre_menu.buttons['creer_projet'].clicked.connect(lambda checked=False: self._next_fenetre(self.fenetre_menu, self.fenetre_creation)) 
+        self.fenetre_menu.show()
+        sys.exit(self.app.exec())
 
 
-def detecte_fermeture_fenetre(fenetre: qtw.QWidget) -> None:
-    """
-    Cette fonction sera appelée *avant* que la fenêtre soit détruite.
-    Tente de récupérer des attributs spécifiques de la fenêtre et
-    ouvre la FenetreProjet si possible.
+    def _next_fenetre(self,fenetre_depart: qtw.QWidget, fenetre_suivante: qtw.QWidget) -> None:
+        """
+        Ferme la fenêtre de départ et affiche la fenêtre suivante.
 
-    :param fenetre: contient l'objet de la fenetre, qui est de pres ou de loin un widget
-    """
-    try:
-        xlsx_file = getattr(fenetre, "xlsx_file")
-        train = getattr(fenetre, "_train")
-        fenetre_projet = FenetreProjet(xlsx_file, train)
-        fenetre_projet.show()
-    except Exception as e:
-        print("Impossible de récupérer les attributs :", e)
+        :param fenetre_depart: fenetre anterieur a fermer
+        :param fenetre_suivante: nouvelle fenetre à mettre en avant
+        """
+        fenetre_depart.close()
+        fenetre_suivante.show()
+
+
+    def _ouvre_projet_lors_fermeture(self,fenetre: qtw.QWidget) -> None:
+        """
+        Cette fonction sera appelée *avant* que la fenêtre soit détruite.
+        Tente de récupérer des attributs spécifiques de la fenêtre et
+        ouvre la FenetreProjet si possible.
+
+        :param fenetre: contient l'objet de la fenetre, qui est de pres ou de loin un widget
+        """
+        try:
+            reducteur = getattr(fenetre, "_reducteur")
+            fenetre_projet = FenetreProjet(reducteur, self)
+            fenetre_projet.show()
+        except Exception as e:
+            print("Impossible de récupérer les attributs :", e)
 
 
 class FenetreMenu(Fenetre):
-    def __init__(self, param: dict) -> None:
+    def __init__(self, param: dict, projet: Projet) -> None:
         """
         Classe pour générer uniquement la fenêtre de menu.
 
         :param param: dictionnaire contenant les paramètres de la fenêtre, propre à chaque fenêtre
+        :param projet: instance de la classe Projet pour le passer à la fenetre projet
         """
+        self.project = projet
         super().__init__(param, {
             'layouts': {'main': 'h', 'left': 'v', 'right': 'v'},
             'widgets': ['engrenages'],
             'labels': ['titre'],
             'buttons': ['creer_projet', 'ouvrir_projet', 'exit']
         })
-        self.adapt_composant()
-        self.add_left()
-        self.add_right()
-        self.add_main()
+        self._adapt_composant()
+        self._add_left()
+        self._add_right()
+        self._add_main()
 
 
-    def adapt_composant(self) -> None:
+    def _adapt_composant(self) -> None:
         """
         Crée et adapte les composants de la fenêtre (titres, boutons, widgets).
         """
         self._adapte_titre()
         self.buttons['exit'].setFixedSize(210, 50)
         self.buttons['exit'].clicked.connect(self.close)
+        self.buttons['ouvrir_projet'].clicked.connect(self._ouvrir_projet)
         self._generer_icone_engrenage(self.widgets['engrenages'])
 
 
-    def add_left(self) -> None:
+    def _add_left(self) -> None:
         """
         Ajoute les elements du layout de gauche contenant les boutons creer projet et ouvrir projet
         """
@@ -118,7 +143,7 @@ class FenetreMenu(Fenetre):
         self.layouts['left'].addStretch()
 
 
-    def add_right(self) -> None:
+    def _add_right(self) -> None:
         """
         Ajoute les element du layoute de droite contenant les engrenages et le bouton exite
         """
@@ -127,7 +152,7 @@ class FenetreMenu(Fenetre):
         self.layouts['right'].addWidget(self.buttons['exit'])
 
 
-    def add_main(self) -> None:
+    def _add_main(self) -> None:
         """
         Compose le layout principal à partir des sous-layouts gauche et droit.
         """
@@ -161,17 +186,43 @@ class FenetreMenu(Fenetre):
         self.labels['titre'].setAlignment(qtg.Qt.AlignmentFlag.AlignCenter)
 
 
+    def _ouvrir_projet(self) -> None:
+        """
+        Ouvre un projet reducteur existante, lie le contenue et ouvre la fenetre projet.
+        """
+        path, _ = qtw.QFileDialog.getOpenFileName(self,
+            "Ouvrir un projet",
+            os.path.expanduser("~"),
+            "Fichier Excel (*.xlsx);;Tous les fichiers (*)"
+        )
+        fichier_xslx = xlsx.XlsxReducteur(path)
+        fichier_xslx.ouverture_espace_existant()
+        mes_etages = fichier_xslx.lire_fichier()
+        if len(mes_etages) == 0:
+            fenetre_erreur = FenetreFichierInvalide()
+            fenetre_erreur.exec()
+            return
+        reducteur = mod.Reducteur(mes_etages)
+        fenetre_projet = FenetreProjet(reducteur, self.project)
+        fenetre_projet.setWindowTitle(str(path))
+        fenetre_projet.show()
+        self.close()
+        
+
+class FenetreFichierInvalide(qtw.QMessageBox):
+    def __init__(self) -> None:
+        """
+        Classe pour générer une fenêtre de message d'erreur lorsque le fichier ouvert est invalide.
+        """
+        super().__init__()
+        self.setIcon(qtw.QMessageBox.Icon.Critical)
+        self.setWindowTitle("Erreur de fichier")
+        self.setText("Le fichier sélectionné est invalide ou vide.")
+        self.setStandardButtons(qtw.QMessageBox.StandardButton.Ok)
+
+
+
+
 if __name__ == '__main__':
-    # Variable globale pour stocker l'instance de la fenêtre
-    app = qtw.QApplication(sys.argv)
-    # Créer les fenetres
-    fenetre_menu = FenetreMenu(MENU)
-    fenetre_creation = FenetreCreationProjet()
-    # Surveille la femerture de la fenetre_creation
-    watcher = CloseWatcher(detecte_fermeture_fenetre)
-    fenetre_creation.installEventFilter(watcher)
-    # lie le bouton créer projet à la mise en avant de fenetre_creation
-    fenetre_menu.buttons['creer_projet'].clicked.connect(lambda checked=False: next_fenetre(fenetre_menu, fenetre_creation))
-    
-    fenetre_menu.show()
-    sys.exit(app.exec())
+    projet = Projet()
+    projet.ouvrir_menu()

@@ -12,8 +12,7 @@
     le fichier xlsx et les parametres correspondant
 """
 
-import modeles2 as mod
-import time
+import gestion_reducteur as mod
 from outil_gui import Fenetre
 import xlsx_reducteur as xlsx
 from PySide6 import (
@@ -22,6 +21,9 @@ from PySide6 import (
     QtCore as qtc
 )
 
+# validator pour les float
+validator = qtg.QDoubleValidator()
+validator.setLocale(qtc.QLocale(qtc.QLocale.C))
 
 CREATION_PROJET = {
     'buttons':['Précedent','Next'],
@@ -49,11 +51,11 @@ CREATION_PROJET = {
 
 PAGE_0 = {
     'labels_unitee':{
-                'Vitesse':{'unitee':'RPM','valeur_defaut':'4000','validator':qtg.QDoubleValidator(0.0, 10000.0, 6),'parent':'block_gauche'},
-                'Puissance':{'unitee':'W','valeur_defaut':'1500','validator':qtg.QDoubleValidator(0.0, 10000.0, 6),'parent':'block_gauche'},
-                'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':qtg.QDoubleValidator(0.0, 10000.0, 6),'parent':'block_droit'}
+                'Vitesse':{'unitee':'RPM','valeur_defaut':'1500','validator':validator,'parent':'block_gauche'},
+                'Puissance':{'unitee':'W','valeur_defaut':'4000','validator':validator,'parent':'block_gauche'},
+                'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':validator,'parent':'block_droit'}
             },
-    'labels':['Reducteur','Choix Parametre Global'],
+    'labels':['Réducteur','Choix Paramètres Globaux'],
     'styleSheet': '''
                 QWidget {
                     background: #fff;           /* Couleur de fond blanche */
@@ -72,7 +74,7 @@ PAGE_0 = {
 
 
 PAGE_1 = {
-    'labels':['nombre d’étage :'],
+    'labels':['Nombre d’étage(s) :'],
     'styleSheet': '''
                 QWidget {
                     background: #fff; /* Couleur de fond blanche */
@@ -97,12 +99,12 @@ PAGE_1 = {
 
 LIGNE_TRAIN = {
     'labels_unitee':{
-                'entraxe':{'unitee':'mm','valeur_defaut':'400','validator':qtg.QIntValidator(0, 10000)},
-                'σ_max':{'unitee':'Mpa','valeur_defaut':'1500','validator':qtg.QIntValidator(0, 10000)},
+                'entraxe':{'unitee':'mm','valeur_defaut':'100','validator':validator},
+                'σ_max':{'unitee':'Mpa','valeur_defaut':'500','validator':validator},
             },
     'labels':['1'],
     'comboboxes':{'type_engrenage':['  Engrenage droit', '  Engrenage hélicoïdal'],
-                  'type_train':['  Train Simple', '  Train Epicicloïdal']},
+                  'type_train':['  Train Simple', '  Train épicycloïdal']},
     'styleSheet': '''
                 QWidget {
                     background: #fff; /* Couleur de fond blanche */
@@ -156,13 +158,13 @@ class FenetreCreationProjet(Fenetre):
             'stack':['stack']
         }
         super().__init__(CREATION_PROJET,elements)
-        self.generer_widget_page(nbr_page=2)
+        self._generer_widget_page(nbr_page=2)
         self.layouts['button'].insertStretch(0, 1)
-        self.generer_bouton_next_precedent(self.layouts['button'])
-        self.ajoute_composants()
+        self._generer_bouton_next_precedent(self.layouts['button'])
+        self._ajoute_composants()
 
 
-    def generer_widget_page(self, nbr_page:int) -> None:
+    def _generer_widget_page(self, nbr_page:int) -> None:
         '''
         creer un objet pour chaque page avec la bonne classe et ajoute le au stack permetant le defilement
         
@@ -179,7 +181,7 @@ class FenetreCreationProjet(Fenetre):
 
 
 
-    def generer_bouton_next_precedent(self, layout:qtw.QHBoxLayout) -> None:
+    def _generer_bouton_next_precedent(self, layout:qtw.QHBoxLayout) -> None:
         '''
         adapte les boutons et les lie au fonction a appeler
         
@@ -196,7 +198,7 @@ class FenetreCreationProjet(Fenetre):
         self.buttons['precedent'].hide()
 
 
-    def ajoute_composants(self) -> None:
+    def _ajoute_composants(self) -> None:
         '''
         ajoute les composants de la page constituer des boutons et du stack permetant le changement de page
         
@@ -244,9 +246,9 @@ class FenetreCreationProjet(Fenetre):
             self.showMinimized()
             # prendre les dernieres valeurs
             self.genere_projet()
-            self.genere_xlsx()
             fenetre_attente.close()
             self.close()
+            self.precedente_page()
 
 
     def genere_projet(self) -> None:
@@ -257,32 +259,36 @@ class FenetreCreationProjet(Fenetre):
         - il est important de les laisser en instance courante pour pouvoir les lire juste avant la fermeture de la page
         - ``self._page[0].variables`` doit etre valide de 0 a 1
         '''
-        
+        # cette fonction est encore en prototype le temps que les differentes classes de calcul soit implementée
+        # extrait les description des pages
         description_global =  self._page[0].variables
-        self._description_global = mod.Global()
-        self._description_global.description =  description_global
         variables_lignes = self._page[1].variables_lignes
-        values_global = [int(val) for val in description_global.values()]
-        values_train = [int(val) for val in variables_lignes[0].values()] # ajoute que le premier train
-        self._train = mod.Calcule_train_simple(*values_global, *values_train)
-    
-        
-    def genere_xlsx(self) -> None:
-        '''
-        genere les differents instance utilisant la classe xlsx.
-        xlsx_param est une liste contenant tout les parametres du projet
-        en utilisant des classe tamplate pour etre sur d'avoir la bonne structure
-        xlsx_file contient toute les metodes lier au ficher xlsx, permetant de le modifier et le sauvegrader
-
-        **Préconditions :**
-        - il est important de les laisser en instance courante pour pouvoir les lire juste avant la fermeture de la page
-        - ``self._description_global`` doit etre valide et contenir la description global (vitesse,puissance,couple)
-        - ``self._description_global`` doit etre un objet train
-        '''
-        # creation du fichier
-        self.xlsx_file = xlsx.ProjetXlsx(self._description_global)
-        self.xlsx_file.ecrire_description_ogjet_multiple(self._train.train_1,1)
-        self.xlsx_file.save()
+        # lis des données des linedits et des differentes variables
+        values_global = [float(val) for val in description_global.values()]
+        mes_etages = []
+        for num_train in range(len(variables_lignes)):
+            values_train = []
+            variables_train = variables_lignes[num_train]
+            # creation du train
+            if variables_train['type_train'] == '  Train Simple':
+                mes_etages.append(mod.Train_simple(num_train + 1))
+            elif variables_train['type_train'] == '  Train épicycloïdal':
+                mes_etages.append(mod.Train_epi(num_train + 1))
+            if variables_train['type_engrenage'] == '  Engrenage hélicoïdal':
+                mes_etages[num_train].description['global'].description['beta'] = 20 # angle d'hélice par defaut
+            # incorporation des valeur
+            for key in variables_train:
+                if isinstance(variables_train[key],str):
+                    values_train.append(variables_train[key]) # cas des combobox
+                else:
+                    values_train.append(float(variables_train[key].text())) # cas des linedits
+            mes_etages[num_train].description['global'].description['entraxe'] = values_train[0]
+            mes_etages[num_train].description['global'].description['resistance_elastique'] = values_train[1]
+        # ajout des parametres globals
+        mes_etages[0].description['global'].description['_vitesse_entree'] = values_global[0]
+        mes_etages[0].description['global'].description['_puissance_entree'] = values_global[1]
+        mes_etages[-1].description['global'].description['_couple_sortie'] = values_global[2]
+        self._reducteur = mod.Reducteur(mes_etages)
 
 
 class Page_0():
@@ -473,7 +479,7 @@ class Page_1():
         '''
         # genere premiere ligne
         self._lignes =[]
-        self._lignes.append(Ligne_train(self._fenetre,1))
+        self._lignes.append(LigneTrain(self._fenetre,1))
         self.widgets['premiere_ligne'] = self._lignes[0].widget
         # adapte et ajoute widget des lignes suivante qui n'existe pas encore
         self.layouts['ligne_vertical'].setSpacing(15)
@@ -515,7 +521,7 @@ class Page_1():
 
         :param num: numero de la nouvelle ligne de train dans la liste
         '''
-        self._lignes.append(Ligne_train(self._fenetre,num+1))
+        self._lignes.append(LigneTrain(self._fenetre,num+1))
         self.layouts['ligne_vertical'].addWidget(self._lignes[num].widget)
 
     
@@ -575,7 +581,7 @@ class Page_1():
         return page
 
 
-class Ligne_train():
+class LigneTrain():
     def __init__(self,fenetre,numero) -> None:
         '''
         genere un widget avec tout les elements necessaire à la partie droite d'un train
@@ -587,11 +593,21 @@ class Ligne_train():
         self._numero = numero
         self._genere_elements()
         self._add_element_block_droite()
-        self._fenetre.creer_getters_variables_lineedits(self,self._variables)
+    
+
+    @property
+    def variables(self) -> dict[str]:
+        '''
+        au varaibles 
+        '''
+        variables = self._variables
+        for key in self.comboboxes:
+            variables[key] = self.comboboxes[key].currentText()
+        return variables
 
 
     @property
-    def widget(self):
+    def widget(self) -> qtw.QWidget:
         '''
         acces au widget du module entier
         '''
@@ -641,15 +657,19 @@ class Ligne_train():
         **Préconditions :**
         - les self.labels , layoute liste_deroulante et widgets doivent etre valide
         '''
+        # ajoute les combobox au layout list
         for key in self.comboboxes:
             self.layouts['list'].addWidget(self.comboboxes[key])
         self._widgets['list'].setLayout(self.layouts['list'])
         self._widgets['list'].setObjectName("sous_block")
+        # ajoute tout les elements au layout main
         liste_widgets = [3,self.numero_train,self._widgets['list'],30,self._widgets['entraxe'],self._widgets['σ_max'],3]
         self._fenetre.ajoute(self.layouts['main'],liste_widgets)
+        # adapte le widget principal
         self._widgets['main'].setLayout(self.layouts['main'])
         self._widgets['main'].setObjectName("sous_block")
         self._widgets['main'].setFixedHeight(55)
+        # adapte le label numero train
         self.numero_train.setObjectName("sous_block")
         self.numero_train.setFixedWidth(45)
         self.numero_train.setAlignment(qtc.Qt.AlignCenter)
@@ -669,11 +689,11 @@ class FenetreAttenteCreation(Fenetre):
             'labels':['texte','points'],
         }
         super().__init__(ATTENTE_CREATION,elements)
-        self.genere_fenetre()
-        self.genere_changement_dynamique()
+        self._genere_fenetre()
+        self._genere_changement_dynamique()
 
 
-    def genere_fenetre(self) -> None:
+    def _genere_fenetre(self) -> None:
         '''
         adapte le style du laout main et y ajoute le label texte et celui des points dynamoique
         pour ensuite ajouter le main à la fenetre
@@ -689,7 +709,7 @@ class FenetreAttenteCreation(Fenetre):
         self.setLayout(main)
 
 
-    def genere_changement_dynamique(self) -> None:
+    def _genere_changement_dynamique(self) -> None:
         '''
         creer un timer pour appeler de maniere cyclique self.clignoter
 
@@ -700,11 +720,11 @@ class FenetreAttenteCreation(Fenetre):
         self._index = 0
         # Timer pour l’animation
         self.timer = qtc.QTimer()
-        self.timer.timeout.connect(self.clignoter)
+        self.timer.timeout.connect(self._clignoter)
         self.timer.start(400)  # toutes les 400 ms
 
 
-    def clignoter(self) -> None:
+    def _clignoter(self) -> None:
         '''
         Permet le chamgement du text tu label a chaque appel
 
