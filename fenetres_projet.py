@@ -389,7 +389,7 @@ class Frame_Train(qtw.QFrame):
         :return: retourne la combobox pour directment l'ajouter au layout
         '''
         combobox = qtw.QComboBox()
-        items = ['Train Simple', 'Train Epicicloïdal']
+        items = ['Train simple', 'Train épicycloïdal']
         for item in items:
             combobox.addItem(item)
             index = combobox.count() - 1

@@ -55,7 +55,7 @@ PAGE_0 = {
                 'Puissance':{'unitee':'W','valeur_defaut':'4000','validator':validator,'parent':'block_gauche'},
                 'Couple':{'unitee':'Nm','valeur_defaut':'380','validator':validator,'parent':'block_droit'}
             },
-    'labels':['Reducteur','Choix Parametre Global'],
+    'labels':['Réducteur','Choix Paramètres Globaux'],
     'styleSheet': '''
                 QWidget {
                     background: #fff;           /* Couleur de fond blanche */
@@ -74,7 +74,7 @@ PAGE_0 = {
 
 
 PAGE_1 = {
-    'labels':['nombre d’étage :'],
+    'labels':['Nombre d’étage(s) :'],
     'styleSheet': '''
                 QWidget {
                     background: #fff; /* Couleur de fond blanche */
@@ -104,7 +104,7 @@ LIGNE_TRAIN = {
             },
     'labels':['1'],
     'comboboxes':{'type_engrenage':['  Engrenage droit', '  Engrenage hélicoïdal'],
-                  'type_train':['  Train Simple', '  Train Epicicloïdal']},
+                  'type_train':['  Train Simple', '  Train épicycloïdal']},
     'styleSheet': '''
                 QWidget {
                     background: #fff; /* Couleur de fond blanche */
@@ -272,7 +272,7 @@ class FenetreCreationProjet(Fenetre):
             # creation du train
             if variables_train['type_train'] == '  Train Simple':
                 mes_etages.append(mod.Train_simple(num_train + 1))
-            elif variables_train['type_train'] == '  Train Epicicloïdal':
+            elif variables_train['type_train'] == '  Train épicycloïdal':
                 mes_etages.append(mod.Train_epi(num_train + 1))
             if variables_train['type_engrenage'] == '  Engrenage hélicoïdal':
                 mes_etages[num_train].description['global'].description['beta'] = 20 # angle d'hélice par defaut
