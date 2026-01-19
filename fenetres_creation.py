@@ -14,7 +14,6 @@
 
 import gestion_reducteur as mod
 from outil_gui import Fenetre
-import xlsx_reducteur as xlsx
 from PySide6 import (
     QtWidgets as qtw,
     QtGui as qtg,
