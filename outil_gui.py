@@ -9,6 +9,8 @@
     a l'aide de ces methodes qui permette de simplifier les teches repetitive et recurente dans la plupart des fenetres
 """
 
+import sys
+import os
 from PySide6 import (
     QtWidgets as qtw,
     QtGui as qtg,
@@ -129,7 +131,13 @@ class Fenetre(qtw.QWidget):
         :param name_and_path: nom et chemain de l'image
         :return: retourne le label contenant l'image
         '''
-        pixmap = qtg.QPixmap(name_and_path)
+        # Gestion du chemin pour PyInstaller
+        if hasattr(sys, 'frozen'):
+            image_path = os.path.join(sys._MEIPASS, name_and_path.lstrip('./'))
+        else:
+            image_path = name_and_path
+        
+        pixmap = qtg.QPixmap(image_path)
         label = qtw.QLabel()
         label.setPixmap(pixmap)
         return label

@@ -16,6 +16,7 @@ from outil_gui import Fenetre,BackstagePopup
 import gestion_reducteur as md
 import xlsx_reducteur as xlsx
 import os
+import sys
 from PySide6 import (
     QtWidgets as qtw,
     QtGui as qtg,
@@ -462,10 +463,17 @@ class Frame_Train(qtw.QFrame):
         defini l'image a utiliser en fonction du type de train
         '''
         if self._train.titre.startswith('train_simple_'):
-            image = './simple.png'
+            image = 'simple.png'
         elif self._train.titre.startswith('train_epi_'):
-            image = './epicicloïdale.png'
-        self.label_image.setPixmap(qtg.QPixmap(image))
+            image = 'epicicloïdale.png'
+        
+        # Gestion du chemin pour PyInstaller
+        if hasattr(sys, 'frozen'):
+            image_path = os.path.join(sys._MEIPASS, image)
+        else:
+            image_path = './' + image
+        
+        self.label_image.setPixmap(qtg.QPixmap(image_path))
 
 
     def _genere_un_parametre(self,sous_obj,key,value,unitee):
